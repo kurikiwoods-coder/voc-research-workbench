@@ -71,6 +71,8 @@ SQLite 迁移位于 `src/raw_store/migrations/`。服务从空库启动时自动
 
 固定版本与问答字段分别按管道核验。供应商的公开示例只用于编写适配器，最终以本账户的真实响应验收。[TypeSafe Score](https://docs.typesafe.ai/primitives/score) · [TypeSafe 数据使用](https://help.typesafe.ai/articles/5974925716) · [第三方接口文档](https://jevmodel.org/zh/docs/)
 
+**选择复测供应商。** TypeSafe 的模型目录列有 `jev-1.14.0`，Score 文档定义了每档概率。有组织 ZDR 审查记录和相应 Key 后，可在本机将 `JEV_PROVIDER` 明确设为 `typesafe` 并新建批次。JevModel 公开文档示例使用 `jev-latest`，其 Score 示例只列分数与置信度。走该通道时仍发送 `jev-1.14.0`，逐字段保存真实响应。两个通道均按工作台规则拆为 8 + 3 题。[TypeSafe 模型目录](https://docs.typesafe.ai/models) · [账户模型查询](https://docs.typesafe.ai/api/list-models) · [TypeSafe Score](https://docs.typesafe.ai/primitives/score) · [JevModel 服务说明](https://jevmodel.org/zh/docs/)
+
 ## 复测
 
 ```sh
@@ -80,6 +82,13 @@ python scripts/cold_start.py
 python -m playwright install chromium
 python tests/browser_e2e.py
 python tests/live_gate.py
+```
+
+已发布批次可离线交叉核对 SQLite 与 JSON，也可向原帖接口重新取证。后者返回 0 表示原句及许可一致，1 表示观察到差异，2 表示无可用响应或原帖不可读取。独立复核不会修改已发布的批次。
+
+```sh
+python -m src.outputs.audit_receipt --verify docs/evidence/p0-0
+python -m src.outputs.audit_receipt --verify-source docs/evidence/p0-0
 ```
 
 离线工程测试使用独立临时目录。cold_start 会在运行操作系统上用三个独立空库真实启动和停止服务。浏览器脚本启动自己的本地临时服务，仅匿名访问公开来源，保存桌面、窄屏和抽屉截图到 test-results/browser/。指定现有 Chromium 时，可设置 VOC_CHROMIUM。live_gate 使用本机真实环境，凭证齐备时会产生供应商用量。退出码 0 表示全门通过，1 表示测试错误，2 表示存在阻塞。可在「运行记录」回看该次检查。四周历史与真实问卷继续等待相应阶段的运营样本。

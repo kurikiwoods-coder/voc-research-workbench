@@ -39,6 +39,8 @@
 | C0-6 | PASS | 2 个产品品类、3 个任务大类、30 个合成意图，两次跨品类 Top-12 命中。 |
 | G-1 | BLOCKED | C0-1 至 C0-4 待验收。下一阶段的 CSV、原始证据和采样批次等待准入。 |
 
+批次封存后独立重取原帖，首次 HTTP 503，后续 HTTP 200 的原句摘要及许可与批次一致。供应商无凭证元数据探测保留 HTTP 状态与返回字段。C0-1 和 C0-2 等待固定模型的真实两片响应，C0-3 等待 Tavily 或 Brave 的实际发现记录。[原帖复核](evidence/p0-0/source-verification-02.json) · [供应商响应](evidence/p0-0/provider-metadata.json)
+
 每项的时间、证据 ID、请求与响应可由 [JSON 与 SQLite 验收包](evidence/p0-0/README.md) 复核。下方映射表定义验收标准；重新运行页面将读取本机当前批次的结果。
 
 ## 技术路线与数据设计

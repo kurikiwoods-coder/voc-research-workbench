@@ -22,6 +22,14 @@
 python -m src.outputs.audit_receipt --verify docs/evidence/p0-0
 ```
 
+另一次独立联网复核按证据中的原帖号重取正文。北京时间 21:22 返回 HTTP 503，21:25 返回 HTTP 200。第二次返回的许可和原句 UTF-8 SHA-256 与两次正式采样一致。两份复核记录保留在批次之外，C0-3 仍等待指定引擎取证。[首次响应](source-verification-01.json) · [再次响应](source-verification-02.json) · [公开原帖](https://cooking.stackexchange.com/questions/94603/how-do-i-get-something-sticky-like-honey-or-golden-syrup-off-measuring-spoons-or)
+
+```sh
+python -m src.outputs.audit_receipt --verify-source docs/evidence/p0-0
+```
+
+北京时间 21:29 另行发出两次无正文、无凭证的 GET。TypeSafe 账户模型目录返回 HTTP 403 和要求 API key 的 JSON。JevModel 的公开发现页在本环境返回 HTTP 403，正文格式为非 JSON。两次探测均未发送判断问题。固定模型、Score 字段及账户额度仍以有权账户的真实响应验收。[请求与响应记录](provider-metadata.json)
+
 | 文件 | 文件字节 SHA-256 |
 |---|---|
 | run.json | 0216cbe253f6d4796a3dac08fac4d9b7e7b952c00641252b306b303af2a35d35 |
@@ -40,6 +48,8 @@ SELECT shard_no, tokens, remaining FROM usage_ledger;
 ```
 
 ## 工程与浏览器复测
+
+23 项离线回归通过，涵盖接口、断点恢复、计量、归档一致性及原话变更检测。Linux 三次空库冷启动通过。[完整测试输出](test-results.txt)
 
 本机实际运行单元与接口测试、Linux 三次独立空库冷启动、正式在线检查和只读证据核对。全门在线测试退出码为 2。首次运行与恢复保留相同批次 ID 和两组时间戳。Chromium 实际浏览器交互覆盖状态筛选、查看原话的证据抽屉、搜索验收矩阵、空结果、未同步额度、恢复批次与 JSON 下载。390 × 844 CSS 像素的窄屏浏览器测试使用同一套页面资源与本机接口，内容区宽度与滚动宽度均为 375 像素，折叠导航可以进入验收矩阵。
 
