@@ -3,6 +3,10 @@
 > 决定（2026-11-23，Ryan 定）：工作台是全品类的，不是营养秤专用的。
 > 一个意图可以属于多个大类，再定一个主大类。大类本身也可以被发现，不只预设。
 > COSORI 营养秤只是第一个跑通的品类。
+>
+> 本页的“大类”指任务大类（Task Category），见 `schemas/category.schema.json`。
+> 产品品类（Product Category）是另一套注册表，见 `schemas/product_category.schema.json`
+> 与 PDT v1.3.1 §6.9，二者绝不混用。
 
 ## 双向查找
 
