@@ -55,7 +55,12 @@ def split(items):
 
 
 def probability(value):
-    return type(value) in (int, float) and math.isfinite(value) and 0 <= value <= 1
+    return type(value) in (int, float) and 0 <= value <= 1
+
+
+def input_tokens(body):
+    usage = body.get("usage") if isinstance(body, dict) else None
+    return number(usage.get("input_tokens")) if isinstance(usage, dict) else None
 
 
 def distribution(probs, keys):
@@ -87,16 +92,13 @@ def validate(asked, obj):
             gaps.append(f"{key}.confidence")
         criteria, probs = question["criteria"], answer.get("probabilities")
         if kind == "choice":
-            if answer.get("choice") not in criteria:
+            choice = answer.get("choice")
+            if not isinstance(choice, str) or choice not in criteria:
                 gaps.append(f"{key}.choice")
             valid = distribution(probs, criteria)
         else:
             val = answer.get("score")
-            if (
-                type(val) not in (int, float)
-                or not math.isfinite(val)
-                or not 0 <= val <= len(criteria) - 1
-            ):
+            if type(val) not in (int, float) or not 0 <= val <= len(criteria) - 1:
                 gaps.append(f"{key}.score")
             valid = distribution(probs, [str(i) for i in range(len(criteria))])
         if not valid:
@@ -138,6 +140,16 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
         payload = {"model": MODEL, "state": quote["text"], "questions": asked}
         try:
             key, prev = store.reserve(run, i, payload)
+            if prev and prev["state"] == "sending":
+                # Older builds recorded a response and updated its ledger in separate transactions.
+                evidence = store.recorded_shard_success(run, key)
+                if evidence and json.loads(evidence["request_json"]).get("body") == payload:
+                    archived = json.loads(evidence["response_json"])
+                    body = archived["body"]
+                    store.recover_shard(
+                        key, evidence, body, input_tokens(body), number(archived.get("X-Tokens-Remaining"))
+                    )
+                    key, prev = store.reserve(run, i, payload)
         except Conflict as exc:
             return refs, checks, gaps, str(exc)
         if prev and prev["state"] == "received":
@@ -170,10 +182,26 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
                     "question_set_version": VERSION,
                     "mention_id": "forum-" + quote["post_id"],
                 }
-                evid = store.record(
+                state, tokens = "received", input_tokens(obj)
+                if response.status != 200:
+                    # Accounts without documented idempotency pause on ambiguous upstream failures.
+                    safe_retry = response.status == 429 or (
+                        settings.provider == "jevmodel" and response.status == 502
+                    )
+                    retry_after = response.retry_after or ""
+                    wait = int(retry_after) if retry_after.isdecimal() else 2**n
+                    tokens = None
+                    if n < 2 and safe_retry and wait <= 8:
+                        state = None
+                    else:
+                        state = (
+                            "retryable"
+                            if safe_retry or response.status in (401, 402, 403, 422)
+                            else "uncertain"
+                        )
+                evid = store.record_shard_response(
                     attempt,
-                    "jev_shard",
-                    "live_http",
+                    key,
                     meta,
                     {
                         "body": obj,
@@ -181,29 +209,15 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
                         "retry_after": response.retry_after,
                     },
                     response.status,
+                    state=state,
+                    tokens=tokens,
                 )
                 refs.append(evid)
-                if response.status == 200:
-                    usage = obj.get("usage") if isinstance(obj, dict) else None
-                    tokens = number(usage.get("input_tokens")) if isinstance(usage, dict) else None
-                    store.save_shard(key, "received", obj, tokens, response.remaining, evid)
+                if state == "received":
                     break
-                # Ambiguous upstream failures on accounts without documented idempotency need review.
-                safe_retry = response.status == 429 or (
-                    settings.provider == "jevmodel" and response.status == 502
-                )
-                wait = (
-                    int(response.retry_after)
-                    if response.retry_after and response.retry_after.isdecimal()
-                    else 2**n
-                )
-                if n < 2 and safe_retry and wait <= 8:
+                if state is None:
                     sleep(max(1, wait))
                     continue
-                state = (
-                    "retryable" if safe_retry or response.status in (401, 402, 403, 422) else "uncertain"
-                )
-                store.save_shard(key, state, obj, None, None, evid)
                 return (
                     refs,
                     checks,

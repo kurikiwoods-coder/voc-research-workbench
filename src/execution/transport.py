@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass
 import json
+import math
 import re
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlsplit
@@ -35,9 +36,16 @@ class NoRedirect(HTTPRedirectHandler):
 
 
 def number(value):
-    if type(value) is int and value >= 0:
+    if type(value) is int and 0 <= value <= 2**63 - 1:
         return value
     return None
+
+
+def finite_float(value):
+    result = float(value)
+    if not math.isfinite(result):
+        raise ValueError("Non-finite JSON number")
+    return result
 
 
 def redact(value, secrets=()):
@@ -89,7 +97,7 @@ def network(method, url, body, headers):
             if len(data) > 2_000_000:
                 return Response(response.status, {"error": "response_too_large"})
             try:
-                obj = json.loads(data)
+                obj = json.loads(data, parse_float=finite_float, parse_constant=finite_float)
             except (ValueError, UnicodeError):
                 obj = {"error": "non_json_response"}
             header = response.headers.get("X-Tokens-Remaining", "")

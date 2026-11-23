@@ -1,8 +1,9 @@
 """P0-0 discovery sample. Search results only identify URLs; the post endpoint supplies the words."""
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from html import unescape
 from html.parser import HTMLParser
+from itertools import chain, zip_longest
 import re
 from hashlib import sha256
 from urllib.parse import urlsplit
@@ -18,6 +19,8 @@ LICENSES = {
     f"CC BY-SA {v}": f"https://creativecommons.org/licenses/by-sa/{v}/" for v in ("2.5", "3.0", "4.0")
 }
 PUBLIC = {"public_approved"}
+ENGINES = ("tavily", "brave", "forum_search")
+POST_LIMIT = 4
 
 
 class PlainText(HTMLParser):
@@ -50,12 +53,22 @@ def first_sentence(html):
     return hit.group().strip() if hit else plain[:360]
 
 
+def published_at(value):
+    if type(value) is int:
+        try:
+            return (datetime(1970, 1, 1, tzinfo=timezone.utc) + timedelta(seconds=value)).isoformat()
+        except OverflowError:
+            pass
+    return None
+
+
 def discover(settings, store, attempt, transport=network):
     if (transport is network) == store.fixture:
         raise ValueError("在线传输和合成测试必须使用独立数据库")
     secrets = list(settings.keys.values())
-    refs, candidates, errors = [], [], []
-    for engine in ("tavily", "brave", "forum_search"):
+    refs, errors = [], []
+    candidates = {engine: [] for engine in ENGINES}
+    for engine in ENGINES:
         key = settings.keys.get(engine)
         if engine != "forum_search" and not key:
             errors.append(f"{engine} 未配置")
@@ -112,7 +125,7 @@ def discover(settings, store, attempt, transport=network):
                     hits.append(
                         {"id": ident, "url": link, "title": unescape(str(item.get("title", "")))[:240]}
                     )
-                    candidates.append((engine, ident))
+                    candidates[engine].append(ident)
         refs.append(
             store.record(
                 attempt,
@@ -137,11 +150,21 @@ def discover(settings, store, attempt, transport=network):
             )
         )
         if not hits:
-            errors.append(f"{engine} 未取得可核验链接")
-    # Each request is for an ID returned by a search in this run.
+            hint = f"（HTTP {reply.status}）" if reply.status else "（未收到响应）"
+            errors.append(f"{engine} 未取得可核验链接{hint}")
+    # Share the lookup budget across paid engines and reserve one lookup for an available forum fallback.
+    external = (
+        (engine, ident)
+        for pair in zip_longest(candidates["tavily"], candidates["brave"])
+        for engine, ident in zip(ENGINES[:2], pair)
+        if ident
+    )
+    fallback = (("forum_search", ident) for ident in candidates["forum_search"])
+    external_limit = POST_LIMIT - bool(candidates["forum_search"])
     tried = set()
-    for engine, ident in candidates:
-        if ident in tried or len(tried) >= 4:
+    for engine, ident in chain(external, fallback):
+        limit = POST_LIMIT if engine == "forum_search" else external_limit
+        if ident in tried or len(tried) >= limit:
             continue
         tried.add(ident)
         params = {"site": SITE, "filter": "withbody"}
@@ -156,15 +179,16 @@ def discover(settings, store, attempt, transport=network):
         license_name = item.get("content_license")
         quote = first_sentence(item.get("body", "")) if isinstance(item.get("body"), str) else ""
         original = item.get("link")
-        author = str((item.get("owner") or {}).get("display_name", "")).strip()
-        obtained = item.get("creation_date")
-        expires = item.get("last_activity_date")
+        owner = item.get("owner")
+        display_name = owner.get("display_name") if isinstance(owner, dict) else None
+        author = unescape(display_name).strip() if isinstance(display_name, str) else ""
+        date = published_at(item.get("creation_date"))
         verified = (
-            license_name in LICENSES
+            isinstance(license_name, str) and license_name in LICENSES
             and post_id(original) == ident
             and str(item.get("question_id")) == ident
             and bool(quote and author)
-            and type(obtained) is int
+            and date is not None
             and redact(quote, secrets) == quote
         )
         citation = {
@@ -172,16 +196,12 @@ def discover(settings, store, attempt, transport=network):
             "post_id": ident,
             "url": original,
             "text": quote,
-            "author": unescape(author),
+            "author": author,
             "license": license_name,
-            "license_url": LICENSES.get(license_name),
+            "license_url": LICENSES.get(license_name) if verified else None,
             "method": "Stack Exchange API /questions/{id}",
-            "published_at": (
-                datetime.fromtimestamp(obtained, timezone.utc).isoformat()
-                if type(obtained) is int
-                else None
-            ),
-            "last_activity_epoch": expires,
+            "published_at": date,
+            "last_activity_epoch": item.get("last_activity_date"),
             "verified": verified,
             "role": "public_connectivity_sample",
             "research_denominator": 0,
@@ -204,11 +224,13 @@ def discover(settings, store, attempt, transport=network):
                 **params,
             },
             redact(
-                citation if verified else {"verified": False, "error": obj.get("error_message")}, secrets
+                citation if verified else {"verified": False, "error": obj.get("error_message") or obj.get("error")}, secrets
             ),
             reply.status,
         )
         refs.append(ref)
         if verified:
             return citation, refs, engine in {"tavily", "brave"}, errors
+        status = f"HTTP {reply.status}" if reply.status else "未收到响应"
+        errors.append(f"原帖 {ident} 未核验（{status}）")
     return None, refs, False, errors

@@ -1,11 +1,13 @@
 """Deterministic regression tests, including a physically separate synthetic HTTP ledger."""
 
 from pathlib import Path
+from io import BytesIO
 import json
 import sqlite3
 import tempfile
 import unittest
 import uuid
+from urllib.parse import urlsplit
 from unittest.mock import patch
 
 from fastapi.testclient import TestClient
@@ -14,12 +16,13 @@ from src.dashboard.app import balance, create_app, catalogue
 from src.discovery.recall import test_cross_category_recall
 from src.execution.checks import CODES, run_checks, test_gate_requires_all_six, test_isolation_drill
 from src.execution.jev import call_shards, intent_question, questions, split, validate
-from src.execution.transport import Denied, Response, outbound, redact
+from src.execution.transport import Denied, Response, network, outbound, redact
 from src.ingestion.public_source import discover, first_sentence, post_id
 from src.raw_store.store import Busy, Conflict, Store
 from src.outputs.audit_receipt import public_evidence
 
 AUTH = {"X-VOC-Action": "connectivity"}
+FORUM_URL = "https://cooking.stackexchange.com/q/"
 
 
 class ApprovedFixture(Settings):
@@ -89,6 +92,28 @@ class LocalTests(unittest.TestCase):
         self.assertFalse(identity)
         self.assertTrue({"in_registry.noul", "intent.probabilities", "signal_2.type"} <= set(gaps))
 
+    def test_malformed_answer_values_become_schema_gaps(self):
+        asked = questions()
+        obj = response_for({"questions": asked})
+        obj["answers"]["intent"]["choice"] = ["use"]
+        obj["answers"]["friction"]["score"] = 10**400
+        obj["answers"]["in_registry"]["noul"] = 10**400
+        identity, gaps = validate(asked, obj)
+        self.assertTrue(identity)
+        self.assertEqual(gaps, ["intent.choice", "in_registry.noul", "friction.score"])
+
+    def test_invalid_json_numbers_leave_a_recordable_http_failure(self):
+        for literal in (b"NaN", b"Infinity", b"1e999"):
+            with self.subTest(literal=literal):
+                stream = BytesIO(b'{"answers":{"confidence":' + literal + b"}}")
+                stream.status = 200
+                stream.headers = {}
+                with patch("src.execution.transport.build_opener") as opener:
+                    opener.return_value.open.return_value = stream
+                    reply = network("GET", "https://example.invalid", None, {})
+                self.assertEqual(reply.status, 200)
+                self.assertEqual(reply.body, {"error": "non_json_response"})
+
     def test_partial_second_shard_and_idempotent_resume(self):
         calls = []
 
@@ -131,6 +156,75 @@ class LocalTests(unittest.TestCase):
             "待核对",
             call_shards(self.cfg, self.db, self.batch_id, self.attempt, self.quote, unreachable)[3],
         )
+
+    def test_resume_recovers_legacy_recorded_success_without_sending_it_twice(self):
+        payload = {"model": MODEL, "state": self.quote["text"], "questions": split(questions())[0]}
+        key, _ = self.db.reserve(self.batch_id, 1, payload)
+        archived = self.db.record(
+            self.attempt, "jev_shard", "live_http", {"idempotency_key": key, "body": payload},
+            {"X-Tokens-Remaining": 17, "body": response_for(payload)}, 200,
+        )
+        self.assertEqual(self.db.ledger(self.batch_id)[0]["state"], "sending")
+
+        def only_second_shard(method, url, body, headers):
+            self.assertEqual(list(body["questions"]), list(split(questions())[1]))
+            return Response(200, response_for(body), 0)
+
+        reopened = Store(self.root, fixture=True)
+        _, attempt = reopened.begin(None, self.cfg, self.batch_id)
+        args = (self.cfg, reopened, self.batch_id, attempt, self.quote, only_second_shard)
+        self.assertEqual(call_shards(*args)[1:], ([True, True], [], None))
+        ledger = reopened.ledger(self.batch_id)
+        self.assertEqual([row["tokens"] for row in ledger], [17, 17])
+        self.assertEqual(ledger[0]["evidence_id"], archived)
+        self.assertEqual(balance(reopened, self.cfg)["remaining"], 0)
+
+    def test_jev_evidence_and_usage_commit_together(self):
+        with self.db.db() as conn:
+            conn.executescript("""
+                CREATE TRIGGER reject_first_settlement BEFORE UPDATE ON shards
+                WHEN NEW.state='received'
+                BEGIN SELECT RAISE(ABORT, 'synthetic storage failure'); END;
+            """)
+
+        def successful_fixture(method, url, body, headers):
+            return Response(200, response_for(body), 80)
+
+        args = (self.cfg, self.db, self.batch_id, self.attempt, self.quote, successful_fixture)
+        with self.assertRaises(sqlite3.IntegrityError):
+            call_shards(*args)
+        self.assertEqual(self.db.rows("SELECT id FROM evidence WHERE name='jev_shard'"), [])
+        self.assertEqual(self.db.ledger(self.batch_id)[0]["state"], "sending")
+
+    def test_latest_success_without_balance_header_is_unsynced(self):
+        calls = []
+
+        def transport(method, url, body, headers):
+            calls.append(headers["Idempotency-Key"])
+            return Response(200, response_for(body), 80 if len(calls) == 1 else None)
+
+        call_shards(self.cfg, self.db, self.batch_id, self.attempt, self.quote, transport)
+        token = balance(self.db, self.cfg)
+        self.assertIsNone(token["remaining"])
+        self.assertIsNone(token["sync_method"])
+        self.assertIsNotNone(token["last_synced_at"])
+        self.assertEqual(token["input_tokens"], 34)
+        self.assertIn(80, [row["remaining"] for row in token["records"]])
+
+    def test_unauthorized_response_hides_former_balance_but_preserves_usage(self):
+        replies = iter((
+            lambda payload: Response(200, response_for(payload), 80),
+            lambda payload: Response(401, {"error": "fixture_invalid_key"}),
+        ))
+
+        def transport(method, url, body, headers):
+            return next(replies)(body)
+
+        call_shards(self.cfg, self.db, self.batch_id, self.attempt, self.quote, transport)
+        token = balance(self.db, self.cfg)
+        self.assertEqual(token["warning"], "密钥异常")
+        self.assertIsNone(token["remaining"])
+        self.assertEqual(token["input_tokens"], 17)
 
     def test_repeated_key_must_bind_same_payload_and_account(self):
         self.db.reserve(self.batch_id, 1, {"a": 1})
@@ -244,6 +338,64 @@ class LocalTests(unittest.TestCase):
         self.assertFalse(hit)
         self.assertNotIn("Synthetic unapproved text", json.dumps(self.db.audit(self.batch_id)))
 
+    def test_source_check_does_not_let_one_engine_exhaust_the_lookup_budget(self):
+        for with_brave in (True, False):
+            with self.subTest(with_brave=with_brave):
+                candidate = 207 if with_brave else 208
+                seen = []
+
+                def transport(method, url, body, headers):
+                    if "api.tavily.com" in url:
+                        return Response(200, {"results": [{"url": f"{FORUM_URL}{i}"} for i in range(101, 106)]})
+                    if "api.search.brave.com" in url:
+                        return Response(200, {"web": {"results": [{"url": FORUM_URL + "207"}]}})
+                    if "/search/advanced" in url:
+                        return Response(200, {"items": [{"link": FORUM_URL + "208"}]})
+                    ident = int(urlsplit(url).path.rsplit("/", 1)[1])
+                    seen.append(ident)
+                    if ident != candidate:
+                        return Response(404, {"items": []})
+                    return Response(200, {"items": [self.forum_item(ident)]})
+
+                keys = {"tavily": "tavily-fixture"}
+                if with_brave:
+                    keys["brave"] = "brave-fixture"
+                cfg = Settings(self.root, keys=keys)
+                quote, _, hit, _ = discover(cfg, self.db, self.attempt, transport)
+                self.assertIsNotNone(quote)
+                self.assertEqual(quote["post_id"], str(candidate))
+                self.assertEqual(hit, with_brave)
+                self.assertLessEqual(len(seen), 4)
+
+    def test_source_check_skips_invalid_post_metadata(self):
+        malformed = [
+            self.forum_item(1) | {"owner": "deleted"},
+            self.forum_item(2) | {"content_license": []},
+            self.forum_item(3) | {"creation_date": 10**100},
+        ]
+
+        def transport(method, url, body, headers):
+            if "/search/advanced" in url:
+                return Response(200, {"items": [{"link": f"{FORUM_URL}{i}"} for i in range(1, 5)]})
+            ident = int(urlsplit(url).path.rsplit("/", 1)[1])
+            return Response(200, {"items": [malformed[ident - 1] if ident < 4 else self.forum_item(4)]})
+
+        quote, refs, hit, _ = discover(Settings(self.root), self.db, self.attempt, transport)
+        self.assertEqual(quote["post_id"], "4")
+        self.assertFalse(hit)
+        published = self.db.audit(self.batch_id)["attempts"][0]["evidence"]
+        posts = [row for row in published if row["id"] in refs and row["name"] == "forum_post"]
+        self.assertEqual([p["response"]["verified"] for p in posts], [False, False, False, True])
+        self.assertTrue(all("text" not in p["response"] for p in posts[:3]))
+
+    @staticmethod
+    def forum_item(ident):
+        return {
+            "question_id": ident, "content_license": "CC BY-SA 4.0",
+            "link": f"{FORUM_URL}{ident}", "body": "An offline synthetic excerpt.",
+            "owner": {"display_name": "Fixture"}, "creation_date": 1_600_000_000,
+        }
+
     def test_sanitization_and_provider_partition(self):
         self.assertEqual(
             redact(
@@ -300,6 +452,14 @@ class LocalTests(unittest.TestCase):
                     "/api/runs", headers={**AUTH, "Origin": "https://example.invalid"}, json={}
                 ).status_code,
                 403,
+            )
+            self.assertEqual(
+                client.post("/api/runs", headers={**AUTH, "Origin": "http://["}, json={}).status_code,
+                403,
+            )
+            self.assertEqual(
+                client.post("/api/runs", headers={**AUTH, "Origin": "http://localhost"}, json={}).status_code,
+                422,
             )
             self.assertEqual(client.get("/api/workspace").json()["history"], [])
             self.assertEqual(client.get("/static/app.js").status_code, 200)

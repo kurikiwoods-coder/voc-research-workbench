@@ -124,14 +124,18 @@ class Store:
             )
             db.execute("UPDATE attempts SET finished_at=? WHERE id=?", (ts, attempt))
 
-    def record(self, attempt, name, mode, request, response, status=None):
+    def _record(self, db, attempt, name, mode, request, response, status):
         if self.fixture and mode == "live_http":
             mode = "synthetic_contract"
+        return db.execute(
+            """INSERT INTO evidence(attempt_id,name,mode,checked_at,status_code,request_json,response_json)
+               VALUES (?,?,?,?,?,?,?)""",
+            (attempt, name, mode, now(), status, dump(request), dump(response)),
+        ).lastrowid
+
+    def record(self, attempt, name, mode, request, response, status=None):
         with self.db() as db:
-            return db.execute(
-                "INSERT INTO evidence(attempt_id,name,mode,checked_at,status_code,request_json,response_json) VALUES (?,?,?,?,?,?,?)",
-                (attempt, name, mode, now(), status, dump(request), dump(response)),
-            ).lastrowid
+            return self._record(db, attempt, name, mode, request, response, status)
 
     def result(self, attempt, rid, status, detail, evidence, blocker=None):
         with self.db() as db:
@@ -195,13 +199,36 @@ class Store:
                 )
             return key, dict(row) if row else None
 
-    def save_shard(self, key, state, body, tokens, remaining, evidence_id):
+    def _settle_shard(self, db, key, state, body, tokens, remaining, evidence_id):
+        updated = db.execute(
+            """UPDATE shards SET state=?,response_json=?,tokens=?,remaining=?,evidence_id=?,
+                      updated_at=(SELECT checked_at FROM evidence WHERE id=?)
+               WHERE request_key=? AND state='sending'""",
+            (state, dump(body), tokens, remaining, evidence_id, evidence_id, key),
+        )
+        if updated.rowcount != 1:
+            raise Conflict("此分片未处于发送状态，无法回填。")
+
+    def record_shard_response(self, attempt, key, request, response, status, *, state=None, tokens=None):
         with self.db() as db:
-            db.execute(
-                """UPDATE shards SET state=?,response_json=?,tokens=?,remaining=?,evidence_id=?,updated_at=?
-                       WHERE request_key=? AND state='sending'""",
-                (state, dump(body), tokens, remaining, evidence_id, now(), key),
-            )
+            ref = self._record(db, attempt, "jev_shard", "live_http", request, response, status)
+            if state is not None:
+                remaining = response.get("X-Tokens-Remaining") if state == "received" else None
+                self._settle_shard(db, key, state, response["body"], tokens, remaining, ref)
+            return ref
+
+    def recorded_shard_success(self, run_id, key):
+        return self.one(
+            """SELECT e.id,e.request_json,e.response_json FROM evidence e
+               JOIN attempts a ON a.id=e.attempt_id WHERE a.run_id=? AND e.name='jev_shard'
+                 AND e.status_code=200 AND json_extract(e.request_json,'$.idempotency_key')=?
+               ORDER BY e.id DESC LIMIT 1""",
+            (run_id, key),
+        )
+
+    def recover_shard(self, key, evidence, body, tokens, remaining):
+        with self.db() as db:
+            self._settle_shard(db, key, "received", body, tokens, remaining, evidence["id"])
 
     def ledger(self, run_id):
         return self.rows(

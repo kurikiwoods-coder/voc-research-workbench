@@ -1,6 +1,5 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
-from urllib.parse import urlsplit
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Request
@@ -91,15 +90,21 @@ def balance(db, settings):
         tag,
     )
     latest = db.one(
-        """SELECT s.remaining,s.updated_at FROM shards s JOIN runs r ON r.id=s.run_id
-                       WHERE r.account_tag=? AND s.remaining IS NOT NULL AND s.state='received' ORDER BY s.updated_at DESC,s.rowid DESC LIMIT 1""",
+        """SELECT s.remaining FROM shards s JOIN runs r ON r.id=s.run_id
+           WHERE r.account_tag=? AND s.state='received' ORDER BY s.updated_at DESC,s.rowid DESC LIMIT 1""",
         tag,
     )
     token_account = settings.provider == "jevmodel"
-    remaining = latest["remaining"] if latest and token_account else None
+    last_synced = db.one(
+        """SELECT s.updated_at FROM shards s JOIN runs r ON r.id=s.run_id
+           WHERE r.account_tag=? AND s.state='received' AND s.remaining IS NOT NULL
+           ORDER BY s.updated_at DESC,s.rowid DESC LIMIT 1""",
+        tag,
+    ) if token_account else None
+    last_code = records[0]["status_code"] if records else None
+    remaining = latest["remaining"] if latest and token_account and last_code not in (401, 403) else None
     cap = settings.capacity if token_account else None
     percent = 100 * remaining / cap if remaining is not None and cap else None
-    last_code = records[0]["status_code"] if records else None
     warning = {
         401: "密钥异常",
         402: "额度不足",
@@ -108,16 +113,19 @@ def balance(db, settings):
         429: "供应商限流",
         502: "上游服务异常",
     }.get(last_code)
+    if not warning and records and records[0]["state"] == "uncertain":
+        warning = "传输结果或计费待核对"
     if not warning and percent is not None and percent < 20:
         warning = "余额告急" if percent < 5 else "低余额预警"
     return {
         "provider": settings.provider,
         "model": MODEL,
+        "key_configured": bool(settings.keys.get(settings.provider)),
         "remaining": remaining,
         "capacity": cap,
         "percent": percent,
         "sync_method": "header" if remaining is not None else None,
-        "last_synced_at": latest["updated_at"] if latest and token_account else None,
+        "last_synced_at": last_synced["updated_at"] if last_synced else None,
         "input_tokens": total["tokens"] if total["n"] and total["n"] == total["metered"] else None,
         "successful_shards": total["n"],
         "unit": "input tokens" if token_account else "供应商货币账户",
@@ -148,13 +156,8 @@ def create_app(settings=None):
     async def local_controls(request: Request, call_next):
         if request.method not in ("GET", "HEAD", "OPTIONS"):
             origin = request.headers.get("origin")
-            if request.headers.get("X-VOC-Action") != "connectivity" or (
-                origin
-                and (
-                    urlsplit(origin).netloc != request.headers.get("host")
-                    or urlsplit(origin).scheme != request.url.scheme
-                )
-            ):
+            expected = f"{request.url.scheme}://{request.headers.get('host')}"
+            if request.headers.get("X-VOC-Action") != "connectivity" or (origin and origin != expected):
                 return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403)
         reply = await call_next(request)
         reply.headers["Referrer-Policy"] = "no-referrer"

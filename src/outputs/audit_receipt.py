@@ -159,6 +159,7 @@ def verify_public_source(folder):
         elif (
             post_id(row.get("link")) == ident
             and str(row.get("question_id")) == ident
+            and isinstance(license_name, str)
             and license_name in LICENSES
             and expected == {(digest, license_name)}
         ):
