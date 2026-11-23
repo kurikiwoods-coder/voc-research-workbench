@@ -1,0 +1,21 @@
+record_id,source_type,source_url,published_at,collected_at,batch_id,raw_text,lang,rating,verified,evidence_grade,review_status,author_hash,intent_id
+SYN-001,forum,https://example.com/synthetic-thread-1,2026-11-10,2026-11-23,SYN-B001,"[SYNTHETIC] I weigh the same breakfast every morning and wish the scale just remembered my oats.",en,,,A,auto,hash-syn-001,INT-001
+SYN-002,forum,https://example.com/synthetic-thread-1,2026-11-10,2026-11-23,SYN-B001,"[SYNTHETIC] Opening the app for every single weigh-in is too much friction before coffee.",en,,,A,auto,hash-syn-002,INT-002
+SYN-003,youtube,https://example.com/synthetic-video-1,2026-11-09,2026-11-23,SYN-B001,"[SYNTHETIC] The preset food button on the scale itself is the only reason I keep using it.",en,,,A,auto,hash-syn-003,INT-001
+SYN-004,forum,https://example.com/synthetic-thread-2,2026-11-11,2026-11-23,SYN-B001,"[SYNTHETIC] My scale lost the preset after a week and I had to set everything up again.",en,,,B,queued,hash-syn-004,INT-003
+SYN-005,reddit,https://example.com/synthetic-post-1,2026-11-08,2026-11-23,SYN-B002,"[SYNTHETIC] I stopped logging because entering every ingredient by hand takes longer than cooking.",en,,,A,auto,hash-syn-005,INT-004
+SYN-006,forum,https://example.com/synthetic-thread-3,2026-11-12,2026-11-23,SYN-B002,"[SYNTHETIC] Protein tracking is my main reason for weighing; calories are secondary.",en,,,A,auto,hash-syn-006,INT-005
+SYN-007,amazon,https://example.com/synthetic-product-1,2026-11-07,2026-11-23,SYN-B002,"[SYNTHETIC] Works well for baking ratios but the nutrition database misses my local brand.",en,4,true,A,auto,hash-syn-007,INT-006
+SYN-008,forum,https://example.com/synthetic-thread-4,2026-11-13,2026-11-23,SYN-B002,"[SYNTHETIC] When I travel I cannot weigh at all, so my weekly record has gaps.",en,,,B,auto,hash-syn-008,INT-007
+SYN-009,youtube,https://example.com/synthetic-video-2,2026-11-06,2026-11-23,SYN-B003,"[SYNTHETIC] The touch buttons do not work with wet hands, which is exactly when I am cooking.",en,,,A,queued,hash-syn-009,INT-003
+SYN-010,forum,https://example.com/synthetic-thread-5,2026-11-14,2026-11-23,SYN-B003,"[SYNTHETIC] I switched from a basic scale because I wanted protein per portion without opening my phone.",en,,,A,auto,hash-syn-010,INT-001
+SYN-011,reddit,https://example.com/synthetic-post-2,2026-11-05,2026-11-23,SYN-B003,"[SYNTHETIC] Does anyone else weigh meal-prep containers in bulk on Sunday and log them once?",en,,,B,auto,hash-syn-011,INT-008
+SYN-012,forum,https://example.com/synthetic-thread-6,2026-11-15,2026-11-23,SYN-B003,"[SYNTHETIC] The app sync failed three times this week and my history shows nothing.",en,,,A,queued,hash-syn-012,INT-003
+SYN-013,amazon,https://example.com/synthetic-product-2,2026-11-04,2026-11-23,SYN-B004,"[SYNTHETIC] Accurate enough for coffee beans, less useful when the portion is under 5 grams.",en,3,true,B,auto,hash-syn-013,INT-006
+SYN-014,forum,https://example.com/synthetic-thread-7,2026-11-16,2026-11-23,SYN-B004,"[SYNTHETIC] I want the scale to show carbs per portion on its screen, not only in the app.",zh,,,A,auto,hash-syn-014,INT-001
+SYN-015,youtube,https://example.com/synthetic-video-3,2026-11-03,2026-11-23,SYN-B004,"[SYNTHETIC] I gave up after two weeks; weighing every meal felt like a second job.",en,,,A,auto,hash-syn-015,INT-004
+SYN-016,forum,https://example.com/synthetic-thread-8,2026-11-17,2026-11-23,SYN-B004,"[SYNTHETIC] My family shares the scale, so a preset that is only mine would help.",en,,,B,auto,hash-syn-016,INT-009
+SYN-017,reddit,https://example.com/synthetic-post-3,2026-11-02,2026-11-23,SYN-B005,"[SYNTHETIC] The best feature is seeing protein immediately after weighing, no phone needed.",en,,,A,auto,hash-syn-017,INT-001
+SYN-018,forum,https://example.com/synthetic-thread-9,2026-11-18,2026-11-23,SYN-B005,"[SYNTHETIC] Setting up custom foods took an hour; I only did it once.",en,,,B,queued,hash-syn-018,INT-003
+SYN-019,amazon,https://example.com/synthetic-product-3,2026-11-01,2026-11-23,SYN-B005,"[SYNTHETIC] Good scale, but I still use a separate app because the food database is thin.",en,4,true,A,auto,hash-syn-019,INT-010
+SYN-020,forum,https://example.com/synthetic-thread-10,2026-11-19,2026-11-23,SYN-B005,"[SYNTHETIC] I weigh my lunch box at work, so the scale has to work without Wi-Fi.",en,,,A,auto,hash-syn-020,INT-007

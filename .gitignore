@@ -1,0 +1,22 @@
+# Secrets and credentials — never commit
+.env
+.env.*
+!.env.example
+credentials/
+*.pem
+*.key
+id_rsa*
+
+# Real research data — never commit to the public repo
+data/raw/
+data/cx/
+data/private/
+*.csv
+!examples/*.csv
+
+# Local tooling
+__pycache__/
+*.pyc
+.venv/
+node_modules/
+.DS_Store
