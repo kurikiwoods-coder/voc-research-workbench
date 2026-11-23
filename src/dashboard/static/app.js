@@ -14,6 +14,10 @@ const pages = {
   history: ["运行记录", "clock"],
   tokens: ["额度中心", "meter"],
 };
+function pageFromLocation() {
+  const page = location.hash.slice(1);
+  return Object.hasOwn(pages, page) ? page : "checks";
+}
 const labels = {
   PASS: "通过",
   FAIL: "失败",
@@ -46,6 +50,12 @@ const sources = {
   stage_gate: "阶段准入判定",
   probe_error: "执行异常",
 };
+const shardStates = {
+  sending: "等待响应",
+  received: "已收到响应",
+  retryable: "待重试",
+  uncertain: "待核对",
+};
 const detailLabels = [
   "固定 jev-1.14.0 · 11 道判断",
   "Choice / Score / Noul",
@@ -71,7 +81,7 @@ const paths = {
 const ic = (key) =>
   `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[key] || paths.file}"/></svg>`;
 let state = null,
-  current = pages[location.hash.slice(1)] ? location.hash.slice(1) : "checks",
+  current = pageFromLocation(),
   selected = null,
   audit = null,
   busy = false,
@@ -114,7 +124,12 @@ const tell = (msg) => {
   tell.t = setTimeout(() => el("toast").classList.remove("active"), 3500);
 };
 async function api(url, options) {
-  const response = await fetch(url, { cache: "no-store", ...options });
+  let response;
+  try {
+    response = await fetch(url, { cache: "no-store", ...options });
+  } catch {
+    throw new Error("无法连接本机服务。请启动工作台后重新读取。");
+  }
   if (!response.ok) {
     let message = "本地服务暂时不可用";
     try {
@@ -123,7 +138,11 @@ async function api(url, options) {
     } catch {}
     throw new Error(message + "（" + response.status + "）");
   }
-  return response.json();
+  try {
+    return await response.json();
+  } catch {
+    throw new Error("本机服务返回的记录格式异常，请重新读取。");
+  }
 }
 async function refresh(id = selected) {
   const data = await api(
@@ -150,8 +169,19 @@ function nav() {
 function renderQuota() {
   const t = state.token,
     pct = Math.min(100, Math.max(0, t.percent || 0));
+  const balance =
+    !t.key_configured ? "Jev 未连接 · 未同步"
+    : t.remaining == null ? "额度未同步"
+    : number(t.remaining) + " 剩余";
+  const status = t.warning ? balance + " · " + t.warning : balance;
+  const sync = t.last_synced_at ? "上次同步 " + ts(t.last_synced_at, true) : "最近同步 —";
+  const progress =
+    t.percent == null
+      ? `aria-valuetext="${t.remaining == null ? "额度未同步" : "待配置额度上限"}"`
+      : `aria-valuenow="${Math.round(pct)}"`;
+  const meterClass = t.percent == null ? "unknown" : pct < 5 ? "critical" : pct < 20 ? "low" : "";
   el("top-token").innerHTML =
-    `<button class="token-open" data-action="token-view" aria-label="查看 Jev Token Center">${ic("meter")}<span><strong>Jev Token Center</strong><small>${esc(t.warning || (t.remaining == null ? "额度未同步" : number(t.remaining) + " 剩余"))}</small></span><span class="minibar ${t.percent == null ? "unknown" : ""}"><i style="width:${pct}%"></i></span><small class="desktop-token">消耗 ${number(t.input_tokens)}<br>${t.last_synced_at ? "同步 " + esc(ts(t.last_synced_at, true)) : "最近同步 —"}</small></button><a class="small-link" href="${esc(t.purchase_url)}" target="_blank" rel="noopener noreferrer">补充额度 ↗</a>`;
+    `<button class="token-open" data-action="token-view" aria-label="查看 Jev Token Center" aria-describedby="token-status"><span class="token-summary">${ic("meter")}<span><strong>Jev Token Center</strong><small id="token-status">${esc(status)}</small></span></span><small class="desktop-token">消耗 ${number(t.input_tokens)}<br>${esc(sync)}</small></button><span class="minibar ${meterClass}" role="progressbar" aria-label="Jev 余额进度" ${progress}><i style="width:${pct}%"></i></span><a class="small-link" href="${esc(t.purchase_url)}" target="_blank" rel="noopener noreferrer">补充额度 ↗</a>`;
 }
 function head(kicker, title, subtitle, buttons = "") {
   return `<section class="page-head"><div><div class="kicker">${kicker}</div><h1>${title}</h1><p>${subtitle}</p></div><div class="actions">${buttons}</div></section>`;
@@ -300,23 +330,26 @@ function tokens() {
     [
       "最近余额同步",
       t.last_synced_at ? ts(t.last_synced_at, true) : "—",
-      t.last_synced_at ? "供应商响应头" : "等待可信余额记录",
+      t.last_synced_at
+        ? t.remaining == null ? "上次成功同步 · 当前待回填" : "供应商响应头"
+        : "等待可信余额记录",
     ],
   ];
   const metrics = `<div class="metrics">${stats.map(([a, b, c]) => `<div class="metric"><span>${esc(a)}</span><b>${esc(b)}</b><small>${esc(c)}</small></div>`).join("")}</div>`;
   const table = t.records.length
-    ? `<div class="wide-table"><table class="table"><thead><tr><th>批次</th><th>分片</th><th>输入 tokens</th><th>状态</th><th>时间</th></tr></thead><tbody>${t.records.map((r) => `<tr><td>${act("open-run", esc(r.run_id.slice(0, 8)), "link", 'data-id="' + r.run_id + '"')}</td><td>${r.shard_no}</td><td>${number(r.tokens)}</td><td>${esc(r.state)} · ${r.status_code || "—"}</td><td>${esc(ts(r.updated_at, true))}</td></tr>`).join("")}</tbody></table></div>`
+    ? `<div class="wide-table"><table class="table"><thead><tr><th>批次</th><th>分片</th><th>输入 tokens</th><th>状态</th><th>时间</th></tr></thead><tbody>${t.records.map((r) => `<tr><td>${act("open-run", esc(r.run_id.slice(0, 8)), "link", 'data-id="' + r.run_id + '"')}</td><td>${r.shard_no}</td><td>${number(r.tokens)}</td><td>${esc(shardStates[r.state] || r.state)} · ${r.status_code == null ? "未收到 HTTP" : "HTTP " + r.status_code}</td><td>${esc(ts(r.updated_at, true))}</td></tr>`).join("")}</tbody></table></div>`
     : '<div class="state-box"><b>本机账本暂无分片</b>真实 Jev 响应会在这里留下输入用量及同步依据。</div>';
   return (
     head(
       "JEV / TOKEN CENTER",
       "额度中心",
       esc(t.provider) + " · " + esc(t.model) + " · 账户单位 " + esc(t.unit),
-      act("refresh", "刷新状态") + link(t.purchase_url, "补充额度"),
+      (t.key_configured ? "" : act("config", "连接配置")) +
+        act("refresh", "刷新状态") + link(t.purchase_url, "补充额度"),
     ) +
     (t.warning
       ? `<div class="warning">${esc(t.warning)} · 请核对供应商账户或查看最近分片。</div>`
-      : "") +
+      : t.key_configured ? "" : '<div class="warning">Jev 未连接。请在后端配置供应商密钥，余额等待同步。</div>') +
     metrics +
     shellPanel("最近分片", "按当前供应商与本机凭证隔离，最多 20 次。", table)
   );
@@ -443,6 +476,13 @@ function gotoPage(page) {
   if (current === page) render();
 }
 document.addEventListener("click", async (event) => {
+  if (event.target.closest("a.skip")) {
+    event.preventDefault();
+    const main = el("main");
+    main.focus({ preventScroll: true });
+    main.scrollIntoView({ block: "start" });
+    return;
+  }
   const navLink = event.target.closest("a.navlink");
   if (navLink && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
     event.preventDefault();
@@ -500,7 +540,18 @@ document.addEventListener("click", async (event) => {
       save("voc-evidence-" + selected + ".json", audit);
     if (a === "export-matrix") save("voc-requirements.json", filteredMatrix());
   } catch (error) {
-    tell(error.message);
+    if (a === "retry-load") {
+      loadError(error);
+    } else if (el("drawer").open) {
+      el("drawer-body").querySelector("[role=alert]")?.remove();
+      const message = document.createElement("p");
+      message.className = "warning";
+      message.setAttribute("role", "alert");
+      message.textContent = error.message;
+      el("drawer-body").prepend(message);
+    } else {
+      tell(error.message);
+    }
   }
 });
 document.addEventListener("input", (e) => {
@@ -517,7 +568,9 @@ document.addEventListener("change", (e) => {
   }
 });
 window.addEventListener("hashchange", () => {
-  current = pages[location.hash.slice(1)] ? location.hash.slice(1) : "checks";
+  const next = pageFromLocation();
+  if (next !== current && el("drawer").open) el("drawer").close();
+  current = next;
   el("rail").classList.remove("open");
   document.querySelector(".menu-btn").setAttribute("aria-expanded", "false");
   if (state) render();

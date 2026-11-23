@@ -234,10 +234,13 @@ summary:focus-visible {
   align-items: center;
   gap: 12px;
 }
+.token-summary,
 .token-open {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+.token-open {
   background: none;
   border: 0;
   padding: 2px;
@@ -267,6 +270,12 @@ summary:focus-visible {
   display: block;
   height: 100%;
 }
+.minibar.low i {
+  background: var(--amber);
+}
+.minibar.critical i {
+  background: var(--bad);
+}
 .unknown {
   background: repeating-linear-gradient(110deg, #e4ebe9 0 3px, #c6d6d2 3px 5px);
 }
@@ -282,6 +291,7 @@ summary:focus-visible {
 main {
   padding: 30px clamp(18px, 3vw, 55px) 42px;
   max-width: 1630px;
+  scroll-margin-top: 64px;
   margin: auto;
 }
 .page-head {
@@ -749,6 +759,9 @@ main {
 .drawer-section {
   border-bottom: 1px solid var(--line);
   padding: 17px 24px;
+}
+#drawer-body > .warning {
+  margin: 10px 24px;
 }
 .drawer-section h3 {
   font-size: 13px;

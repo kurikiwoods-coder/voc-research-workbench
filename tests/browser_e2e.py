@@ -39,6 +39,20 @@ def browser_checks(base, output):
         heading = lambda name: page.get_by_role("heading", name=name, exact=True)
         link = lambda name: page.get_by_role("link", name=name, exact=True)
         expect(heading("等待首次运行")).to_be_visible()
+        expect(page.get_by_text("Jev 未连接 · 未同步", exact=True)).to_be_visible()
+        progress = page.get_by_role("progressbar", name="Jev 余额进度")
+        expect(progress).to_have_attribute("aria-valuetext", "额度未同步")
+        button("查看 Jev Token Center").click()
+        expect(heading("额度中心")).to_be_visible()
+        link("跳至主要内容").press("Enter")
+        expect(heading("额度中心")).to_be_visible()
+        expect(page.locator("main")).to_be_focused()
+        assert page.url.endswith("#tokens")
+        expect(link("补充额度 ↗").first).to_have_attribute("href", "https://jevmodel.org/zh/pricing/")
+        button("连接配置").click()
+        expect(page.get_by_role("dialog").get_by_text("JEVMODEL_API_KEY", exact=True)).to_be_visible()
+        button("关闭侧栏").click()
+        link("连通性检查").click()
         button("运行检查").click()
         button("开始运行").click()
         expect(heading("P0 准入暂缓")).to_be_visible(timeout=120_000)
@@ -57,22 +71,62 @@ def browser_checks(base, output):
         expect(page.get_by_role("cell", name="CAT-10", exact=True)).to_be_visible()
         page.get_by_label("搜索验收项").fill("no-such-requirement")
         expect(page.get_by_text("没有匹配的需求", exact=True)).to_be_visible()
+        page.get_by_label("搜索验收项").fill("C0-3")
+        page.get_by_role("row").filter(has_text="C0-3").get_by_role("button", name="查看 ›").click()
+        expect(heading("搜索与公开原话")).to_be_visible()
+        page.go_back()
+        expect(heading("连通性检查")).to_be_visible()
+        expect(page.get_by_role("dialog")).to_be_hidden()
         link("运行记录").click()
         button("查看批次 ›").click()
         with page.expect_download() as event:
             button("导出证据").click()
         payload = json.loads(Path(event.value.path()).read_text("utf-8"))
         assert len(payload["attempts"][0]["checks"]) == 7
+        button("恢复此批次").click()
+        button("恢复执行").click()
+        expect(heading("P0 准入暂缓")).to_be_visible(timeout=120_000)
+        link("运行记录").click()
+        button("查看批次 ›").click()
+        with page.expect_download() as event:
+            button("导出证据").click()
+        recovered = json.loads(Path(event.value.path()).read_text("utf-8"))
+        assert recovered["run"]["id"] == payload["run"]["id"]
+        assert len(recovered["attempts"]) == 2
         button("关闭侧栏").click()
         button("查看 Jev Token Center").click()
         expect(heading("额度中心")).to_be_visible()
         expect(page.get_by_text("本机账本暂无分片")).to_be_visible()
+        count = 0
+
+        def count_post(request):
+            nonlocal count
+            if request.method == "POST":
+                count += 1
+
+        page.on("request", count_post)
+        button("刷新状态").click()
+        expect(page.get_by_text("已刷新本地记录")).to_be_visible()
+        assert count == 0
         page.set_viewport_size({"width": 390, "height": 844})
         button("打开导航").click()
         link("连通性检查").click()
         expect(heading("连通性检查")).to_be_visible()
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
         page.screenshot(path=str(output / "mobile.png"))
+        page.set_viewport_size({"width": 320, "height": 740})
+        button("查看 Jev Token Center").click()
+        expect(heading("额度中心")).to_be_visible()
+        assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+        page.goto(base + "#constructor")
+        expect(heading("连通性检查")).to_be_visible()
+        failing = browser.new_page()
+        failing.route("**/api/workspace", lambda route: route.abort())
+        failing.goto(base)
+        expect(failing.get_by_text("无法连接本机服务。请启动工作台后重新读取。")).to_be_visible()
+        failing.unroute("**/api/workspace")
+        failing.get_by_role("button", name="重新读取", exact=True).click()
+        expect(failing.get_by_role("heading", name="P0 准入暂缓")).to_be_visible()
         assert not errors, errors
         browser.close()
 
