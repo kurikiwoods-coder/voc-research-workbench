@@ -1,4 +1,5 @@
 """One outbound boundary for every connector, with an auditable offline drill."""
+
 from dataclasses import dataclass
 import json
 import re
@@ -41,8 +42,21 @@ def number(value):
 
 def redact(value, secrets=()):
     if isinstance(value, dict):
-        return {str(k): redact(v, secrets) for k, v in value.items()
-                if str(k).lower() not in {"authorization","x-subscription-token","api_key","access_token","email","access-token","cookie","set-cookie"}}
+        return {
+            str(k): redact(v, secrets)
+            for k, v in value.items()
+            if str(k).lower()
+            not in {
+                "authorization",
+                "x-subscription-token",
+                "api_key",
+                "access_token",
+                "email",
+                "access-token",
+                "cookie",
+                "set-cookie",
+            }
+        }
     if isinstance(value, list):
         return [redact(v, secrets) for v in value]
     if isinstance(value, str):
@@ -55,7 +69,16 @@ def redact(value, secrets=()):
 
 def network(method, url, body, headers):
     data = json.dumps(body).encode() if body is not None else None
-    req = Request(url, data=data, method=method, headers={**headers,"Accept":"application/json","User-Agent":"VOC-Connectivity/1.0 (public API verification)"})
+    req = Request(
+        url,
+        data=data,
+        method=method,
+        headers={
+            **headers,
+            "Accept": "application/json",
+            "User-Agent": "VOC-Connectivity/1.0 (public API verification)",
+        },
+    )
     try:
         try:
             response = build_opener(NoRedirect()).open(req, timeout=12)
@@ -64,24 +87,33 @@ def network(method, url, body, headers):
         with response:
             data = response.read(2_000_001)
             if len(data) > 2_000_000:
-                return Response(response.status, {"error":"response_too_large"})
+                return Response(response.status, {"error": "response_too_large"})
             try:
                 obj = json.loads(data)
             except (ValueError, UnicodeError):
-                obj = {"error":"non_json_response"}
+                obj = {"error": "non_json_response"}
             header = response.headers.get("X-Tokens-Remaining", "")
             remaining = int(header) if re.fullmatch(r"\d{1,18}", header) else None
             return Response(response.status, obj, remaining, response.headers.get("Retry-After"))
     except (URLError, TimeoutError, ConnectionError, OSError):
-        return Response(None, {"error":"connection_interrupted"})
+        return Response(None, {"error": "connection_interrupted"})
 
 
 def failure(code):
-    return {None:"offline",401:"invalid_key",402:"insufficient_balance",403:"permission_denied",
-            422:"invalid_contract",429:"rate_limited",502:"upstream_error"}.get(code, "provider_error")
+    return {
+        None: "offline",
+        401: "invalid_key",
+        402: "insufficient_balance",
+        403: "permission_denied",
+        422: "invalid_contract",
+        429: "rate_limited",
+        502: "upstream_error",
+    }.get(code, "provider_error")
 
 
-def outbound(channel, *, labels, method="GET", path="", query=None, body=None, headers=None, transport=network):
+def outbound(
+    channel, *, labels, method="GET", path="", query=None, body=None, headers=None, transport=network
+):
     labels = frozenset(labels)
     if labels != {"public_approved"}:
         raise Denied("仅可外发已许可的公开输入")

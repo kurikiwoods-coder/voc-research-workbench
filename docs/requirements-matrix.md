@@ -105,3 +105,14 @@
 | P2-GITHUB | P2 | Issues/讨论作技术信号，季度三角验证独立于主统计 | src/ingestion/ | GitHub、问卷和评价三方来源 |
 | P2-SCHEDULE | P2 | 授权源定期巡检、暂停、恢复、运行日志 | src/ingestion/ | 重试不重采、巡检连续 |
 | P2-HISTORY | P2 | 跨产品品类与历史报告：版本、时间窗、来源、口径、引用 | src/outputs/ | 多品类去重、版本回放与四段报告 |
+| D1 | P0 | 冻结首批主题、第二品类与来源范围 | docs/decisions/D1-first-sites.md | 研究负责人签署范围版本 |
+| D2 | P0 | 落实 100–200 条金标准与首批 50 条对齐的人选 | docs/decisions/D2-gold-standard-owner.md | 标注负责人及记录 |
+| D3 | P0 | 复核外发边界、许可、留存和处理地区 | docs/decisions/D3-external-boundary.md | 对照实际供应商与凭据 |
+| D4 | P0 | 决定问卷试填与正式出题时机 | docs/decisions/D4-survey-first-or-after.md | 审批链接与真实试填 |
+| D5 | P0 | 确认默认服务商、预算上限、补额审批与余额来源 | docs/decisions/D5-token-budget.md | 账户额度及负责人审批 |
+| SOURCE-POLICY | P0 | 来源许可、访问限制、上下文、保留期限和删除审计 | src/ingestion/、src/raw_store/ | 逐源许可与清理记录 |
+| RAW-ROLES | P0 | 用户原话、背景证据、内部材料与合成样本分库或分域 | src/raw_store/ | 检查样本资格、数据角色与正式统计隔离 |
+| BATCH-RECOVERY | P0 | 持久化暂停、幂等恢复、离线读取已有证据 | src/raw_store/、src/execution/ | 故障注入与重启回读 |
+| UI-EVIDENCE | P0 | 所有研究指标可下钻来源、实际时间、分母与原话 | src/dashboard/ | 逐页核对同一过滤范围 |
+| UI-STATES | P0 | 响应式桌面及移动布局，加载、空、错误、配额及上游故障状态均可辨认 | src/dashboard/ | 桌面移动端操作并留存截图 |
+| RESEARCH-REPORT | P0 | 结论记录来源差异、偏差、置信度与样本局限，报告可复现 | src/outputs/ | 抽样回放与建议引用 |
