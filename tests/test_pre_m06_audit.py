@@ -246,7 +246,15 @@ class CrossModuleAudit(unittest.TestCase):
         # Older builds saved this exclusion without a structured revoked state.
         with patch("src.raw_store.corpus.source_permission_revoked", return_value=False):
             self.withdraw(original, "The reuse licence was subsequently cancelled.")
-        with self.open() as (_, restarted):
+        old_view = (MIGRATIONS / "005_corpus_licenses.sql").read_text(encoding="utf-8")
+        old_view = old_view[old_view.index("CREATE VIEW IF NOT EXISTS corpus_withdrawals"):].split(";", 1)[0]
+        with self.app.state.store.db() as db:
+            db.execute("DROP VIEW corpus_withdrawals")
+            db.execute(old_view)
+            db.execute("PRAGMA user_version=5")
+        with self.open() as (app, restarted):
+            self.assertEqual(app.state.store.one("PRAGMA user_version"), {"user_version": 6})
+            self.assertEqual(app.state.store.rows("PRAGMA foreign_key_check"), [])
             self.assertEqual(restarted.get(alias + "/eligible").status_code, 409)
             self.assertTrue(restarted.get(alias).raise_for_status().json()["source_permission_revoked"])
 
@@ -361,7 +369,7 @@ class CrossModuleAudit(unittest.TestCase):
             db.execute("INSERT INTO attempts VALUES (1,?,?,?)", (run, ts, ts))
             db.execute("INSERT INTO evidence VALUES (1,1,'audit','local_sqlite',?,NULL,'{}','{}')", (ts,))
         migrated = Store(directory)
-        self.assertEqual(migrated.one("PRAGMA user_version"), {"user_version": 5})
+        self.assertEqual(migrated.one("PRAGMA user_version"), {"user_version": 6})
         self.assertEqual(migrated.audit(run)["attempts"][0]["evidence"][0]["id"], 1)
         self.assertEqual(migrated.rows("PRAGMA foreign_key_check"), [])
         self.assertEqual(Store(directory).audit(run), migrated.audit(run))

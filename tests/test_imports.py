@@ -587,7 +587,7 @@ class ImportMigrationTest(unittest.TestCase):
                 self.assertEqual(old.execute("PRAGMA user_version").fetchone()[0], 2)
                 self.assertIsNone(old.execute("SELECT name FROM sqlite_master WHERE name='import_batches'").fetchone())
             store = Store(root)
-            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 5)
+            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 6)
             self.assertEqual(store.one("SELECT study_id, scope_id FROM study_scope_freezes"), {"study_id": "p", "scope_id": "s"})
             self.assertEqual(Store(root).one("PRAGMA integrity_check")["integrity_check"], "ok")
 

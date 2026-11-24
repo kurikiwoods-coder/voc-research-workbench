@@ -78,7 +78,7 @@ RESTRICTED_FILE_ROWS = """
         OR CASE WHEN restricted_review.decision='verified' THEN snapshot_requires_restriction(
             restricted_row.privacy, restricted_row.raw_text, restricted_review.role,
             restricted_row.fields_json, restricted_scope.content_json,
-            restricted_license.state, restricted_license.evidence_ref
+            restricted_license.state, restricted_license.evidence_ref, restricted_license.restored_withdrawal_id
         ) ELSE 0 END)
 """
 FILE_ALIAS_RESTRICTED = f"""EXISTS (
@@ -104,7 +104,7 @@ def withdrawal_applies(row):
 def snapshot_valid(row):
     return valid_snapshot_source(
         row["privacy"], row["raw_text"], row["role"], row["fields_json"], row["content_json"],
-        row["license_state"], row["evidence_ref"],
+        row["license_state"], row["evidence_ref"], row["restored_withdrawal_id"],
     )
 
 
@@ -118,6 +118,8 @@ def qualification(row, today):
         state = "revoked"
     elif expired:
         state = "expired"
+    elif row["license_state"] == "authorized" and row["restored_withdrawal_id"] is None and declared != "unknown":
+        state = declared
     elif row["decision"] == "verified" and row["license_state"] is None and declared == "unknown":
         state = "pending"
 

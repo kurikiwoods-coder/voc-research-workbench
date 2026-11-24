@@ -480,7 +480,7 @@ class CorpusTests(unittest.TestCase):
         with closing(sqlite3.connect(self.directory / "connectivity.sqlite3")) as db:
             self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0], 3)
         with TestClient(create_app(self.settings), base_url=ORIGIN, client=("127.0.0.1", 29205)) as fresh:
-            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 5)
+            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 6)
             rows = fresh.get(f"{self.root}/batches/{batch}").json()["records"]
             self.assertEqual([(row["record_id"], row["status"]) for row in rows], [(record, "pending_review")])
 

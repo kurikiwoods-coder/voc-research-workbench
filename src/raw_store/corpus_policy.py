@@ -169,13 +169,19 @@ def legacy_snapshot_recheckable(privacy, raw_text, role, fields_json, scope_json
     )
 
 
-def valid_snapshot_source(privacy, raw_text, role, fields_json, scope_json, license_state, evidence_ref):
-    return (license_state == "authorized" and evidence_identity(evidence_ref) is not None
-            and snapshot_content_valid(privacy, raw_text, role, fields_json, scope_json))
+def valid_snapshot_source(privacy, raw_text, role, fields_json, scope_json, license_state, evidence_ref,
+                          restored_withdrawal_id):
+    if license_state != "authorized" or evidence_identity(evidence_ref) is None:
+        return False
+    if restored_withdrawal_id is None:
+        return legacy_snapshot_recheckable(privacy, raw_text, role, fields_json, scope_json)
+    return snapshot_content_valid(privacy, raw_text, role, fields_json, scope_json)
 
 
-def snapshot_requires_restriction(privacy, raw_text, role, fields_json, scope_json, license_state, evidence_ref):
+def snapshot_requires_restriction(privacy, raw_text, role, fields_json, scope_json, license_state, evidence_ref,
+                                  restored_withdrawal_id):
     if license_state is None:
         # A legacy record awaiting proof should not block its copies from being reviewed.
         return not legacy_snapshot_recheckable(privacy, raw_text, role, fields_json, scope_json)
-    return not valid_snapshot_source(privacy, raw_text, role, fields_json, scope_json, license_state, evidence_ref)
+    return not valid_snapshot_source(privacy, raw_text, role, fields_json, scope_json, license_state,
+                                     evidence_ref, restored_withdrawal_id)
