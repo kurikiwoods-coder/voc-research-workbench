@@ -1,0 +1,23 @@
+{
+  "run": "ffc9fea1-cbd6-40ac-a96b-a848783a561b",
+  "check": "public source recheck",
+  "status": "PASS",
+  "observations": [
+    {
+      "checked_at": "2026-11-24T02:10:08.528+00:00",
+      "endpoint": "https://api.stackexchange.com/2.3/questions/94603",
+      "parameters": {
+        "site": "cooking",
+        "filter": "withbody"
+      },
+      "post_id": "94603",
+      "http_status": 200,
+      "license": "CC BY-SA 4.0",
+      "observed_quote_utf8_sha256": "0647dce03824cb470fe43acb9af607b71a2bc3ddc7742ee74f5128226aac1ecb",
+      "archived_sha256": [
+        "0647dce03824cb470fe43acb9af607b71a2bc3ddc7742ee74f5128226aac1ecb"
+      ],
+      "status": "PASS"
+    }
+  ]
+}

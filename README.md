@@ -1,6 +1,6 @@
 # VOC 研究工作台
 
-> **当前处于 P0-0。** 本地工作台已可运行。最近一次正式准入结果和每项实测证据见[阶段验收记录](docs/evidence/p0-0/README.md)。
+> **当前处于 P0-0，G-1 为 BLOCKED。** 本地工作台可运行，正式验收等待供应商密钥和留存审查。[本轮工程与验收证据](docs/evidence/p0-0/closeout/README.md) · [历史验收记录](docs/evidence/p0-0/README.md)
 
 ## 目的
 

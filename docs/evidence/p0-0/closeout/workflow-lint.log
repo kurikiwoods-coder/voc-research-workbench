@@ -1,0 +1,5 @@
+1.7.11
+installed by downloading from release page
+built with go1.25.7 compiler for linux/amd64
+p0-0-ci.yml: PASS (exit 0)
+shell=bash failure through tee: propagated exit 17

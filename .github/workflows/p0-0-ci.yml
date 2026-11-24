@@ -46,11 +46,12 @@ jobs:
           mkdir -p test-results
           set -o pipefail
           bash scripts/smoke-test.sh 2>&1 | tee test-results/smoke.log
-      - name: Verify the committed archived receipt
+      - name: Verify the committed archived receipts
         shell: bash
         run: |
           set -o pipefail
           python -m src.outputs.audit_receipt --verify docs/evidence/p0-0 | tee test-results/archived-receipt.json
+          python -m src.outputs.audit_receipt --verify docs/evidence/p0-0/regression | tee test-results/regression-receipt.json
       - name: Start the shipped .cmd from an extracted Windows path
         if: runner.os == 'Windows'
         shell: pwsh

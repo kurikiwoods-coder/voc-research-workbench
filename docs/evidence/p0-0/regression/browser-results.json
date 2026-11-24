@@ -1,0 +1,165 @@
+{
+  "browser": "Managed Chromium / Playwright",
+  "recordedAt": "2026-11-23T14:14:40.716Z",
+  "observations": [
+    {
+      "test": "Initial 503 renders an actionable error",
+      "result": "PASS",
+      "evidence": "无法读取本地工作台\n\n本机验收记录暂时不可读（503）\n\n重新读取",
+      "time": "2026-11-23T14:10:40.056Z"
+    },
+    {
+      "test": "Read-only retry recovers the Token Center",
+      "result": "PASS",
+      "evidence": "额度未同步",
+      "time": "2026-11-23T14:11:08.714Z"
+    },
+    {
+      "test": "Skip link focuses main and keeps the selected page",
+      "result": "PASS",
+      "evidence": {
+        "focus": "main",
+        "fragment": "#tokens",
+        "heading": "额度中心"
+      },
+      "time": "2026-11-23T14:11:08.744Z"
+    },
+    {
+      "test": "No-key state and provider billing targets",
+      "result": "PASS",
+      "evidence": {
+        "connection": true,
+        "review": true,
+        "hrefs": [
+          "https://jevmodel.org/zh/pricing/",
+          "https://jevmodel.org/zh/pricing/"
+        ]
+      },
+      "time": "2026-11-23T14:11:10.800Z"
+    },
+    {
+      "test": "Concurrent writer is rejected with HTTP 409",
+      "result": "PASS",
+      "evidence": "已有批次正在执行，可继续查看已有证据。（409）",
+      "time": "2026-11-23T14:11:37.102Z"
+    },
+    {
+      "test": "Retry failures are visible inside the focused modal",
+      "result": "PASS",
+      "evidence": "本机验收记录暂时不可读（503）",
+      "time": "2026-11-23T14:11:52.567Z"
+    },
+    {
+      "test": "Browser executes live probes against a fresh SQLite database",
+      "result": "PASS",
+      "evidence": [
+        "C0-1固定模型与分片固定 jev-1.14.0 · 11 道判断阻塞查看 ›",
+        "C0-2返回字段与概率Choice / Score / Noul阻塞查看 ›",
+        "C0-3搜索与公开原话发现 URL · 许可原文阻塞查看 ›",
+        "C0-4持久化与额度SQLite · 分片用量阻塞查看 ›",
+        "C0-5内部数据隔离外发闸门 · 故障演练通过查看 ›",
+        "C0-6三层模型与召回全局 Top-K · 跨品类检索通过查看 ›"
+      ],
+      "time": "2026-11-23T14:12:23.500Z"
+    },
+    {
+      "test": "Status filter and licensed evidence are interactive",
+      "result": "PASS",
+      "evidence": {
+        "filteredCount": 2,
+        "quotePresent": true,
+        "source": "https://cooking.stackexchange.com/questions/94603/how-do-i-get-something-sticky-like-honey-or-golden-syrup-off-measuring-spoons-or"
+      },
+      "time": "2026-11-23T14:13:03.747Z"
+    },
+    {
+      "test": "Matrix search and Back restore the page without a stale drawer",
+      "result": "PASS",
+      "evidence": {
+        "emptyState": true,
+        "returned": "连通性检查",
+        "drawerHidden": true
+      },
+      "time": "2026-11-23T14:13:05.279Z"
+    },
+    {
+      "test": "Export and resume retain one batch and two genuine attempts",
+      "result": "PASS",
+      "evidence": {
+        "run": "518662c9-1f2b-485a-8395-52be28f838ef",
+        "attempts": 2,
+        "checks": 7,
+        "externalHttp": [
+          [
+            "forum_search",
+            200
+          ],
+          [
+            "forum_post",
+            200
+          ],
+          [
+            "forum_search",
+            200
+          ],
+          [
+            "forum_post",
+            200
+          ]
+        ]
+      },
+      "time": "2026-11-23T14:13:38.050Z"
+    },
+    {
+      "test": "Quota refresh preserves unknown balances and the empty ledger",
+      "result": "PASS",
+      "evidence": {
+        "unknown": "Jev 未连接 · 未同步",
+        "zeroPrinted": false
+      },
+      "time": "2026-11-23T14:14:05.655Z"
+    },
+    {
+      "test": "Malformed fragments fall back to connectivity",
+      "result": "PASS",
+      "evidence": {
+        "hash": "#constructor",
+        "heading": "连通性检查"
+      },
+      "time": "2026-11-23T14:14:05.688Z"
+    },
+    {
+      "test": "Responsive navigation and tables fit 320px and 390px viewports",
+      "result": "PASS",
+      "evidence": [
+        {
+          "viewport": 320,
+          "matrix": [
+            305,
+            305
+          ],
+          "tokens": [
+            320,
+            320
+          ]
+        },
+        {
+          "viewport": 390,
+          "matrix": [
+            375,
+            375
+          ],
+          "tokens": [
+            390,
+            390
+          ]
+        }
+      ],
+      "time": "2026-11-23T14:14:40.531Z"
+    }
+  ],
+  "unexpectedConsoleErrors": [],
+  "managedBrowserExtensionMessages": {
+    "Error sending browser metadata to extension: Object": 30
+  }
+}

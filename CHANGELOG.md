@@ -1,5 +1,14 @@
 # 阶段变更记录
 
+## 2026-11-24 · P0-0 工程收尾
+
+- 恢复旧批次时保留另一个新请求的待重试幂等键。批次切换只采用最近一次读取，迟到响应无法覆盖已选批次。
+- 新增常规 Node 回归和 PR 工程 CI。Linux、Windows Server 和 Chromium 任务均保存日志，Windows 额外从中文及空格路径运行启动器。
+- 为四个供应商补充注册和取钥路径，展示当前密钥配置、所选批次的连接和能力状态、留存审查与正式验收状态。
+- 将收到供应商夹具响应后 SQLite 提交失败的用例扩展到重启恢复。保留前轮正式批次和原始回归证据，本轮继续等待有授权的服务商调用。
+
+[工程报告](docs/evidence/p0-0/closeout/README.md) · [API 配置](docs/connectivity.md#注册与创建密钥) · [需求矩阵](docs/requirements-matrix.md) · [GitHub Actions](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/workflows/p0-0-ci.yml)
+
 ## 2026-11-23 · P0-0 连通性验收
 
 | 提交阶段 | 变更 |

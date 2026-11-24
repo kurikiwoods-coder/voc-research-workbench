@@ -28,18 +28,19 @@
 
 ## 当前验收快照
 
-2026-11-23 批次 `84605f95-7aa1-4f30-93ad-08547334a78c` 完成两次执行。正式准入为 **BLOCKED**。
+2026-11-24 重新核对最新归档批次 `ffc9fea1-cbd6-40ac-a96b-a848783a561b`、公开原帖及本地凭证状态。正式准入为 **BLOCKED**。[归档批次](evidence/p0-0/regression/README.md) · [本轮工程证据](evidence/p0-0/closeout/README.md)
 
 | 项目 | 状态 | 可核验结果 |
 |---|---|---|
-| C0-1 / C0-2 | BLOCKED | 分片计划为 8+3，缺后端密钥及服务商留存审查。实际 Jev 请求为零。 |
-| C0-3 | BLOCKED | 论坛搜索和原帖接口每次均返回 HTTP 200；PDT 的公开搜索取证子项通过，专案指定引擎待取证。 |
-| C0-4 | BLOCKED | 实际库可重开，完整性检查通过；缺两片真实用量，余额未知。 |
-| C0-5 | PASS | 36 次外发拦截，0 次内部传输，另有六种合成故障注入。 |
+| C0-1 | BLOCKED | 缺后端 Jev 密钥及供应商留存审查，固定版本和 8+3 分片等待真实响应。 |
+| C0-2 | BLOCKED | Choice、Score、Noul 和完整逐档概率等待真实响应。 |
+| C0-3 | BLOCKED | 独立重取论坛原帖返回 HTTP 200，内容 SHA-256 和许可一致。Tavily 或 Brave 的实际发现记录待取证。 |
+| C0-4 | BLOCKED | SQLite 与 JSON 归档一致，无真实 Jev 分片用量。已用独立夹具确认，在收到响应但账本未提交时恢复原批次不会自动重发。 |
+| C0-5 | PASS | 36 次外发拦截，0 次内部传输，六种合成故障演练在工程回归中复测通过。 |
 | C0-6 | PASS | 2 个产品品类、3 个任务大类、30 个合成意图，两次跨品类 Top-12 命中。 |
 | G-1 | BLOCKED | C0-1 至 C0-4 待验收。下一阶段的 CSV、原始证据和采样批次等待准入。 |
 
-批次封存后独立重取原帖，首次 HTTP 503，后续 HTTP 200 的原句摘要及许可与批次一致。供应商无凭证元数据探测保留 HTTP 状态与返回字段。C0-1 和 C0-2 等待固定模型的真实两片响应，C0-3 等待 Tavily 或 Brave 的实际发现记录。[原帖复核](evidence/p0-0/source-verification-02.json) · [供应商响应](evidence/p0-0/provider-metadata.json)
+Windows Server 2022 工程 CI 完成三次空库冷启动和中文、空格路径下的启动器验证。Windows 10/11 真机记录仍为 NOT_TESTED。正式 API 批次等待前置凭证，工程 CI 的状态不参与 G-1 汇总。[原帖复核](evidence/p0-0/closeout/public-source.json) · [API 配置](connectivity.md#注册与创建密钥)
 
 每项的时间、证据 ID、请求与响应可由 [JSON 与 SQLite 验收包](evidence/p0-0/README.md) 复核。下方映射表定义验收标准；重新运行页面将读取本机当前批次的结果。
 

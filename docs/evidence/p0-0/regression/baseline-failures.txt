@@ -1,0 +1,17 @@
+Baseline 9928025 with focused regression cases added before fixes. Offline injected inputs only.
+ERROR: test_malformed_answer_values_become_schema_gaps (test_connectivity.LocalTests.test_malformed_answer_values_become_schema_gaps)
+TypeError: unhashable type: 'list'
+ERROR: test_source_check_skips_invalid_post_metadata (test_connectivity.LocalTests.test_source_check_skips_invalid_post_metadata)
+AttributeError: 'str' object has no attribute 'get'
+FAIL: test_jev_evidence_and_usage_commit_together (test_connectivity.LocalTests.test_jev_evidence_and_usage_commit_together)
+AssertionError: Lists differ: [{'id': 2}] != []
+FAIL: test_latest_success_without_balance_header_is_unsynced (test_connectivity.LocalTests.test_latest_success_without_balance_header_is_unsynced)
+AssertionError: 80 is not None
+FAIL: test_resume_recovers_legacy_recorded_success_without_sending_it_twice (test_connectivity.LocalTests.test_resume_recovers_legacy_recorded_success_without_sending_it_twice)
+AssertionError: Tuples differ: ([], [], '上次请求的计费或契约状态待核对，请查看原始证据。') != ([True, True], [], None)
+FAIL: test_source_check_does_not_let_one_engine_exhaust_the_lookup_budget (test_connectivity.LocalTests.test_source_check_does_not_let_one_engine_exhaust_the_lookup_budget) (with_brave=True)
+AssertionError: unexpectedly None
+FAIL: test_source_check_does_not_let_one_engine_exhaust_the_lookup_budget (test_connectivity.LocalTests.test_source_check_does_not_let_one_engine_exhaust_the_lookup_budget) (with_brave=False)
+AssertionError: unexpectedly None
+Ran 24 tests in 0.133s
+FAILED (failures=5, errors=2)
