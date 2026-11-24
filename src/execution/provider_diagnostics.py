@@ -75,7 +75,11 @@ def probe_jev(cfg, store, run, attempt, transport):
         })
     status = shards[-1]["http_status"] if shards else None
     if reason:
-        result = request_error(status)
+        if status == 422:
+            gaps.append("fixed_model_or_request_contract")
+            result = outcome("CAPABILITY_BLOCKED", ERROR_GUIDE["invalid_contract"], error_code="invalid_contract")
+        else:
+            result = request_error(status)
     else:
         if versions != [True, True]:
             gaps = ["model_or_question_ids", *gaps]

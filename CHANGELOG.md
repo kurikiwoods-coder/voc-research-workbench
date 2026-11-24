@@ -6,7 +6,7 @@
 - 新增各供应商的独立连接诊断、脱敏证据和额度显示。Jev 的合成诊断复用固定 8 + 3 分片与账本。公开搜索保留发现、回源、许可、原句四层状态。
 - Windows 凭证用当前用户 DPAPI 加密。Linux 和 macOS 使用仅当前用户可访问的文件。连接诊断独立落库，正式验收继续使用原有批次及 G-1 规则。
 
-[本机操作说明](docs/connectivity.md#从工作台配置-api) · [需求与验收](docs/requirements-matrix.md)
+[本机操作说明](docs/connectivity.md#从工作台配置-api) · [本轮测试证据](docs/evidence/p0-0/api-setup/README.md) · [需求与验收](docs/requirements-matrix.md)
 
 ## 2026-11-24 · P0-0 工程收尾
 

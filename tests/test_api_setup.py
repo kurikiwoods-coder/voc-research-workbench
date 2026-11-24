@@ -258,11 +258,15 @@ class ProbeFixtureTests(unittest.TestCase):
 
         gaps = run_probe(self.cfg, self.db, "jevmodel", "missing", missing)
         wrong = run_probe(self.cfg, self.db, "typesafe", "alias", alias)
+        rejected = run_probe(self.cfg, self.db, "jevmodel", "rejected", lambda *a: Response(422, {}))
         self.assertEqual(gaps["status"], "CAPABILITY_BLOCKED")
         self.assertIn("friction.probabilities", gaps["schema_gap"])
         self.assertNotIn("probabilities", gaps["shards"][0]["response_fields"]["friction"])
         self.assertEqual(wrong["status"], "CAPABILITY_BLOCKED")
         self.assertEqual([s["response_model"] for s in wrong["shards"]], ["jev-latest"])
+        self.assertEqual(rejected["status"], "CAPABILITY_BLOCKED")
+        self.assertEqual(rejected["http_status"], 422)
+        self.assertIn("fixed_model_or_request_contract", rejected["schema_gap"])
 
     def test_diagnostics_cannot_retry_unrecorded_or_ambiguous_requests(self):
         self.db.begin("in-flight", self.cfg)

@@ -1,0 +1,67 @@
+C:\hostedtoolcache\windows\Python\3.12.10\x64\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+test_diagnostics_cannot_retry_unrecorded_or_ambiguous_requests (test_api_setup.ProbeFixtureTests.test_diagnostics_cannot_retry_unrecorded_or_ambiguous_requests) ... ok
+test_jev_fixed_version_fields_usage_and_same_key_only_send_one_pair (test_api_setup.ProbeFixtureTests.test_jev_fixed_version_fields_usage_and_same_key_only_send_one_pair) ... ok
+test_missing_probability_and_alias_stay_blocked (test_api_setup.ProbeFixtureTests.test_missing_probability_and_alias_stay_blocked) ... ok
+test_provider_error_outcomes_and_budget_are_based_on_observed_fields (test_api_setup.ProbeFixtureTests.test_provider_error_outcomes_and_budget_are_based_on_observed_fields) ... ok
+test_search_checks_provider_then_canonical_source_and_ignores_snippets (test_api_setup.ProbeFixtureTests.test_search_checks_provider_then_canonical_source_and_ignores_snippets) ... ok
+test_empty_workspace_planned_connectors_and_wizard (test_api_setup.SetupAPITests.test_empty_workspace_planned_connectors_and_wizard) ... ok
+test_environment_keys_can_be_replaced_and_locally_disabled (test_api_setup.SetupAPITests.test_environment_keys_can_be_replaced_and_locally_disabled) ... ok
+test_invalid_and_oversized_secret_requests_are_never_echoed_or_saved (test_api_setup.SetupAPITests.test_invalid_and_oversized_secret_requests_are_never_echoed_or_saved) ... ok
+test_loopback_host_and_same_origin_required_for_mutations (test_api_setup.SetupAPITests.test_loopback_host_and_same_origin_required_for_mutations) ... ok
+test_preflight_records_without_http_are_idempotent_and_stay_out_of_formal_gate (test_api_setup.SetupAPITests.test_preflight_records_without_http_are_idempotent_and_stay_out_of_formal_gate) ... ok
+test_private_storage_and_failed_atomic_replacement (test_api_setup.SetupAPITests.test_private_storage_and_failed_atomic_replacement) ... ok
+test_reviews_and_active_provider_are_independent_and_persistent (test_api_setup.SetupAPITests.test_reviews_and_active_provider_are_independent_and_persistent) ... ok
+test_rotation_is_immediate_and_survives_service_restart_without_echo (test_api_setup.SetupAPITests.test_rotation_is_immediate_and_survives_service_restart_without_echo) ... ok
+test_unreadable_vault_preserves_offline_access_and_fails_closed (test_api_setup.SetupAPITests.test_unreadable_vault_preserves_offline_access_and_fails_closed) ... ok
+test_alias_missing_answer_nan_and_wrong_sum_do_not_pass (test_connectivity.LocalTests.test_alias_missing_answer_nan_and_wrong_sum_do_not_pass) ... ok
+test_api_empty_workspace_readonly_and_validation (test_connectivity.LocalTests.test_api_empty_workspace_readonly_and_validation) ... ok
+test_connection_diagnostics_keep_credentials_and_fixture_results_out_of_status (test_connectivity.LocalTests.test_connection_diagnostics_keep_credentials_and_fixture_results_out_of_status) ... ok
+test_first_key_can_resume_unbilled_batch_only (test_connectivity.LocalTests.test_first_key_can_resume_unbilled_batch_only) ... ok
+test_gate_requires_six_same_batch_results_and_review (test_connectivity.LocalTests.test_gate_requires_six_same_batch_results_and_review) ... ok
+test_interrupted_request_pauses_without_double_submission (test_connectivity.LocalTests.test_interrupted_request_pauses_without_double_submission) ... ok
+test_invalid_json_numbers_leave_a_recordable_http_failure (test_connectivity.LocalTests.test_invalid_json_numbers_leave_a_recordable_http_failure) ... ok
+test_jev_evidence_and_usage_commit_together (test_connectivity.LocalTests.test_jev_evidence_and_usage_commit_together) ... ok
+test_latest_success_without_balance_header_is_unsynced (test_connectivity.LocalTests.test_latest_success_without_balance_header_is_unsynced) ... ok
+test_malformed_answer_values_become_schema_gaps (test_connectivity.LocalTests.test_malformed_answer_values_become_schema_gaps) ... ok
+test_mock_transport_cannot_write_an_operational_gate (test_connectivity.LocalTests.test_mock_transport_cannot_write_an_operational_gate) ... ok
+test_nonpublic_isolation_and_faults (test_connectivity.LocalTests.test_nonpublic_isolation_and_faults) ... ok
+test_offline_history_survives_restart (test_connectivity.LocalTests.test_offline_history_survives_restart) ... ok
+test_partial_second_shard_and_idempotent_resume (test_connectivity.LocalTests.test_partial_second_shard_and_idempotent_resume) ... ok
+test_public_receipt_preserves_quote_digest_without_identity (test_connectivity.LocalTests.test_public_receipt_preserves_quote_digest_without_identity) ... ok
+test_repeated_key_must_bind_same_payload_and_account (test_connectivity.LocalTests.test_repeated_key_must_bind_same_payload_and_account) ... ok
+test_resume_recovers_legacy_recorded_success_without_sending_it_twice (test_connectivity.LocalTests.test_resume_recovers_legacy_recorded_success_without_sending_it_twice) ... ok
+test_sanitization_and_provider_partition (test_connectivity.LocalTests.test_sanitization_and_provider_partition) ... ok
+test_score_gap_keeps_actual_fields_and_never_infers_distribution (test_connectivity.LocalTests.test_score_gap_keeps_actual_fields_and_never_infers_distribution) ... ok
+test_shards_share_gate_and_are_complete (test_connectivity.LocalTests.test_shards_share_gate_and_are_complete) ... ok
+test_source_check_does_not_let_one_engine_exhaust_the_lookup_budget (test_connectivity.LocalTests.test_source_check_does_not_let_one_engine_exhaust_the_lookup_budget) ... ok
+test_source_check_skips_invalid_post_metadata (test_connectivity.LocalTests.test_source_check_skips_invalid_post_metadata) ... ok
+test_source_id_quote_and_approved_only (test_connectivity.LocalTests.test_source_id_quote_and_approved_only) ... ok
+test_source_review_must_match_provider_and_file_digest (test_connectivity.LocalTests.test_source_review_must_match_provider_and_file_digest) ... ok
+test_storage_immutable_and_writer_lock (test_connectivity.LocalTests.test_storage_immutable_and_writer_lock) ... ok
+test_synthetic_recall_is_global (test_connectivity.LocalTests.test_synthetic_recall_is_global) ... ok
+test_unauthorized_response_hides_former_balance_but_preserves_usage (test_connectivity.LocalTests.test_unauthorized_response_hides_former_balance_but_preserves_usage) ... ok
+test_independent_source_checks_match_the_preserved_quote_hash (test_release_receipt.ReceiptTests.test_independent_source_checks_match_the_preserved_quote_hash) ... ok
+test_real_discovery_and_followup_have_source_and_matching_id (test_release_receipt.ReceiptTests.test_real_discovery_and_followup_have_source_and_matching_id) ... ok
+test_recheck_distinguishes_changed_content_from_unavailable_content (test_release_receipt.ReceiptTests.test_recheck_distinguishes_changed_content_from_unavailable_content) ... ok
+test_sqlite_and_json_agree_on_observed_outcome (test_release_receipt.ReceiptTests.test_sqlite_and_json_agree_on_observed_outcome) ... ok
+test_unset_credentials_do_not_create_metered_requests (test_release_receipt.ReceiptTests.test_unset_credentials_do_not_create_metered_requests) ... ok
+
+----------------------------------------------------------------------
+Ran 46 tests in 8.607s
+
+OK
+✔ resuming another batch preserves the key of an interrupted new request (13.4381ms)
+✔ a slow earlier evidence read cannot replace the last selected batch (1.5647ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 120.2083
+Windows cold start 1/3: PASS
+Windows cold start 2/3: PASS
+Windows cold start 3/3: PASS
+OK: Git-bound content and staged files checked

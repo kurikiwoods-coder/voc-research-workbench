@@ -1,0 +1,15 @@
+test_cross_category_recall (__main__.LiveGate.test_cross_category_recall) ... ok
+test_gate_requires_all_six (__main__.LiveGate.test_gate_requires_all_six) ... skipped 'BLOCKED · C0-1、C0-2、C0-3、C0-4；供应商留存审查待核验'
+test_isolation_drill (__main__.LiveGate.test_isolation_drill) ... ok
+test_live_answer_contract (__main__.LiveGate.test_live_answer_contract) ... skipped 'BLOCKED · JEVMODEL_API_KEY 未配置；缺少该供应商的公开语料留存审查记录'
+test_live_discovery_and_quote (__main__.LiveGate.test_live_discovery_and_quote) ... skipped 'BLOCKED · tavily 未配置；brave 未配置'
+test_live_ledger_readback (__main__.LiveGate.test_live_ledger_readback) ... skipped 'BLOCKED · 缺少两片真实 Jev 用量，余额未同步。'
+test_live_model_and_shards (__main__.LiveGate.test_live_model_and_shards) ... skipped 'BLOCKED · JEVMODEL_API_KEY 未配置；缺少该供应商的公开语料留存审查记录'
+
+----------------------------------------------------------------------
+Ran 7 tests in 10.703s
+
+OK (skipped=5)
+Live batch 7fbcdf4d-3e8b-4f02-9974-ce52fe1a520e · jevmodel
+G-1 BLOCKED · 阶段验收暂缓
+live_gate exit code: 2

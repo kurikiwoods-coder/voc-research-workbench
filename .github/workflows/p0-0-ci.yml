@@ -52,6 +52,7 @@ jobs:
           set -o pipefail
           python -m src.outputs.audit_receipt --verify docs/evidence/p0-0 | tee test-results/archived-receipt.json
           python -m src.outputs.audit_receipt --verify docs/evidence/p0-0/regression | tee test-results/regression-receipt.json
+          python -m src.outputs.audit_receipt --verify docs/evidence/p0-0/api-setup/live-receipt | tee test-results/api-setup-receipt.json
       - name: Start the shipped .cmd from an extracted Windows path
         if: runner.os == 'Windows'
         shell: pwsh

@@ -28,13 +28,13 @@
 
 ## 当前验收快照
 
-2026-11-24 重新核对最新归档批次 `ffc9fea1-cbd6-40ac-a96b-a848783a561b`、公开原帖及本地凭证状态。正式准入为 **BLOCKED**。[归档批次](evidence/p0-0/regression/README.md) · [本轮工程证据](evidence/p0-0/closeout/README.md)
+2026-11-24 在空凭证工作区执行批次 `7fbcdf4d-3e8b-4f02-9974-ce52fe1a520e`。公开论坛搜索及原帖接口返回 HTTP 200。正式准入为 **BLOCKED**。[本轮证据](evidence/p0-0/api-setup/README.md) · [上轮归档](evidence/p0-0/closeout/README.md)
 
 | 项目 | 状态 | 可核验结果 |
 |---|---|---|
 | C0-1 | BLOCKED | 缺后端 Jev 密钥及供应商留存审查，固定版本和 8+3 分片等待真实响应。 |
 | C0-2 | BLOCKED | Choice、Score、Noul 和完整逐档概率等待真实响应。 |
-| C0-3 | BLOCKED | 独立重取论坛原帖返回 HTTP 200，内容 SHA-256 和许可一致。Tavily 或 Brave 的实际发现记录待取证。 |
+| C0-3 | BLOCKED | 论坛发现及原帖回源返回 HTTP 200。Tavily 或 Brave 的实际发现记录待取证。 |
 | C0-4 | BLOCKED | SQLite 与 JSON 归档一致，无真实 Jev 分片用量。已用独立夹具确认，在收到响应但账本未提交时恢复原批次不会自动重发。 |
 | C0-5 | PASS | 36 次外发拦截，0 次内部传输，六种合成故障演练在工程回归中复测通过。 |
 | C0-6 | PASS | 2 个产品品类、3 个任务大类、30 个合成意图，两次跨品类 Top-12 命中。 |
