@@ -1,6 +1,12 @@
 # 开发交接
 
-## 本轮 M06-A 交接
+## 本轮 M06-B 交接
+
+对开发分支 M06-A 提交 `48b5352feb72df852417d6c9edb96775896153a7` 的独立审核为 **PASS_WITH_CONDITIONS**。M06 架构审批 PENDING，实施 NOT_STARTED。SQLite v6；Windows 11 NOT_TESTED；Pre-M06 Gate 与 G-1 均 BLOCKED；本轮真实研究 API 调用 0。技术原型的范围、缺失的专案 v2.2 PDF 及正式验收缺项见[审核结论](docs/audits/m06-architecture-review.md)。
+
+接续人先核对[负责人待决项](docs/architecture/m06-decisions.md)和[逐项台账](docs/audits/m06-architecture-findings.md)。获批后按审核报告的实施顺序验证同连接资格、不可变发行、发生身份、同证据过滤与当前编码。保留公开 M05 Python 方法和 GET 契约。回放、缓存、导出均须按当前许可限制访问；业务准入和外发权限另验。原 24 例与新增 16 例属于设计推演，双连接与规模原型另列在[证据索引](docs/evidence/m06-b/README.md)。M06-C 等待另行授权。
+
+## 前轮 M06-A 交接
 
 开发分支 `codex/p0-0-connectivity`，设计依据为 Pre-M06-D 冻结提交 `06a233e157631c9f9a004d8b1311c2948597a429`。M06-A 已获授权并完成文档交付，提交 M06-B 独立评审。设计 READY_FOR_REVIEW，审批 PENDING，实现 NOT_STARTED。Windows 11 实机 NOT_TESTED，Pre-M06 Gate 和 G-1 均 BLOCKED，真实研究 API 调用 0 次。
 

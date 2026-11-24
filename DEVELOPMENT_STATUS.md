@@ -2,7 +2,11 @@
 
 核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，远端基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## M06-A 架构设计交付
+## M06-B 独立架构审核
+
+审核基线为开发分支 `48b5352feb72df852417d6c9edb96775896153a7`。M06_ARCHITECTURE_REVIEW=PASS_WITH_CONDITIONS，M06_ARCHITECTURE_APPROVAL=PENDING，M06_IMPLEMENTATION=NOT_STARTED。完成原 24 例逐项复核、16 例新增推演和临时 SQLite 实验。保留 SQLite v6、PDT v1.3.1 与原验收条件。Windows 11 实机 NOT_TESTED，PRE_M06_GATE=BLOCKED，G-1=BLOCKED，REAL_RESEARCH_API_CALLS=0。冻结前需负责人签认业务口径、明确授权控制及缺失原件的处置。工程实施须另获授权。[审核报告](docs/audits/m06-architecture-review.md) · [问题台账](docs/audits/m06-architecture-findings.md) · [实验记录](docs/evidence/m06-b/README.md)
+
+## 前轮 M06-A 架构设计交付
 
 本轮在 Pre-M06-D 文档冻结提交 `06a233e157631c9f9a004d8b1311c2948597a429` 上完成三层关系设计。六份设计文档包含证据与片段身份、SQLite v6 增量预案、双向查询、六桶、24 个合成反例及 12 项验收映射。反例为纸面推演。M06_ARCHITECTURE=READY_FOR_REVIEW，M06_ARCHITECTURE_APPROVAL=PENDING，M06_IMPLEMENTATION=NOT_STARTED。下一步为另行授权的 M06-B 独立审核。[设计入口](docs/architecture/m06-design.md) · [验收映射](docs/architecture/m06-test-plan.md)
 
