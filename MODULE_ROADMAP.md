@@ -69,12 +69,12 @@
 | 模块职责 | 本机解析、映射、预览、质检、暂存和导入批次回查。 |
 | 前置依赖 | M03 项目与冻结范围。M05 消费同一 SQLite 中的待处理记录。 |
 | 工程开发 | 已实现 CSV / XLSX 多编码、批次幂等、撤销、报告及稳定来源记录。 |
-| 工程测试 | [本机和三平台证据](docs/evidence/m04/README.md) |
+| 工程测试 | Python 95 项（新增 26）、Node 2 项、Chromium 6 组通过。Ubuntu 和 Windows Server 2022 各 3 次冷启动。[本机和三平台证据](docs/evidence/m04/README.md) |
 | 正式业务验收 | G1 要求的实际来源与合格样本、正式证据及全局去重仍待验。G-1 BLOCKED。 |
 | 数据库及 API | 主库 v3 迁移、import_files / import_batches / import_rows / import_candidates、/api/imports。 |
 | 前端页面 | 数据导入中心、字段映射、质量检查、结果与项目批次历史。 |
 | 验收标准 | 结构、出处、时间与许可分别校验。原话字节和文件行保留，待审、重复、拒收不进入正式研究统计。 |
-| 最近相关提交 | [M04 提交](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/commits) |
+| 最近相关提交 | [M04 代码复测 `336e68c`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/336e68c7e02bda08e00210e02958ed02250fc80e) · [CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341223418) |
 | 剩余问题 | 按 M05 接入正式证据核验与跨批次去重，按原标准完成 G1、RAW。 |
 
 ## M05 原始语料库、去重及溯源

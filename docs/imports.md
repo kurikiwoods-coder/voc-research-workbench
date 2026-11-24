@@ -48,6 +48,6 @@
 
 `import_candidates` 只暴露未撤销批次中可交付后续审核的行，`research_eligible=0`、`outbound_allowed=0`。从同一主库按 `record_id` 稳定追踪导入原话，关联 `batch_id`、`study_id`、冻结的 `scope_id` 与 `scope_version`。`file_id`、`sheet_name`、`line_number` 共同定位原始文件位置。精确原话在 `raw_text`，标准字段在 `fields_json`，所有原始列值在 `originals_json`，以批次 `headers_json`、`mapping_json` 解读。隐私等级、状态、原因及文本指纹可用于后续分域、审核与去重，指纹本身不代表可发布或同一用户。
 
-M05 需要以该稳定标识建立正式原话证据关联，补齐来源许可、原文核验、脱敏、跨批次去重及正式计数资格。继续使用同一本地库，按证据建立品类关系。正式 P0 准入仍由 G-1 判定。
+M05 需要以该稳定标识建立正式原话证据关联，补齐来源许可、原文核验、脱敏、跨批次去重及正式计数资格。继续使用同一本地库，按证据建立品类关系。正式 P0 准入仍由 G-1 判定。M05 接入前需复核跨批次去重键，以及批次撤销如何传递给已关联证据和既有研究结果。
 
 [需求验收矩阵](requirements-matrix.md) · [M04 工程证据](evidence/m04/README.md)

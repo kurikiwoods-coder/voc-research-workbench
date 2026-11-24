@@ -4,7 +4,7 @@
 
 - 实现 CSV 多编码及 XLSX 多工作表导入，支持自动和手工字段映射、数据质检与错误报告。
 - SQLite v3 增量迁移新增项目级暂存批次。保留文件、原话和行号，复用冻结范围及幂等事务。
-- 新增两种导入模板、批次撤销和后续原话证据接口。G-1 保持 BLOCKED。
+- 新增两种导入模板、批次撤销和后续原话证据接口。Ubuntu、Windows Server 与 Chromium 验证通过，G-1 保持 BLOCKED。
 
 [本机操作](docs/imports.md) · [工程测试](docs/evidence/m04/README.md)
 

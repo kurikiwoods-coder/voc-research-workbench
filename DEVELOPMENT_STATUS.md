@@ -6,6 +6,8 @@
 
 完成本机文件上传、工作表选择、字段映射、质量检查、确认入库、批次查询及撤销。导入写入 SQLite v3 暂存，绑定原项目和冻结范围。真实 Tavily、Brave、Jev 请求 0 次，G-1 保持 BLOCKED。[本机用法、模板与 M05 契约](docs/imports.md) · [工程测试记录](docs/evidence/m04/README.md)
 
+本地 Linux、Ubuntu 和 Windows Server 2022 各通过 95 项 Python（含新增 26 项）、2 项 Node 与 3 次空库冷启动，Chromium 六组通过。四份既有归档核验通过。Windows 10/11 真机 NOT_TESTED。[CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341223418) · [截图和实际输出](docs/evidence/m04/README.md)
+
 ## 上轮 M03 研究项目与范围管理
 
 交付本机项目列表、新建和编辑、搜索排序、当前项目切换、归档恢复、五种研究模式及范围快照冻结。SQLite v2 增量迁移保留 M01 和 M02 存储边界。[本机操作与接口](docs/studies.md) · [工程测试记录](docs/evidence/m03/README.md)
