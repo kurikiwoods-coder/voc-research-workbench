@@ -6,7 +6,9 @@
 
 本机工作台已接入原始语料审核。记录绑定冻结范围与导入文件行，保存原话快照摘要、角色、许可核验依据、保留期限和历史。跨批次按项目聚合重复原话，撤销、排除及到期会重算可用组成员。原话审核走回环 FastAPI 和 SQLite v4，正式统计和外发资格均关闭。[本机操作与接入](docs/imports.md#m05-原始语料审核) · [工程测试记录](docs/evidence/m05/README.md)
 
-GitHub 发布待具备开发分支写权限的认证。PR #1 当前的 CI 证据覆盖接管基线。本轮验证使用本机合成输入、隔离数据库及既有脱敏归档，真实 Tavily、Brave、Jev 请求均为 0。
+M05 实现提交为 `b02a2b647bff67f7e091b51fcdfc46cc719077e8`，直接基于 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。Windows 11 本机通过 Python 104 项、Node 2 项、空库冷启动 3 次、Chromium 8 组及四份历史归档核验。验证使用合成输入、隔离数据库和既有脱敏归档，真实 Tavily、Brave、Jev 请求均为 0。
+
+2026-11-24，GitHub 确认 `kurikiwoods-coder` 具备仓库写入权限。Windows 上的 Git HTTPS 推送在发包阶段遇到 `Bad file descriptor`。通过获准的临时仓库 SSH 密钥，将 `b02a2b6` 常规推送到 `codex/p0-0-connectivity`，并核对远端完整 SHA。临时密钥已撤销。该提交的 Ubuntu、Windows Server 2022 和 Chromium 作业全部通过，M05 完成本轮工程交付。M05 增量 Git bundle 已通过 `git bundle verify` 并保存在本机交付目录。[草稿 PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [M05 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45352022477)
 
 ## 上轮 M04 CSV / Excel 数据导入
 
@@ -50,4 +52,4 @@ Linux 本机、Ubuntu CI 和 Windows Server 2022 各通过 69 项 Python（含 1
 
 ## 下一轮候选
 
-当前正式阶段为 P0-0。恢复发布时核对开发分支远端 head，常规推送 M05 并核验同一提交的 CI。正式语料验收需完成逐源清理审计、三批和至少 100 条真实语义片段，并抽查 30/30 可回源。后续模块等待开发指令。
+当前正式阶段为 P0-0。正式语料验收需完成逐源清理审计、三批和至少 100 条真实语义片段，并抽查 30/30 可回源。后续模块等待开发指令。

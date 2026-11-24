@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-本轮接续 M05 本机原始语料治理。M04 已通过独立工程验收。正式阶段仍为 P0-0，G-1 为 BLOCKED。具体交付和发布状态见 [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md)。
+M05 本机原始语料治理已完成工程交付。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 BLOCKED。后续模块等待开发指令。[开发状态](DEVELOPMENT_STATUS.md)
 
 ## M01 基础工程与连通性
 
@@ -85,13 +85,13 @@
 | 模块职责 | 存储不可变原文、出处和时间窗，治理语料资格与重复引用。 |
 | 前置依赖 | M03 冻结范围与 M04 本机导入。线上批次和证据关系分别依赖 M08、M06。 |
 | 工程开发 | 已实现本机核验、快照摘要、角色隔离、按项目去重、溯源、保留期限和可追查的审核历史。 |
-| 工程测试 | 本机测试和发布进度见 [工程记录](docs/evidence/m05/README.md)。 |
+| 工程测试 | Windows 11 本机通过 Python 104 项、Node 2 项、三次空库冷启动、Chromium 8 组及四份历史归档核验。实现提交的 Ubuntu、Windows Server 2022 和 Chromium 作业全部通过。 |
 | 正式业务验收 | G1、G2、RAW、SOURCE-POLICY 待正式核验。当前语料的正式统计及外发资格均关闭。 |
 | 数据库及 API | SQLite v4 增量迁移，新增 corpus_snapshots、corpus_reviews 和 /api/corpus。原文通过 M04 的稳定行号引用回放。 |
 | 前端页面 | 原始语料、批次候选、原文溯源与审核详情。 |
 | 验收标准 | 3 批来源、≥100 条真实片段，30/30 可回源。许可、采样窗口、角色、重复与剔除原因可查。 |
-| 最近相关提交 | 引入本节的 M05 提交。远端基线为 `bca9363`，上传状态见 [开发状态](DEVELOPMENT_STATUS.md)。 |
-| 测试结果与证据 | [本机验收记录](docs/evidence/m05/README.md) · [历史正式连通性归档](docs/evidence/p0-0/tavily-live/README.md) |
+| 最近相关提交 | [M05 实现 `b02a2b6`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/b02a2b647bff67f7e091b51fcdfc46cc719077e8)，已推送到 `codex/p0-0-connectivity`。 |
+| 测试结果与证据 | [本机验收记录](docs/evidence/m05/README.md) · [M05 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45352022477) · [历史正式连通性归档](docs/evidence/p0-0/tavily-live/README.md) |
 | 剩余问题 | 逐源许可与实际清理审计，SQLite 和备份的受控清理，接入线上批次与正式证据关系。 |
 
 ## M06 三层用户需求数据关系

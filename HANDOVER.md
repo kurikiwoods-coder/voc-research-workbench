@@ -53,3 +53,15 @@ python tests/browser_e2e.py
 smoke 包含 Python、Node、三次空库冷启动和密钥扫描。Linux 缺少 Chromium 系统库时可按 Actions 工作流执行 `python -m playwright install --with-deps chromium`。跨平台基准由 GitHub Actions 的 Ubuntu、Windows Server 和 Chromium 作业给出。Windows 10/11 实机、macOS 或其他云端环境的运行结果按实际验证单独登记。[工程工作流](.github/workflows/p0-0-ci.yml)
 
 提交前检查暂存列表和 diff，确保夹具为合成数据、证据已审核脱敏。推送前重新核对远端 head，常规推送开发分支后在 PR 和 Actions 上核对对应提交。公开 GitHub 仓库存放代码、开发记录与获准的工程证据。凭证、真实语料、公司资料和运行数据库留在原授权环境。[开发规范](AGENTS.md) · [模块路线图](MODULE_ROADMAP.md) · [开发状态](DEVELOPMENT_STATUS.md)
+
+### M05 发布与恢复
+
+Windows 上可用 Git Credential Manager 在浏览器完成 GitHub 登录。在 PowerShell 运行 `git credential-manager github login --browser`，在 GitHub 页面选择具备仓库写权限的账号。验证凭证的远端账号及仓库权限后，重新获取开发分支并核对两侧提交。确认远端为待发布提交的祖先后，常规推送 `codex/p0-0-connectivity`，再在 PR #1 核对提交 SHA 及 Ubuntu、Windows Server 2022 和 Chromium 作业。
+
+2026-11-24 已通过 GitHub CLI 确认 `kurikiwoods-coder` 的仓库写入权限。Codex 和普通 Windows PowerShell 的 Git HTTPS 推送均在发包阶段返回 `Bad file descriptor`。M05 从 `bca9363` 通过获准的临时仓库 SSH 密钥常规推送，核对远端实现提交为 `b02a2b647bff67f7e091b51fcdfc46cc719077e8`，随后撤销临时密钥。对应的 Ubuntu、Windows Server 2022 和 Chromium 作业全部通过。[M05 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45352022477)
+
+本机交付目录保留已验证的增量包 `voc-workbench-m05-b02a2b6.bundle`，包含 `b02a2b647bff67f7e091b51fcdfc46cc719077e8`，需要现有仓库包含基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。恢复时先执行 `git bundle verify <本机包路径>`，然后将包的开发分支取到新的本机恢复分支，核对恢复结果及当前远端历史后再决定如何接续。
+
+```sh
+git fetch <本机包路径> refs/heads/codex/p0-0-connectivity:refs/heads/recovery/m05-b02a2b6
+```
