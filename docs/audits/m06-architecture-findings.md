@@ -1,6 +1,6 @@
 # M06-B 架构问题台账
 
-对象是 M06-A 提交 `48b5352feb72df852417d6c9edb96775896153a7` 的设计。严重度按可能后果分级，表中“修订”均指设计。所有正式实现为 `IMPLEMENTATION_NOT_TESTED`；原型能支持的具体断言另见[实验索引](../evidence/m06-b/README.md)。没有观察到生产泄露、正式数据损坏或真实研究请求。
+对象是 M06-A 提交 `48b5352feb72df852417d6c9edb96775896153a7` 的设计。严重度按可能后果分级，表中“修订”均指设计。所有正式实现为 `IMPLEMENTATION_NOT_TESTED`；原型能支持的具体断言另见[实验索引](../evidence/m06-b/README.md)。没有观察到生产泄露、正式数据损坏或真实研究请求。 下表保留 M06-B 独立审核当时的问题和建议。现行状态在后面的冻结处置表。
 
 | 编号 / 级别 | 设计章节及原需求依据 | 最小反例与后果 | 修订 / 受影响模块 | 后续验收方法 |
 |---|---|---|---|---|
@@ -17,4 +17,23 @@
 | B-F11 / P2 | 数据模型“项目片段”“原子提交”；PDT §6 版本追溯及本机 SQLite 约束 | 10 万来源行逐次修改就复制全版，会持续增加主库且串行占写锁。本次一版实增约 9.2 MB。 | 编辑合为批准批次，锁外准备，锁内短提交；索引支持正反查和键集分页，实际迁移后评估 M05 批量资格、长尾和版本留存。M06/M07/M12/M13。 | 以完整 M05 路径重跑三档、并发写、长版本史、WAL 备份恢复；对照同一批逐条资格及查询计划。 |
 | B-F12 / P3 | 数据模型“项目片段与证据”关于 M05 返回字段；HANDOVER 的已有资格方法 | 按草案读取 primary_record_id 不能取得 M05 当前组主。 | 字段核正为 duplicate.canonical_record_id；组主仅供显示，身份键独立。M05/M06。 | 对照现有 corpus.py 的 duplicate 返回及原例 19，组主切换后 M/E 均不变。 |
 
-P0 1 项、P1 9 项、P2 1 项、P3 1 项。P0 已给出设计修订，正式实现仍需通过隔离断言并建立可信审核角色。P1 中涉及负责人权责的处置集中在[待决清单](../architecture/m06-decisions.md)，未获批准前不建议冻结。[审核报告](m06-architecture-review.md) · [设计反例](../evidence/m06-b/counterexamples.md)
+## M06-B-F 冻结处置
+
+共 12 项，P0 一项、P1 九项、P2/P3 各一项。DESIGN_RESOLVED 表示约束已写入契约。POLICY_APPROVED 仅用于本次负责人明确批准的政策。IMPLEMENTATION_TEST_REQUIRED 表示正式实现仍须执行所列断言。DEFERRED_NON_BLOCKING 表示可后验且不妨碍设计冻结。BLOCKED 表示缺少足以决定设计的依据，本次为 0 项。状态可以并列。
+
+| 项目 | 设计/政策 | 工程或延后状态 | 实施阶段与失败断言 |
+|---|---|---|---|
+| B-F01 P0 跨项目泄露 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C4。六角色逐入口检验定义、搜索、两向关系、历史、摘要、分页、计数、错误、预检/重放、报告及出队。隐藏项目与不存在项目的响应对未授权者不可区分；专项授权撤回后不可重放原文。 |
+| B-F02 P1 有效主类 | DESIGN_RESOLVED | IMPLEMENTATION_TEST_REQUIRED | C1/C4。构造零主、双主、跨版主、已停用主及封版后改写；发行应失败，原 HEAD 及成员不变。 |
+| B-F03 P1 版本与命令 | DESIGN_RESOLVED | IMPLEMENTATION_TEST_REQUIRED | C1/C4。同谱系双根、混合 NULL、错项目/错版键、同键异载荷拒绝；两连接竞争只发一版，同键同载荷断连重放只得原引用。 |
+| B-F04 P1 资格及竞态 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C2/C4。复核同连接 M05、UTC 换日、先撤销/后撤销及副本，旧预检不能完成发布；新授权仅恢复指定来源，原发布须复核。 |
+| B-F05 P1 转载身份 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C3/C5。两条独立同文仍计二，带转载线索但缺证的第三条单挂；按来源、品类核待核比率和敏感性上下界。 |
+| B-F06 P1 产品边 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C3/C4。用错误商品页、否定/比较、混合批次校验。整批失败无写入；成功每边有独立决定，提议对正式反查贡献零，停用规则可查受影响边。 |
+| B-F07 P1 编码依赖 | DESIGN_RESOLVED | IMPLEMENTATION_TEST_REQUIRED | C3/C5。只撤销跨句上下文，另一个 E 可维持 M 但旧回执退出发布；不同版及失败尝试不得补成有效回执。 |
+| B-F08 P1 切片与分母 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C5。对 A17 的 A+炸锅应为零，原帖/转载并集 distinct 一次，A18 保留次因。核六桶和、主类和及独立整行账，缺正式数据返回 null。 |
+| B-F09 P1 代表与报告 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C4/C5。先换读者再撤销代表来源，区分不可见和失格；只暂停依赖用途，复查历史读/导出与处置、分发登记。 |
+| B-F10 P1 旧范围 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C1/C3/C4。同名不绑定，未解析与非产品空集有别；错目录/映射版拒绝。历史报告固定旧绑定，保护已发布节点及祖先。 |
+| B-F11 P2 规模 | DESIGN_RESOLVED | DEFERRED_NON_BLOCKING、IMPLEMENTATION_TEST_REQUIRED | C5。1K/10K/100K 走完整 M05，逐条与批量结果一致；检长版本史、WAL 恢复与长查询撤销。优化不得缓存过期资格。 |
+| B-F12 P3 组主字段 | DESIGN_RESOLVED | IMPLEMENTATION_TEST_REQUIRED | C2/C3。按现有 duplicate.canonical_record_id 读显示字段，切换组主后 M/E 不变；正式消费尚待实现验证。 |
+
+[五项签认及冻结结论](../architecture/m06-owner-approval.md) · [具体入口权限](../architecture/m06-api-contract.md) · [实施步骤](../architecture/m06-implementation-plan.md)

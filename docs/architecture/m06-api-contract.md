@@ -4,11 +4,31 @@
 
 ## 通用约定
 
-- 关系定义以 registry_version 精确定位。项目证据接口必须给 study_id，固定 segment_revision；首次浏览可解析当前版并把确切版返回，翻页必须带回。scope_id、scope_version 成对；可选 batch_id、source、time_field、from、to、product_category_id、category_id、intent_id、confidence_band、index_version。多选同维为并集，维间取交集，时间为 UTC 半开区间。具体见[统计契约](m06-statistics-contract.md)。
+- 关系定义以 registry_version 精确定位。项目证据接口必须给 study_id，固定 segment_revision；首次浏览可解析当前版并把确切版返回，翻页必须带回。scope_id、scope_version 成对；可选 batch_id、source、time_field、from、to、product_category_id、category_id、intent_id、confidence_band、index_version。多选同维为并集，维间取交集，时间为 UTC 半开区间。具体见[统计契约](m06-statistics-contract.md)。 涉及范围品类时解析并回传每个 scope 的 mapping_revision 和 catalog_version；历史报告须按已保存映射解析。统计响应和游标固定 counting_policy_version。
 - 全局及历史定义端点均使用获准共享字段的显式投影，包括定义、公开生命周期、版本及主次边。正反例须是独立编写的合成示例或经独立治理批准共享的内容。项目来源、使用和发现批次、项目证据计数、私有评审理由、依赖和撤销提示均按独立项目权限读取。跨项目对象查询统一 404，项目选择器只给出可访问项目，遗漏 study_id 不从界面状态补取。
-- 所有新增路径（含 /api/intents、/api/categories、/api/product-categories 及各自集合根路径）须显式纳入现有本机私有路由保护。只从真实回环客户端接受，忽略代理头冒充的地址，复用现有 Host 检查与 API no-store。带副作用或 POST 校验请求遵守同源 Origin 和 X-VOC-Action: connectivity。读、项目操作、全局审核分别校验；API 不接受调用者自行声明的角色。当前工作台尚无完整的全局审核授权流程，M11 接管写命令前须确定可信操作者来源。
+- 所有新增路径（含 /api/intents、/api/categories、/api/product-categories 及各自集合根路径）须显式纳入现有本机私有路由保护。只从真实回环客户端接受，忽略代理头冒充的地址，复用现有 Host 检查与 API no-store。带副作用或 POST 校验请求遵守同源 Origin 和 X-VOC-Action: connectivity。读、项目操作、全局审核分别校验；API 不接受调用者自行声明的角色。当前工作台尚无完整的全局审核授权流程，M11 接管写命令前须验证可信操作者和可撤销授权，无法验证时关闭特权操作。
 - 成功读返回 200。集合返回 items、next_cursor、resolved_versions、filter_echo、mode、as_of_utc；稳定排序指定 ID，游标绑定相同筛选、项目和版本；页大小建议默认 25、上限 100。游标每次重核项目权限和 M05 资格，长查询需在交付前用新快照复核实际依赖。对失效视图重新开始查询，客户端清除旧结果和已打开的原文抽屉。空结果返回 []。无正式结果为 200 unavailable + reasons + counts:null。
 - 400 参数组合冲突，422 无效 ID 格式/枚举/坐标或校验失败，403 回环、同源或操作权限不满足，404 查无或越项目，409 版本过时/已失格/幂等冲突，503 存储忙或资格不可检查（不返回旧值）。错误体含 code、message、可选 reason_codes、current_version、retryable；不带原文、路径、凭证、源 URL 或其他项目标识。写入幂等键及载荷摘要见[事务设计](m06-data-model.md)。
+
+### 角色与数据入口
+
+| 逻辑角色 | 允许的操作与范围 |
+|---|---|
+| 项目负责人 | 管理项目与授权范围，登记报告版本、接收范围及失效、撤回状态，负责发布、修订和撤回通知。 |
+| 项目研究人员 | 在获准项目内查当前合格数据与投影，无权以定义权限跨项目取证。 |
+| 项目审核者 | 在获准项目与操作范围内审核来源、证据、产品关系，每条决定可追溯。 |
+| 全局注册表审核者 | 审查可共享的定义及主次关系。需要核验项目原话时，另查对应项目、原话核验用途和有效期限的明确授权。 |
+| 数据治理审核者 | 在专项授权的项目、证据范围和操作内复核当前资格、历史输出与撤销，登记实际失格和受影响用途。 |
+| 普通报告读者 | 只读授权发布结果，原话及历史数字仍按当前可见性投影。读者无权不改变证据的真实资格。 |
+
+授权记录绑定可信身份、授予人、项目与数据范围、允许操作、起止时间、撤回时间和决定引用。每个涉及项目分别核验；角色名、浏览器参数、回环访问和历史回执都不充当授权。M06 预留此鉴权契约；特权写入须能核实操作者，完整账户管理不在此阶段。内部 CX 的既有绝对隔离优先于任何共享授权。
+
+| 入口 | 投影与资格断言 |
+|---|---|
+| 产品/任务/意图定义列表、详情、搜索、正反查、历史版本及变更摘要 | 只查允许共享的定义、关系与已批准公共字段；私有自由文本、例句、计数、项目存在性不能通过搜索命中、错误、总数、排序或分页游标推知。 |
+| 项目片段、证据、产品↔意图、冻结范围、分母与下钻 | 先查项目和精确成员，再以当前资格生成获准投影；越界等同不存在，统计、空页、明细与错误不得泄露其他项目。治理路径单独授权。 |
+| 单条/批量审核、预检、联审及幂等重放 | 每次核验项目与操作权限；重放只投影仍获准的最小结果。仅在权限内指出失败边，越界输入不能揭示隐藏对象。 |
+| 报告浏览、历史比较、导出、发送出队及撤回登记 | 对每一用途重核当前许可、留存期、全部实际依赖及读者授权。仅按受限投影展示；真实失格暂停依赖用途，治理复核登记，负责人处理版本及通知。已下载文件按分发登记跟踪处置。 |
 
 ## 路由
 
@@ -27,15 +47,16 @@
 | POST /studies/{S}/relations/validate | 同源项目操作。传 operation、候选 ID、expected_registry_version、expected_segment_revision、主次与证据引用 | 200 valid 布尔值、violations、可确认条件及所用版本。预检无写入，不能作为发布凭据。对“缺父候选”区分允许保存与阻止确认。 |
 | GET /studies/{S}/denominators | 必填 mode=engineering/synthetic/formal，附上述筛选与版本 | availability、reasons、counts、by_primary_category、excluded_by_reason、reconciliation、filter_echo；各阶段 null 说明缺项。正式未放行时 counts 与正式对账均 null。 |
 | POST /studies/{S}/registry/joint-confirmation（M11 后续命令） | 可信全局审核权限 + 项目证据权，Idempotency-Key。传 expected_registry_version、expected_segment_revision、candidate_intent_id、candidate_category_id、primary_category_id、secondary_ids、representative_refs、reason；证据引用精确绑定 R/M/E。若批准跨项目支持，每条另核对应项目与版本，跨项目引用不允许通过单一 S 的授权。 | 201 新发行，200 同载荷重放（重核授权后只返回原 ID 与版本）；同键异载荷或旧版本 409。锁内校验同一 UTC 日的 M05 资格、唯一有效主边、至少三次独立代表发生和冻结范围；必要关系、版本与审核结果原子写入。返回 command_id、registry_version、确认的两 ID，数据不足 422。M06 基础界面只提供预检。 |
+| POST /studies/{S}/product-relations/review（拟议单条/批量人工命令） | 可信项目审核者和 Idempotency-Key；传 expected_segment_revision、各边 M/E、产品 P、catalog_version、预期决定版、依据和动作。单条也采用一项列表。 | 同一事务逐边核成员、原话资格、实际产品指称、授权和预期版。批内重复键拒绝；任何一项失败整批回滚，返回有权查看的失败项。全部通过才逐边追加决定、人、时间、版次、证据和规则来源，返回每边决定引用；同键同载荷重核权限后重放，异载荷 409。M06 提供底层约束，完整审核流程归 M11。 |
 
 **响应示例（合成，仅示协议）**
 
 ```http
-GET /api/studies/S-demo/denominators?mode=formal&registry_version=1.0.0&segment_revision=2
+GET /api/studies/S-demo/denominators?mode=formal&registry_version=1.0.0&segment_revision=2&counting_policy_version=M06-B-F.1
 ```
 
 ```json
-{"mode":"formal","availability":"unavailable","reasons":["G1_BLOCKED","RESEARCH_NOT_ADMITTED","M12_RECEIPTS_MISSING"],"counts":null,"reconciliation":null,"by_primary_category":null,"excluded_by_reason":null,"filter_echo":{"study_id":"S-demo","registry_version":"1.0.0","segment_revision":2}}
+{"mode":"formal","availability":"unavailable","reasons":["G1_BLOCKED","RESEARCH_NOT_ADMITTED","M12_RECEIPTS_MISSING"],"counts":null,"reconciliation":null,"by_primary_category":null,"excluded_by_reason":null,"filter_echo":{"study_id":"S-demo","registry_version":"1.0.0","segment_revision":2,"counting_policy_version":"M06-B-F.1"}}
 ```
 
 ```http

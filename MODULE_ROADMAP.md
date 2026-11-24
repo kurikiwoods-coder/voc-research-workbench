@@ -8,9 +8,9 @@
 
 ## 当前模块
 
-M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-B 独立审核 PASS_WITH_CONDITIONS，M06 审批 PENDING，实施 NOT_STARTED。[开发状态](DEVELOPMENT_STATUS.md)
+M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-B-F 架构审核 PASS，负责人批准五项政策，架构 FROZEN，实施 NOT_STARTED。[开发状态](DEVELOPMENT_STATUS.md)
 
-M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。Windows 11 实机为 **NOT_TESTED**，**PRE_M06_GATE_BLOCKED**，G-1 **BLOCKED**。M06-B 已完成独立架构审核与设计修订，等待负责人裁定。[审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
+M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。Windows 11 实机为 **NOT_TESTED**，**PRE_M06_GATE_BLOCKED**，G-1 **BLOCKED**。M06-B-F 已完成[负责人裁定及架构冻结](docs/architecture/m06-owner-approval.md)，实施另需授权。[审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
 ## M01 基础工程与连通性
 
@@ -104,16 +104,16 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 |---|---|
 | PDT 与矩阵编号 | §6、§6.6、§6.9、§9.3；C0-6、CAT-1～CAT-10（CAT-4 协作）、J-14 接口 |
 | 模块职责 | 维护 Product Category、Task Category、Intent 以及证据驱动的双向关系。 |
-| 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。M06-B 设计审核已完成，实施须另获授权。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
-| 工程开发 | M06-B PASS_WITH_CONDITIONS，审批 PENDING，实现 NOT_STARTED。既有 JSON Schema 和内存 SQLite 冒烟继续作为工程基线。[六份设计文档](docs/architecture/m06-design.md) |
+| 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。M06-B-F 架构已冻结，实施须另获授权。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
+| 工程开发 | M06-B-F 审核 PASS，审批 APPROVED，架构 FROZEN，实现 NOT_STARTED。既有 JSON Schema 和内存 SQLite 冒烟继续作为工程基线。[六份设计文档](docs/architecture/m06-design.md) |
 | 工程测试 | C0-6 冒烟通过，正式关系 API 未测试。 |
 | 正式业务验收 | CAT 系列待验。 |
 | 数据库及 API | 已有产品品类、任务大类、意图、证据-品类和统计桶 Schema。待正式表、双向查找及发布事务接口。 |
 | 前端页面 | 正式品类、任务、意图双向页面未实现。 |
 | 验收标准 | 已确认意图唯一主任务大类。产品关系由合格原话证据得出。仅 published_classified 的 distinct mention_id 入分母，主大类合计精确对账。 |
-| 最近相关提交 | `0044906` |
+| 最近相关提交 | M06-B 审核基线 `2651d66`，本次裁定见[负责人批准记录](docs/architecture/m06-owner-approval.md)。 |
 | 测试结果与证据 | 2 个产品品类、3 个任务大类、30 个合成意图、两次跨品类命中。 |
-| 剩余问题 | 24 个原例已复核，新增 16 例；待签认身份、产品生效、代表证据、旧范围和计数政策。持久化、发布约束及正式验收待实施。[独立审核](docs/audits/m06-architecture-review.md)[专项矩阵](docs/architecture/m06-test-plan.md) |
+| 剩余问题 | 40 例设计推演可回放；持久化、许可竞态、跨项目授权、完整资格规模和正式业务验收待实施或取证。专案 v2.2 原 PDF 待补。[分阶段计划](docs/architecture/m06-implementation-plan.md) · [专项矩阵](docs/architecture/m06-test-plan.md) |
 
 ## M07 意图注册表及版本管理
 

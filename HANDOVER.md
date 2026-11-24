@@ -1,10 +1,16 @@
 # 开发交接
 
-## 本轮 M06-B 交接
+## M06-B-F 架构冻结
+
+2026-11-24，以 M06-B 审核提交 `2651d66c6f14f93b05e8123f4ca8009eaede37a4` 为输入，负责人批准表达身份、产品归属、统计口径、跨项目授权及旧范围映射五项政策。架构审核 PASS、设计批准 APPROVED、架构 FROZEN。12 项问题均有设计处置及实施回归，未解决 P0/P1 设计阻塞为 0。M06_IMPLEMENTATION=NOT_STARTED，Windows 11 实机 NOT_TESTED，Pre-M06 Gate 和 G-1 均 BLOCKED，真实研究 API 调用 0。
+
+接续以[冻结记录](docs/architecture/m06-owner-approval.md)和[C1–C5 实施计划](docs/architecture/m06-implementation-plan.md)为准。M06-C 须另行获准。计划保留 M05 既有公开资格入口并要求写事务同连接复核；仅凭旧 verified、报告或同组副本均不足以恢复证据。CAT-1 至 CAT-10、C0-6 与 J-14 的原门槛和现有证据范围见[专项矩阵](docs/architecture/m06-test-plan.md)。
+
+## 历史记录 · M06-B 交接
 
 对开发分支 M06-A 提交 `48b5352feb72df852417d6c9edb96775896153a7` 的独立审核为 **PASS_WITH_CONDITIONS**。M06 架构审批 PENDING，实施 NOT_STARTED。SQLite v6；Windows 11 NOT_TESTED；Pre-M06 Gate 与 G-1 均 BLOCKED；本轮真实研究 API 调用 0。技术原型的范围、缺失的专案 v2.2 PDF 及正式验收缺项见[审核结论](docs/audits/m06-architecture-review.md)。
 
-接续人先核对[负责人待决项](docs/architecture/m06-decisions.md)和[逐项台账](docs/audits/m06-architecture-findings.md)。获批后按审核报告的实施顺序验证同连接资格、不可变发行、发生身份、同证据过滤与当前编码。保留公开 M05 Python 方法和 GET 契约。回放、缓存、导出均须按当前许可限制访问；业务准入和外发权限另验。原 24 例与新增 16 例属于设计推演，双连接与规模原型另列在[证据索引](docs/evidence/m06-b/README.md)。M06-C 等待另行授权。
+当时要求核对[决策与备选](docs/architecture/m06-decisions.md)和[逐项台账](docs/audits/m06-architecture-findings.md)。获批后按审核报告的实施顺序验证同连接资格、不可变发行、发生身份、同证据过滤与当前编码。保留公开 M05 Python 方法和 GET 契约。回放、缓存、导出均须按当前许可限制访问；业务准入和外发权限另验。原 24 例与新增 16 例属于设计推演，双连接与规模原型另列在[证据索引](docs/evidence/m06-b/README.md)。M06-C 等待另行授权。
 
 ## 前轮 M06-A 交接
 

@@ -1,6 +1,6 @@
 # M06 数据模型与事务
 
-这是基于 SQLite v6 的增量设计草案。表名用于评审数据约束，字段尚未落库。M06 拥有身份、关系和约束；M07 经营注册表，M11 操作审核，M12 提供编码回执，M13 持有报告。完整身份与切片示例见[总体设计](m06-design.md)，计数见[统计契约](m06-statistics-contract.md)。
+这是基于 SQLite v6 的增量冻结设计。表名说明待实施约束，字段尚未落库。M06 拥有身份、关系和约束；M07 经营注册表，M11 操作审核，M12 提供编码回执，M13 持有报告。完整身份与切片示例见[总体设计](m06-design.md)，计数见[统计契约](m06-statistics-contract.md)。
 
 ## 实体关系
 
@@ -11,8 +11,9 @@ erDiagram
     BATCH ||--o{ RECORD : imports
     RECORD ||--o| SNAPSHOT : anchors
     SNAPSHOT ||--o{ EVIDENCE : locates
-    FROZEN_SCOPE ||--o| SCOPE_BINDING : pins
+    FROZEN_SCOPE ||--o{ SCOPE_BINDING : pins
     SCOPE_BINDING ||--o{ SCOPE_PRODUCT : samples
+    MENTION_PRODUCT ||--o{ PRODUCT_REVIEW : reviewed_by
     REGISTRY ||--o{ SCOPE_BINDING : defines
     REGISTRY ||--o{ PRODUCT : versions
     REGISTRY ||--o{ TASK : versions
@@ -69,10 +70,10 @@ STUDY、FROZEN_SCOPE、BATCH、RECORD、SNAPSHOT 对应 v6 的 study_projects、
 | intent | V:T，A:T，name:T，definition:T，inclusion_criteria:T，exclusion_criteria:T，lifecycle_status:T，primary_category_id:T?，primary_marker:I，survey_validation_status:T，version:T，PK(V,A) | FK V→registry。candidate/pending_parent/confirmed/rejected/merged/retired。CHECK 约束 confirmed 必须有主任务，primary_marker 固定 1。延迟复合 FK (V,A,primary_category_id,primary_marker)→intent_task(V,A,C,is_primary)。共享问卷状态来自获准发布的版本，具体项目问卷依据留在项目受控记录。 |
 | intent_task | V:T，A:T，C:T，is_primary:I，task_status:T，PK(V,A,C)，UQ(V,A,C,is_primary) | (V,A)→intent，(V,C,task_status)→task(V,C,lifecycle_status)，CHECK task_status='confirmed'。唯一部分索引 (V,A) WHERE is_primary=1。候选建议放在受控审核记录。反向索引(V,C,A)。正式边的通用业务定义可经单独审核共享，项目证据和自由文本审核理由留在项目内。 |
 | representative | V:T，A:T，S:T，R:I，M:T，E:T，PK(V,A,S,R,M,E) | (V,A)→intent，(S,R,M,E)→support。封版前锁内由有权操作者确认至少三次独立发生及每条原话/链接，按 M 与发生核定；同一 M 的多个 E、跨项目重复选入同一发生都不能凑数。跨项目无法区分独立发生时不得满足门槛。当前资格损失仅在有权的消费路径计算，避免在全局路由暴露跨项目的支持数量、来源或撤销原因。 |
-| scope_binding | S:T，scope_id:T，V:T，mapping_status:T，command_id:T，PK(S,scope_id)，UQ(S,scope_id,V) | (S,scope_id)→study_scope_freezes 的现有 v6 复合父键，V→registry，(S,command_id)→command。仅创建已审核的 `mapped_product` 或 `non_product` 绑定，未解析为独立审计状态 `unresolved`。实际 scope_version 来自同一 study_scopes.version_no。 |
-| scope_product | S:T，scope_id:T，V:T，P:T，PK(S,scope_id,P) | (S,scope_id,V)→scope_binding，(V,P)→product。封版触发校验 mapped_product 至少一条 confirmed 品类、non_product 零条。范围用作抽样约束，证据边需逐条取证。 |
+| scope_binding | S:T，scope_id:T，mapping_revision:I，previous_revision:I?，V:T，mapping_status:T，scope_reviewer_ref:T，catalog_reviewer_ref:T?，basis_ref:T，command_id:T，PK(S,scope_id,mapping_revision)，UQ(S,scope_id,mapping_revision,V) | (S,scope_id)→v6 study_scope_freezes，V→registry，(S,command_id)→command，前版仅能指向同一 S/scope 的直接前版。锁内校验 expected_mapping_revision，版号自 1 连续追加，禁止改写。原 scope_version 从该冻结记录核对。unresolved 留合法依据；mapped_product/non_product 须有 M03 范围提请或确认及有权目录复核，决定、操作者、证据、时间可回查。没有映射记录的旧字符串按 unresolved 处理。 |
+| scope_product | S:T，scope_id:T，mapping_revision:I，V:T，P:T，PK(S,scope_id,mapping_revision,V,P) | (S,scope_id,mapping_revision,V)→scope_binding，(V,P)→product。发布绑定时 mapped_product 至少一条同版 confirmed 产品，non_product、unresolved 零条。父记录和节点清单原子追加；下游只可按确切映射、目录版与冻结范围查询。 |
 
-三种全局稳定 ID 使用各自命名空间，含义相同可沿用，已拒绝/合并/停用 ID 保留墓碑，后继以 change_edge 记录。定义微调升实体次版本，结构变动（合并、拆分等）升主版本；发行版本与单条实体版本分列。已发布研究的冻结范围仍引用某节点时，拒绝停用；先经授权完成范围替代与活动引用退出，历史冻结继续解析不可覆盖的原版及祖先链。旧 content_json 保留原样。含无法核实的品类字符串时，登记 unresolved 与项目审核事件，阻止依赖品类的正式发布。历史映射经人工核定精确稳定 ID 与版本后建立绑定，不以名称自动匹配；无产品研究须有明确的 non_product 审核映射。范围品类与编码注册表版本可以不同，按稳定 ID 跟踪并同时返回两个版本。
+三种全局稳定 ID 使用各自命名空间，含义相同可沿用，已拒绝/合并/停用 ID 保留墓碑，后继以 change_edge 记录。定义微调升实体次版本，结构变动（合并、拆分等）升主版本；发行版本与单条实体版本分列。已发布研究的冻结范围仍引用某节点时，拒绝停用；先列出受影响研究、报告和祖先，审核替代节点、发行新版本并验证活动引用退出，历史冻结继续解析不可覆盖的原版及祖先链。旧 content_json 保留原样。含无法核实的品类字符串时，登记 unresolved 与项目审核事件，阻止依赖品类的正式发布。历史映射经人工核定精确稳定 ID 与版本后建立绑定，不以名称自动匹配；无产品研究须有明确的 non_product 审核映射。范围品类与编码注册表版本可以不同，按稳定 ID 跟踪并同时返回两个版本。
 
 ### 项目片段与证据
 
@@ -83,7 +84,8 @@ STUDY、FROZEN_SCOPE、BATCH、RECORD、SNAPSHOT 对应 v6 的 study_projects、
 | segment_rev | S:T，R:I，parent_rev:I?，rule_version:T，created_at:T，command_id:T，sealed:I，PK(S,R)，UQ(S,R,parent_rev) | S→study_projects，(S,parent_rev)→segment_rev，(S,command_id)→command。每 S 单根部分唯一索引及唯一非空父版，CHECK parent_rev<R。父版已封版，读请求固定已封版 R，并发写校验 expected_revision。 |
 | member | S:T，R:I，M:T，identity_state:T，PK(S,R,M) | (S,R)→segment_rev，(S,M)→mention。identity_state=distinct/needs_review。待确认为同一次发生的输入在排除台账保留，核清前不重复入合格集合。旧 R 固定，新 R 复用未变的 ID。 |
 | support | S:T，R:I，M:T，E:T，segment_no:I，occurrence_basis:T，review_ref:T，PK(S,R,M,E)，UQ(S,R,E) | (S,R,M)→member，(S,E)→evidence。segment_no 为规则版内原始行的段序，重切可变化。同一版同一原始区间只支持一个发生；不同需求应切为可区别的区间；无法区分先待审。新成员至少一条区间证据，当前能否使用逐次判定。加索引 (S,E,R)。 |
-| mention_product | S:T，R:I，M:T，E:T，catalog_version:T，P:T，link_type:T，review_status:T，command_id:T，PK(S,R,M,E,P) | (S,R,M,E)→support，(catalog_version,P)→product，(S,command_id)→command。P 必须能回到当前该条原话。review_status=auto/queued/human_confirmed。P0 建议仅 human_confirmed 可生效；auto 仅作可追溯提议，正式自动确认待负责人裁定，见[决策](m06-decisions.md)。索引(S,P,R,M)。 |
+| mention_product | S:T，R:I，M:T，E:T，catalog_version:T，P:T，link_type:T，command_id:T，PK(S,R,M,E,catalog_version,P) | (S,R,M,E)→support，(catalog_version,P)→product，(S,command_id)→command。索引(S,P,R,M)。原话须支持该产品；规则提议可保存，P0 查询仅采用已人工确认、当前有资格且未暂停/撤销的边。 |
+| product_review | 以上完整边键，decision_seq:I，decision:T，basis_ref:T，actor_ref:T，decided_at:T，command_id:T，mode:T，proposal_provenance:J，按完整边键与 decision_seq 唯一 | FK 指向同项目/同版的完整边及项目命令。不可改写的逐边事件记录 proposed/queued/human_confirmed/suspended/withdrawn；对同一边只解析最新生效事件。保留原话区间、产品 ID、依据及审核版。B 预留来源、规则版、品类、条件、有效期与回退；C 预留模型、输入证据、校准版、置信与裁决。按来源及规则/模型确切版本反查受影响的边，暂停或撤销后重新审核。P0 只有人工可确认。 |
 | replacement | S:T，R:I，old_rev:I，old_mention_id:T，new_mention_id:T，reason:T，PK(S,R,old_mention_id,new_mention_id) | (S,R,old_rev)→segment_rev(S,R,parent_rev)，(S,old_rev,old_mention_id)→member，(S,R,new_mention_id)→member。拆并使用不同 M，封版验证稳定 ID 有向环。调整坐标且语义和发生不变时沿用 M，保留两版 support。 |
 | discovery_review | S:T，R:I，M:T，V:T，seq:I，A:T?，review_state:T，reason_code:T，command_id:T，PK(S,R,M,V,seq) | (S,R,M)→member，V→registry，非空(V,A)→intent，(S,command_id)→command。M09/M10 提出，M11 决定；open/accepted/rejected/closed 与原因分列。当前只读取该键最新决定，若其依赖失格则标待复核，不回退至旧决定，不由此获得编码发布资格。 |
 | discovery_input | S:T，R:I，M:T，V:T，seq:I，E:T，dependency_role:T，target_e:T?，PK(S,R,M,V,seq,E,dependency_role) | 精确绑定 discovery_review；(S,E)→evidence，(S,R,M,target_e)→support。occurrence 与 context 使用下文 receipt_input 相同的互斥 CHECK，使无独立 M 的合法上下文也可登记。所有实际使用的区间重核 M05 资格；失格触发待复核。 |
@@ -96,9 +98,10 @@ STUDY、FROZEN_SCOPE、BATCH、RECORD、SNAPSHOT 对应 v6 的 study_projects、
 |---|---|---|
 | command | command_id:T PK，S:T?，namespace:T，operation:T，idempotency_key:T，input_hash:T，actor_ref:T，reason:T，created_at:T，result_ref:J，UQ(namespace,operation,idempotency_key)，UQ(S,command_id) | S→study_projects，可空仅限纯全局定义命令。联合命令保留来源项目授权绑定；项目命令命名空间由服务端生成。哈希覆盖规范化输入、预期版本及服务端确认的作用域。结果仅含 ID/版本，重放仍核操作者和项目权限；失败回滚，与审核驳回记录分开。自由文本及 S 不进入共享定义投影。 |
 | change_edge | V:T，seq:I，command_id:T，kind:T，from_version:T?，from_id:T?，to_id:T?，action:T，PK(V,seq) | V/from_version→registry，command_id→command。CHECK 约束可空端及动作；封版触发器按 kind 校验对应实体和版本，排除跨类型及引用不存在。可用分类型表和精确 FK 实现等价约束。全局只投影获准共享的类型及定义变更，不透出私有命令。 |
-| coding_receipt（M12 逻辑接口） | receipt_id:T PK，S:T，R:I，M:T，V:T，attempt_no:I，supersedes:T?，A:T?，index_version:T，question_set_version:T，model_id:T，input_hash:T，candidate_list:J，shard_refs:J，assessment:J，publication_status:T，created_at:T，UQ(S,R,M,V,attempt_no)，UQ(receipt_id,S,R,M,V) | (S,R,M)→member，V→registry，非空(V,A)→intent，(supersedes,S,R,M,V)→receipt，前序 attempt_no 必须更低。每个绑定仅一个有效发布决定，受控指针原子切换，不因最新尝试草稿或失格回退旧回执。完整性与校准归 M12。 |
+| coding_receipt（M12 逻辑接口） | receipt_id:T PK，S:T，R:I，M:T，V:T，attempt_no:I，supersedes:T?，A:T?，index_version:T，question_set_version:T，model_id:T，input_hash:T，candidate_list:J，shard_refs:J，assessment:J，counting_policy_version:T，publication_status:T，created_at:T，UQ(S,R,M,V,attempt_no)，UQ(receipt_id,S,R,M,V) | (S,R,M)→member，V→registry，非空(V,A)→intent，(supersedes,S,R,M,V)→receipt，前序 attempt_no 必须更低。counting_policy_version 记录发布时口径，后续重算另记口径与差异。每个绑定仅一个有效发布决定，受控指针原子切换，不因最新尝试草稿或失格回退旧回执。完整性与校准归 M12。 |
 | receipt_input（M12 逻辑接口） | receipt_id:T，S:T，R:I，M:T，V:T，E:T，dependency_role:T，target_e:T?，PK(receipt_id,E,dependency_role) | (receipt_id,S,R,M,V)→receipt，(S,E)→evidence，(S,R,M,target_e)→support。CHECK 限定 occurrence 时 target_e 非空且等于 E，context 时 target_e 为空。封版核至少一个 occurrence。context 可来自另一片段，也可只有合格来源区间而未产生独立 M。登记每条实际输入并按 (S,E) 反查；任一必要输入失格即停用回执，需重新分析和审核。 |
-| report（M13 引用契约） | report_id:T PK，S:T，R:I，scope_versions:J，V:T，index_version:T，filters:J，computed_at:T，receipt_refs:J，counts:J，supersedes:T? | 绑定项目、片段版与注册表，scope_versions 枚举实际冻结范围，保存 UTC 窗口、来源/批次、算法/阈值及证据引用。归档记录只追加，当前可展示性另查。原文、许可附件和用户身份不进入此载荷。 |
+| report（M13 引用契约） | report_id:T PK，S:T，R:I，scope_mapping_refs:J，counting_policy_version:T，V:T，index_version:T，filters:J，computed_at:T，receipt_refs:J，counts:J，supersedes:T? | 绑定项目、片段版与注册表，每个范围引用保存 scope_id、scope_version、mapping_revision、目录 V，并引用不可变映射及受保护祖先；固定六桶口径版，保存 UTC 窗口、来源/批次、算法/阈值及证据引用。归档记录只追加，当前可展示性另查。原文、许可附件和用户身份不进入此载荷。 |
+| 报告分发登记（M13/M15） | report_id、发布版、接收范围、发放时刻、当前有效/失效/撤回、通知与处置引用 | 项目负责人负责发布、修订、撤回通知；数据治理审核者登记失格依赖、受影响用途与处置。按许可到期清理，允许时保留最小审计引用。接收范围及通知记录均受项目授权限制。 |
 
 未分段的排除事件、URL/页面数沿用 M04/M05 或后续 M08 已有可授权的输入台账；按[计数单位](m06-statistics-contract.md)投影，无可核稳定输入键的阶段返回不可用。六桶属于派生视图，不建可随意编辑的 bucket 列。无需创建“产品×意图”事实总表，正反两个方向共享 support → mention_product 和有效编码回执。
 
@@ -112,7 +115,7 @@ STUDY、FROZEN_SCOPE、BATCH、RECORD、SNAPSHOT 对应 v6 的 study_projects、
 4. 所有本次资格查询使用同一 UTC 日期。提交前比较最新 UTC 日期，跨日则回滚重算，最终 COMMIT 错误须显式 rollback 并恢复干净事务状态。并发胜者发行；等待方重取写锁后，陈旧预期版返回 409，持久写忙按有限退避后给可重试错误。完整提交后客户端断开，由同键重放返回原引用。确认的共享定义与项目编码发布走各自状态流。
 5. 资格与项目权限随使用时刻变化。短读使用同一快照及 UTC 日；长统计出结果前在新快照复核实际依赖的版本、权限、M05 资格与日期。有变化则废弃结果并重算。首版避免跨请求缓存原文、资格与未复核聚合；旧报告再展示、下载和出队前复核全部必要依赖。数据库写锁只能约束同库写者，对自然到期、提交后撤销、验证与送达间的时差以及已分发内容不作原子保证。
 
-已发布版本作为历史定义继续存在。某条代表原话失格后，在获准项目读路径实时遮蔽，并为有权复核者生成依赖整改记录。建议具有相关权限的服务确认代表性门槛或实际编码依赖失效后，暂停受影响的正式产出或重新核算，交 M07/M11 审核新定义或替代支持。单一读者缺乏项目权限只限制其投影；跨项目判定及历史输出访问策略待[负责人裁定](m06-decisions.md)。共享定义视图不公开可反推出他人撤销事件的状态，获准审计者可读脱敏历史元数据。新授权使 M05 当前行有可能重新合格，不能自动恢复旧编码、旧统计或旧报告。
+已发布定义不可变。代表原话实际失格由获明确授权的治理审核者结合实时资格复核，登记失格与影响，只暂停依赖用途，交 M07/M11 补证或发行新版。某读者缺乏项目权限只限制其可见投影。历史展示、导出及出队按当前许可重验；共享定义不暴露他项目撤销事件。已分发报告由负责人登记并通知，第三方下载副本的处置只能跟踪。重新授权须显式复核。[角色与入口](m06-api-contract.md) · [负责人裁定](m06-owner-approval.md)
 
 ## v6 升级与恢复预案
 

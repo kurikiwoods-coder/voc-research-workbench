@@ -15,4 +15,4 @@
 
 主审另行复跑 SQLite 事务与资格脚本，退出码 0。同源副本和独立来源的资格序列为 `200/200/200 → 409/409/200 → 409/409/409 → 200/409/409`。旧读事务仍能看到旧许可，把旧快照提升为写事务得到 `SQLITE_BUSY_SNAPSHOT`。写锁内把判定日推进一天后，最后一个独立来源也过期。新授权只恢复指定原话的工程资格。
 
-[审核评语与原需求复核](../../audits/m06-architecture-review.md) · [问题台账](../../audits/m06-architecture-findings.md) · [待签认决策](../../architecture/m06-decisions.md)
+[审核评语与原需求复核](../../audits/m06-architecture-review.md) · [问题台账](../../audits/m06-architecture-findings.md) · [决策与审核历史](../../architecture/m06-decisions.md) · [后续 M06-B-F 政策批准](../../architecture/m06-owner-approval.md)

@@ -1,8 +1,12 @@
 # VOC Research Workbench 开发状态
 
-核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，远端基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
+核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，历史接管基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## M06-B 独立架构审核
+## M06-B-F 架构冻结
+
+2026-11-24，以 M06-B 审核提交 `2651d66c6f14f93b05e8123f4ca8009eaede37a4` 为输入，负责人批准表达身份、产品归属、统计口径、跨项目授权及旧范围映射五项政策。架构审核 PASS、设计批准 APPROVED、架构 FROZEN。12 项问题均有设计处置及实施回归，未解决 P0/P1 设计阻塞为 0。M06_IMPLEMENTATION=NOT_STARTED，Windows 11 实机 NOT_TESTED，Pre-M06 Gate 和 G-1 均 BLOCKED，真实研究 API 调用 0。 [负责人批准记录](docs/architecture/m06-owner-approval.md) · [问题台账](docs/audits/m06-architecture-findings.md) · [实施计划](docs/architecture/m06-implementation-plan.md)
+
+## 历史记录 · M06-B 独立架构审核
 
 审核基线为开发分支 `48b5352feb72df852417d6c9edb96775896153a7`。M06_ARCHITECTURE_REVIEW=PASS_WITH_CONDITIONS，M06_ARCHITECTURE_APPROVAL=PENDING，M06_IMPLEMENTATION=NOT_STARTED。完成原 24 例逐项复核、16 例新增推演和临时 SQLite 实验。保留 SQLite v6、PDT v1.3.1 与原验收条件。Windows 11 实机 NOT_TESTED，PRE_M06_GATE=BLOCKED，G-1=BLOCKED，REAL_RESEARCH_API_CALLS=0。冻结前需负责人签认业务口径、明确授权控制及缺失原件的处置。工程实施须另获授权。[审核报告](docs/audits/m06-architecture-review.md) · [问题台账](docs/audits/m06-architecture-findings.md) · [实验记录](docs/evidence/m06-b/README.md)
 
