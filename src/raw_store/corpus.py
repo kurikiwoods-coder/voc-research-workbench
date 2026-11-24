@@ -8,7 +8,7 @@ from unicodedata import normalize
 from src.raw_store.corpus_policy import (
     CONTROL, SENSITIVE, permission_recorded, safe_metadata, validate_snapshot, valid_snapshot_source,
 )
-from src.raw_store.imports import RESTRICTED_SOURCE_ROWS, source_withdrawal
+from src.raw_store.imports import RESTRICTED_SOURCE_ROWS, source_withdrawal, withdrawn_source_alias
 from src.raw_store.store import Conflict, dump, now
 from src.raw_store.studies import StudyStore
 
@@ -29,12 +29,12 @@ ROW_SOURCE = """
     )
 """
 CANDIDATE = "(v.review_id IS NOT NULL OR r.status IN ('staged', 'pending_review'))"
-SOURCE_ALIAS_RESTRICTED = f"""EXISTS (
+SOURCE_ALIAS_RESTRICTED = f"""(EXISTS (
     SELECT 1 {RESTRICTED_SOURCE_ROWS}
     AND restricted_file.study_id=f.study_id AND restricted_file.sha256=f.sha256
     AND restricted_batch.sheet_index=b.sheet_index AND restricted_row.line_number=r.line_number
     AND restricted_row.record_id<>r.record_id
-)"""
+) OR {withdrawn_source_alias(":study_id", "r.originals_json")})"""
 EFFECTIVE_RETENTION = """
     CASE WHEN v.decision='excluded' THEN (
         SELECT MIN(h.retention_until) FROM corpus_reviews h WHERE h.record_id=r.record_id

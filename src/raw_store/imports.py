@@ -6,6 +6,7 @@ import hashlib
 import json
 from uuid import uuid4
 
+from src.raw_store.corpus_policy import source_identity
 from src.raw_store.store import Conflict, dump, now
 from src.raw_store.studies import StudyStore, scope_record, SCOPE_SELECT
 
@@ -23,6 +24,21 @@ def source_withdrawal(record_id):
     return f"""EXISTS (
         SELECT 1 FROM corpus_reviews withdrawal WHERE withdrawal.record_id={record_id}
         AND withdrawal.decision='excluded' AND source_permission_revoked(withdrawal.reason)
+    )"""
+
+
+def withdrawn_sources(study_id):
+    return f"""SELECT DISTINCT source_identity(json_extract(origin.fields_json, '$.source_url')) AS source
+        FROM import_batches origin_batch JOIN import_rows origin USING(batch_id)
+        WHERE origin_batch.study_id={study_id}
+        AND json_extract(origin.fields_json, '$.source_url') IS NOT NULL
+        AND {source_withdrawal("origin.record_id")}"""
+
+
+def withdrawn_source_alias(study_id, originals):
+    return f"""EXISTS (
+        SELECT 1 FROM ({withdrawn_sources(study_id)}) withdrawn
+        JOIN json_each({originals}) AS cell ON source_identity(cell.value)=withdrawn.source
     )"""
 
 
@@ -63,7 +79,12 @@ def restricted_source_lines(db, file, sheet_index):
     # A second import of the same bytes can have a different file ID or field mapping.
     rows = db.execute(f"""SELECT DISTINCT restricted_row.line_number {RESTRICTED_SOURCE_ROWS}
                           AND restricted_file.study_id=:study_id AND restricted_file.sha256=:sha256
-                          AND restricted_batch.sheet_index=:sheet_index""",
+                          AND restricted_batch.sheet_index=:sheet_index
+                          UNION
+                          SELECT r.line_number FROM import_rows r
+                          JOIN import_batches b USING(batch_id) JOIN import_files f USING(file_id)
+                          WHERE b.study_id=:study_id AND f.sha256=:sha256 AND b.sheet_index=:sheet_index
+                          AND {withdrawn_source_alias(":study_id", "r.originals_json")}""",
                       {"study_id": file["study_id"], "sha256": file["sha256"],
                        "sheet_index": sheet_index, "today": now()[:10]})
     return {row["line_number"] for row in rows}
@@ -72,6 +93,15 @@ def restricted_source_lines(db, file, sheet_index):
 def check_sheet_access(db, file, sheet_index):
     if restricted_source_lines(db, file, sheet_index):
         raise Conflict("该工作表含受语料审核或保留条件限制的内容，请从批次历史查看可用记录。")
+
+
+def check_sheet_sources(db, study_id, sheet):
+    withdrawn = {row["source"] for row in db.execute(withdrawn_sources("?"), (study_id,)) if row["source"]}
+    if withdrawn and any(
+        source_identity(value) in withdrawn for cells in [sheet.columns, *(row.values for row in sheet.rows)]
+        for value in cells
+    ):
+        raise Conflict("该工作表含本项目已撤销许可的来源，请先移除该来源的内容。")
 
 
 def visible_import_row(row, restricted_lines):
@@ -146,6 +176,10 @@ class ImportStore:
                                                 (file_id,)).fetchone()["source_bytes"]
             return result, target
 
+    def check_preview_sources(self, study_id, sheet):
+        with self.store.db() as db:
+            check_sheet_sources(db, study_id, sheet)
+
     def confirmation_receipt(self, study_id, file_id, sheet_index, mapping, privacy, signature):
         with self.store.db() as db:
             db.execute("BEGIN")
@@ -188,6 +222,7 @@ class ImportStore:
             if previous:
                 return self.saved_batch(db, study_id, previous["batch_id"])
             check_sheet_access(db, file, index)
+            check_sheet_sources(db, study_id, sheet)
             ident = str(uuid4())
             db.execute("""INSERT INTO import_batches
                        (batch_id, study_id, scope_id, file_id, sheet_index, sheet_name, header_line, headers_json,

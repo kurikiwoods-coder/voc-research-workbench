@@ -52,6 +52,20 @@ def safe_source_url(value):
     return all(key(name) not in SECRET_QUERY_KEYS and not SENSITIVE.search(value) for name, value in parameters)
 
 
+def source_identity(value):
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    if not value.casefold().startswith(("https://", "http://")) or not url_valid(value):
+        return None
+    parts = urlsplit(value)
+    host = parts.hostname.rstrip(".")
+    if not host:
+        return None
+    port = parts.port or (443 if parts.scheme == "https" else 80)
+    return json.dumps((parts.scheme, host, port, parts.path or "/", parts.query, parts.fragment))
+
+
 def safe_metadata(raw_fields):
     fields = json.loads(raw_fields)
     result = {k: fields[k] for k in METADATA_FIELDS if k in fields

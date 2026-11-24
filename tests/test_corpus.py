@@ -368,6 +368,64 @@ class CorpusTests(unittest.TestCase):
             f"/api/imports/{self.study}/uploads/{status['trace']['file_id']}"
         ).status_code, 409)
 
+    def test_withdrawn_source_remains_restricted_when_csv_content_and_line_change(self):
+        _, [original] = self.import_rows([ROW])
+        filler = ["合成补充记录", "forum", "https://unrelated.invalid/post", *ROW[3:]]
+        alias_batch, [_, alias] = self.import_rows([filler, ROW], filename="换行副本.csv")
+        self.verify(original)
+        self.assertEqual(self.verify(alias)["duplicate"]["record_count"], 2)
+        independent_row = [*ROW[:2], "https://independent.invalid/post", *ROW[3:]]
+        _, [independent] = self.import_rows([independent_row])
+        self.assertEqual(self.verify(independent)["duplicate"]["record_count"], 3)
+
+        root = f"/api/imports/{self.study}"
+        path = f"{root}/scopes/{self.scope}/uploads"
+        rows = [filler, independent_row, ROW]
+
+        def upload(filename):
+            response = self.client.post(path, content=make_csv(rows=rows), headers={
+                "Content-Type": "application/octet-stream", "X-VOC-Filename": filename,
+            })
+            response.raise_for_status()
+            return f"{root}/uploads/{response.json()['file_id']}"
+
+        draft = upload("before-withdrawal.csv")
+        mapping = self.client.get(draft).json()["suggested_mapping"]
+        plan = {"sheet_index": 0, "mapping": mapping, "privacy": "unknown"}
+        preview = self.client.post(draft + "/preview", json=plan)
+        preview.raise_for_status()
+        confirm = {**plan, "preview_token": preview.json()["preview_token"]}
+        self.verify(original, decision="excluded", reason="许可已撤销", retention_until=None)
+
+        for url in (draft, upload("after-withdrawal.csv")):
+            for endpoint, method, payload in (
+                ("", "GET", None), ("/preview", "POST", plan), ("/confirm", "POST", confirm),
+            ):
+                with self.subTest(url=url, endpoint=endpoint):
+                    response = self.client.request(method, url + endpoint, json=payload)
+                    self.assertEqual(response.status_code, 409)
+                    self.assertNotIn(QUOTE.strip().splitlines()[0], response.text)
+        with self.subTest(view="existing corpus"):
+            detail = self.get(alias)
+            self.assertEqual(detail["status"], "source_restricted")
+            self.assertIsNone(detail["raw_text"])
+            self.assertIsNone(detail["duplicate"])
+            self.assertEqual(self.review(alias).status_code, 409)
+        with self.subTest(view="existing import"):
+            reply = self.client.get(f"{root}/batches/{alias_batch}")
+            reply.raise_for_status()
+            records = reply.json()["rows"]
+            self.assertEqual(records[0]["raw_text"], filler[0])
+            self.assertIsNone(records[1]["raw_text"])
+            self.assertEqual(records[1]["originals"], [])
+            self.assertEqual(records[1]["fields"], {})
+        self.assertEqual(self.get(independent)["duplicate"]["record_count"], 1)
+        other_study, other_scope = self.project()
+        _, [other] = self.import_rows([ROW], study=other_study, scope=other_scope)
+        response = self.client.get(f"/api/corpus/{other_study}/records/{other}")
+        response.raise_for_status()
+        self.assertEqual(response.json()["raw_text"], QUOTE)
+
     def test_review_requires_same_origin_and_does_not_echo_invalid_body(self):
         _, [record] = self.import_rows([ROW])
         url = f"{self.root}/records/{record}/review"

@@ -7,7 +7,7 @@ from pathlib import Path
 import sqlite3
 import uuid
 
-from src.raw_store.corpus_policy import source_permission_revoked, valid_snapshot_source
+from src.raw_store.corpus_policy import source_identity, source_permission_revoked, valid_snapshot_source
 
 
 def now():
@@ -60,6 +60,7 @@ class Store:
         if not (self.fixture or self.diagnostic):
             db.create_function("valid_snapshot_source", 5, valid_snapshot_source, deterministic=True)
             db.create_function("source_permission_revoked", 1, source_permission_revoked, deterministic=True)
+            db.create_function("source_identity", 1, source_identity, deterministic=True)
         return db
 
     @contextmanager

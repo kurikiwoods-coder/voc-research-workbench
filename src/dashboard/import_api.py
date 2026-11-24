@@ -161,6 +161,7 @@ def register_imports(app):
         with errors(), parse_slot():
             file, scope = db.get_file(str(study_id), str(file_id), sheet_index)
             sheet = read_sheet(file.pop("source_bytes"), file["kind"], sheet_index)
+            db.check_preview_sources(str(study_id), sheet)
             return {"file": file, "scope_version": scope["scope_version"], **sheet_preview(sheet)}
 
     @router.delete("/{study_id}/uploads/{file_id}")
@@ -174,6 +175,7 @@ def register_imports(app):
         with errors(), parse_slot():
             file, scope = db.get_file(str(study_id), str(file_id), plan.sheet_index)
             sheet = read_sheet(file.pop("source_bytes"), file["kind"], plan.sheet_index)
+            db.check_preview_sources(str(study_id), sheet)
             rows, summary = evaluate(sheet, plan.mapping, scope, plan.privacy)
             flagged = [row for row in rows if row["issues"]]
             return {
