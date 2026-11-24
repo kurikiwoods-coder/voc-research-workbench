@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M01 的同批资料恢复。基线 Tavily 已通过，原运行库清理后只剩脱敏归档。恢复使用受信归档和对已许可原帖的核对，复用原批次已有搜索证据。供应商审核与正式 Jev 调用以后由原验收流程复核。
+M01 的同批资料恢复。基线 Tavily 已通过，原运行库清理后只剩脱敏归档。恢复使用受信归档和对已许可原帖的核对，复用原批次已有搜索证据。恢复功能工程测试已通过。供应商审核与正式 Jev 调用仍须完成原正式验收。
 
 ## M01 基础工程与连通性
 
@@ -17,14 +17,14 @@ M01 的同批资料恢复。基线 Tavily 已通过，原运行库清理后只�
 | PDT 与矩阵编号 | C0-1～C0-6、G-1、G0、G7；BATCH-RECOVERY、PRIVACY、UI-STATES |
 | 模块职责 | 构建本机运行、批次审计、公开来源连通、幂等恢复、Jev 固定版本技术门。 |
 | 前置依赖 | Python 与 SQLite、合规原帖。正式 Jev 验收还依赖 M02 凭证和供应商审核。 |
-| 工程开发 | P0-0 工作台及验收程序已实现。本轮处理已归档公开来源的同批次恢复。 |
-| 工程测试 | 基线 CI 通过。工程新增回归待本轮 CI。 |
+| 工程开发 | P0-0 工作台及验收程序已实现。本轮交付同批资料恢复，继续使用原批次入口。 |
+| 工程测试 | 本轮工程测试通过。Ubuntu 与 Windows Server 各 53 项 Python、2 项 Node、3 次空库冷启动。Chromium E2E 通过。 |
 | 正式业务验收 | C0-3、C0-5、C0-6 PASS；C0-1、C0-2、C0-4、G-1 BLOCKED；P0 G0、G7 未完成。 |
-| 数据库及 API | SQLite runs、attempts、results、evidence、shards。GET `/api/health`、`/api/workspace`、`/api/runs/{id}/evidence`，POST `/api/runs`、`/api/runs/{id}/resume`。 |
+| 数据库及 API | SQLite runs、attempts、results、evidence、shards。GET `/api/health`、`/api/workspace`、`/api/runs/{id}/evidence`，POST `/api/runs`、`/api/runs/{id}/resume`。 归档恢复使用本机 CLI，写入同一批次凭据且无 Schema 迁移。 |
 | 前端页面 | 连通性检查、验收矩阵、运行记录、证据抽屉。 |
 | 验收标准 | 同一批次的六项都通过且供应商审核可追溯才放行 G-1。G0 另有 Windows 本地三次冷启动，G7 按矩阵执行故障与安全实测。 |
-| 最近相关提交 | `a650478` |
-| 测试结果与证据 | [认证 Tavily 批次](docs/evidence/p0-0/tavily-live/README.md)和[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45322408935)。 |
+| 最近相关提交 | `47051f3` |
+| 测试结果与证据 | [本轮 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45325025692)记录六个新增恢复回归和四份归档的完整性核验。[认证 Tavily 批次](docs/evidence/p0-0/tavily-live/README.md)记录历史业务结果。 |
 | 剩余问题 | JevModel 审查、固定模型真实响应和额度实测待补。桌面 Windows 10/11 真机尚无记录。 |
 
 ## M02 API 配置中心
@@ -108,7 +108,7 @@ M01 的同批资料恢复。基线 Tavily 已通过，原运行库清理后只�
 | 数据库及 API | 已有产品品类、任务大类、意图、证据-品类和统计桶 Schema。待正式表、双向查找及发布事务接口。 |
 | 前端页面 | 正式品类、任务、意图双向页面未实现。 |
 | 验收标准 | 已确认意图唯一主任务大类。产品关系由合格原话证据得出。仅 published_classified 的 distinct mention_id 入分母，主大类合计精确对账。 |
-| 最近相关提交 | `f917ff9` |
+| 最近相关提交 | `0044906` |
 | 测试结果与证据 | 2 个产品品类、3 个任务大类、30 个合成意图、两次跨品类命中。 |
 | 剩余问题 | 正式关系持久化、发布约束、跨品类查询和互斥计数。 |
 
@@ -125,7 +125,7 @@ M01 的同批资料恢复。基线 Tavily 已通过，原运行库清理后只�
 | 数据库及 API | `schemas/intent-registry.schema.json` 与 `examples/sample-intent-registry.json`。待注册表版本、差异、历史和发布 API。 |
 | 前端页面 | 正式注册表和版本对比页未实现。 |
 | 验收标准 | 生命周期与问卷验证状态独立。确认意图有唯一主任务大类；金标准、索引、正式结果绑定具体版本。 |
-| 最近相关提交 | `d7c844a` |
+| 最近相关提交 | `8e8a74e` |
 | 测试结果与证据 | C0-6 只验证样例数据，未覆盖版本发布、回滚和历史查询。 |
 | 剩余问题 | 注册表事务、版本追踪、审计和发布。 |
 
@@ -159,7 +159,7 @@ M01 的同批资料恢复。基线 Tavily 已通过，原运行库清理后只�
 | 数据库及 API | 待主题运行、聚类成员、版本、差异和运行查询 API。 |
 | 前端页面 | 主题发现与聚类证据页未实现。 |
 | 验收标准 | 按 DISCOVERY 保存单轨与两轨结果、复算差异；盲测与真实小样本确认可提出或驳回候选。 |
-| 最近相关提交 | `f917ff9` |
+| 最近相关提交 | `0044906` |
 | 测试结果与证据 | C0-6 向量召回未覆盖 BERTopic。 |
 | 剩余问题 | 模型参数、离线复跑、主题样本和盲测。 |
 

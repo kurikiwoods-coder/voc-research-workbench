@@ -1,12 +1,20 @@
 # VOC Research Workbench 开发状态
 
-核查日期 2026-11-24。初始远端基线 `a650478dc6cc4a0a0baf66debddf141ed4763b0f`，分支 `codex/p0-0-connectivity`，PR #1 为草稿。
+核查日期 2026-11-24。核查基线 `a650478dc6cc4a0a0baf66debddf141ed4763b0f`，目标分支 `codex/p0-0-connectivity`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [15 个模块](MODULE_ROADMAP.md)
 
 ## 本轮 M01 基础工程与连通性
 
-工程范围为恢复已经归档的认证 Tavily 来源证据并支持同批续测。现有原运行库已清理。恢复入口只处理 P0-0 受信归档，保留来源边界，待原正式检查重新计算其余项。
+已交付同批来源恢复。在本机运行 `python -m src.outputs.recover_source_batch` 可从锁定的 Tavily 归档恢复原批次，原帖许可、时间和原句指纹重新核对后才写入。恢复保留原批次 ID 和搜索证据。继续验收从「运行记录 → 恢复此批次」执行。原帖发生变化、归档损坏或中途写库失败时停止恢复，重复执行无额外搜索请求。[操作说明](docs/connectivity.md#原运行库缺失时继续原批次)
 
-工程测试待 GitHub Actions 执行。基线 47 项 Python、2 项 Node、Linux 和 Windows Server 的空库冷启动及 Chromium E2E 已通过。[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45322408935)
+| 验证范围 | 实际结果 |
+|---|---|
+| Ubuntu | 53 项 Python、2 项 Node、3 次空库冷启动，四份 SQLite 与 JSON 归档核验通过 |
+| Windows Server 2022 | 53 项 Python、2 项 Node、3 次空库冷启动，归档及中文和空格路径启动通过 |
+| Chromium | 浏览器 E2E 通过，涵盖桌面和 320 / 390 像素布局 |
+| 归档恢复 | 新增 6 项回归通过，覆盖锁定摘要、同批幂等、原帖变化、篡改拒绝、事务回滚及夹具隔离 |
+| Windows 10/11 真机 | NOT_TESTED |
+
+已通过工程测试的实现提交为 [`47051f3`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/47051f3749589478aef41b0fa2b73a9ac542bf30)。恢复回归使用隔离夹具及已提交的归档核验。真实 Jev 和付费 Tavily 请求在本轮均为 0。[本轮 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45325025692) · [恢复回归](https://github.com/kurikiwoods-coder/voc-research-workbench/blob/47051f3749589478aef41b0fa2b73a9ac542bf30/tests/test_recover_source_batch.py)
 
 ## 正式验收
 
@@ -20,8 +28,8 @@
 | C0-6 | PASS | 两个产品品类及 30 个意图的跨品类召回冒烟 |
 | G-1 | BLOCKED | 等待供应商留存审查及 C0-1、C0-2、C0-4 |
 
-[正式批次 `89b0c2d1-576d-420f-9046-9e55878159be`](docs/evidence/p0-0/tavily-live/README.md) · [需求矩阵](docs/requirements-matrix.md) · [15 个模块](MODULE_ROADMAP.md)
+[正式批次 `89b0c2d1-576d-420f-9046-9e55878159be`](docs/evidence/p0-0/tavily-live/README.md) · [需求矩阵](docs/requirements-matrix.md)
 
-## 后续依赖
+## 下一轮候选
 
-M01 业务部分继续等待经核验的 Jev 留存政策、处理链和实际响应。M02 后续正式额度能力另按 TC 与 G5 验收。M03 研究项目和范围可以作为下一单模块候选，其正式投入使用仍依赖 G-1，独立预开发需有明确范围和授权。
+当前仍处于 P0-0。M01 正式部分继续等待经核验的 Jev 留存政策、处理链和真实响应。M03 研究项目与范围管理是下一独立模块候选。正式交付受 G-1 约束，单独的本地预开发须有明示的范围与授权。每轮只实施一个获准模块。
