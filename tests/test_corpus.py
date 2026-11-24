@@ -128,10 +128,16 @@ class CorpusTests(unittest.TestCase):
         self.assertEqual([reply.status_code for reply in results], [200, 200])
         self.assertEqual(len(self.get(record)["history"]), 1)
         excluded = self.verify(record, decision="excluded", reason="许可已撤销", retention_until=None)
-        self.assertEqual(excluded["status"], "excluded")
+        self.assertEqual(self.review(record).status_code, 409)
+        self.assertEqual(excluded["status"], "policy_restricted")
         self.assertIsNone(excluded["raw_text"])
         self.assertEqual(len(excluded["history"]), 2)
+        self.assertFalse(excluded["can_review"])
+        self.assertTrue(excluded["source_permission_revoked"])
+        self.assertEqual(self.verify(record, decision="excluded", reason="许可已撤销", retention_until=None), excluded)
+        self.assertEqual(self.review(record, decision="excluded", reason="暂时排除").status_code, 409)
         db = self.app.state.store
+        self.assertEqual(db.one("SELECT reason FROM corpus_reviews WHERE decision='excluded'")["reason"], "许可已撤销")
         for sql in ("DELETE FROM corpus_snapshots", "DELETE FROM corpus_reviews"):
             with self.subTest(sql=sql), self.assertRaises(sqlite3.IntegrityError), db.db() as conn:
                 conn.execute(sql)
@@ -147,6 +153,40 @@ class CorpusTests(unittest.TestCase):
             self.assertIsNone(detail["raw_text"])
             self.assertIsNone(detail["duplicate"])
             self.assertEqual(self.review(record, retention_until="2099-01-01").status_code, 409)
+
+    def test_exclusion_does_not_erase_or_extend_the_prior_retention_limit(self):
+        rows = [[f"合成原话 {index}", *ROW[1:]] for index in range(2)]
+        _, records = self.import_rows(rows)
+        for record, limit in zip(records, (None, "2099-01-01")):
+            self.verify(record)
+            self.verify(record, decision="excluded", reason="暂时排除该源", retention_until=limit)
+
+        next_day = (datetime.fromisoformat(self.retain) + timedelta(days=1)).date().isoformat()
+        with patch("src.raw_store.corpus.now", return_value=next_day + "T00:00:00+00:00"):
+            for record in records:
+                with self.subTest(record=record):
+                    self.assertEqual(self.get(record)["status"], "retention_expired")
+                    self.assertEqual(self.review(record, retention_until="2099-01-01").status_code, 409)
+
+    def test_restricted_record_masks_source_cells_and_free_form_review_text(self):
+        quote_text = "合成原话可能在来源列和审核记录重复出现"
+        row = [quote_text, quote_text, *ROW[2:]]
+        batch, [record] = self.import_rows([row])
+        self.verify(record, role="background", basis=quote_text)
+        excluded = self.verify(record, decision="excluded", role="background",
+                               reason="原话中的合成摘录", retention_until=None)
+
+        self.assertIsNone(excluded["raw_text"])
+        self.assertEqual(excluded["metadata"], {})
+        self.assertIsNone(excluded["source_type"])
+        self.assertIsNone(excluded["history"][0]["reason"])
+        self.assertIsNone(excluded["history"][1]["basis"])
+        self.assertEqual([event["decision"] for event in excluded["history"]], ["excluded", "verified"])
+        self.assertEqual(excluded["trace"]["batch_id"], batch)
+        rows = self.client.get(f"{self.root}/batches/{batch}").json()["records"]
+        self.assertIsNone(rows[0]["source_type"])
+        saved = self.app.state.store.one("SELECT basis FROM corpus_reviews WHERE decision='verified'")
+        self.assertEqual(saved["basis"], quote_text)
 
     def test_restriction_applies_to_same_file_aliases_but_not_independent_sources(self):
         _, [original] = self.import_rows([ROW])
@@ -201,6 +241,132 @@ class CorpusTests(unittest.TestCase):
             self.assertIsNone(data["duplicate"])
             self.assertFalse(data["research_eligible"])
             self.assertFalse(data["outbound_allowed"])
+
+    def test_amazon_market_and_review_fields_are_required_by_source_address(self):
+        columns = BASE + ["rating", "verified", "product_model", "market"]
+        rows = [
+            ["缺少评价字段", "forum", "https://www.amazon.com/review/1", *ROW[3:], "", "yes", "", "US"],
+            ["未验证的评价", "forum", "https://www.amazon.com./review/2", *ROW[3:], "4", "no", "合成型号", "US"],
+            ["完整的美国评价", "amazon", "https://www.amazon.com/review/3", *ROW[3:], "5", "yes", "合成型号", "US"],
+        ]
+        _, records = self.import_rows(rows, columns=columns)
+        for record in records[:2]:
+            with self.subTest(record=record):
+                self.assertEqual(self.review(record).status_code, 422)
+        self.assertEqual(self.verify(records[2])["metadata"]["rating"], 5)
+
+    def test_explicitly_unconfirmed_permission_masks_pending_quote_and_blocks_verification(self):
+        permissions = ["No permission", "Permission denied by source", "未获授权，禁止保存",
+                       "License revoked", "授权已撤销"]
+        rows = [[f"合成原话 {index}", ROW[1], ROW[2], ROW[3], permission, "public"]
+                for index, permission in enumerate(permissions)]
+        _, records = self.import_rows(rows)
+        for record in records:
+            with self.subTest(record=record):
+                self.assertIsNone(self.get(record)["raw_text"])
+                self.assertEqual(self.review(record).status_code, 422)
+
+    def test_source_metadata_omits_encoded_sensitive_fields(self):
+        urls = ["https://source-a.invalid/post/contact%40example.invalid",
+                "https://source-a.invalid/post#contact%40example.invalid"]
+        rows = [[f"合成原话 {index}", ROW[1], url, *ROW[3:], f"fixture\u007fvalue{index}"]
+                for index, url in enumerate(urls)]
+        _, records = self.import_rows(rows, columns=BASE + ["external_id"])
+        self.assertEqual(len(records), len(urls))
+        for record in records:
+            with self.subTest(record=record):
+                metadata = self.get(record)["metadata"]
+                self.assertNotIn("source_url", metadata)
+                self.assertNotIn("external_id", metadata)
+                self.assertEqual(self.review(record).status_code, 422)
+
+    def test_legacy_approvals_are_rechecked_before_display_and_deduplication(self):
+        _, [valid] = self.import_rows([ROW])
+        self.verify(valid)
+        denied = [*ROW[:4], "No permission", "public"]
+        encoded = [*ROW[:2], "https://source-b.invalid/post/contact%40example.invalid", *ROW[3:]]
+        import_root = f"/api/imports/{self.study}"
+        legacy = []
+        for index, row in enumerate((denied, encoded)):
+            batch, [record] = self.import_rows([row])
+            alias_batch, [alias] = self.import_rows([row], privacy="public", filename=f"同源副本-{index}.csv")
+            file_url = f"{import_root}/uploads/{self.get(record)['trace']['file_id']}"
+            alias_url = f"{import_root}/uploads/{self.get(alias)['trace']['file_id']}"
+            mapping = self.client.get(file_url).json()["suggested_mapping"]
+            plan = {"sheet_index": 0, "mapping": mapping, "privacy": "unknown"}
+            preview = self.client.post(file_url + "/preview", json=plan)
+            preview.raise_for_status()
+            confirm = {**plan, "preview_token": preview.json()["preview_token"]}
+            legacy.append((batch, record, alias_batch, alias, file_url, alias_url, confirm))
+        with patch("src.raw_store.corpus_policy.permission_recorded", return_value=True), \
+                patch("src.raw_store.corpus_policy.safe_source_url", return_value=True):
+            for _, record, *_ in legacy:
+                self.verify(record)
+        for batch, record, alias_batch, alias, file_url, alias_url, confirm in legacy:
+            with self.subTest(record=record):
+                detail = self.get(record)
+                self.assertEqual(detail["status"], "policy_restricted")
+                self.assertEqual(detail["decision"], "verified")
+                self.assertIsNone(detail["raw_text"])
+                self.assertEqual(detail["metadata"], {})
+                self.assertIsNone(detail["duplicate"])
+                self.assertEqual(self.review(record, role="synthetic").status_code, 409)
+                records = self.client.get(f"{self.root}/batches/{batch}").json()["records"]
+                self.assertEqual(records[0]["status"], "policy_restricted")
+            with self.subTest(alias=alias):
+                self.assertEqual(self.get(alias)["status"], "source_restricted")
+            for ident in (batch, alias_batch):
+                with self.subTest(batch=ident):
+                    result = self.client.get(f"{import_root}/batches/{ident}")
+                    result.raise_for_status()
+                    row = result.json()["rows"][0]
+                    self.assertIsNone(row["raw_text"])
+                    self.assertEqual(row["originals"], [])
+                    self.assertEqual(row["fields"], {})
+            for url in (file_url, alias_url):
+                with self.subTest(file=url):
+                    self.assertEqual(self.client.get(url).status_code, 409)
+                    self.assertEqual(self.client.post(url + "/preview", json={
+                        field: confirm[field] for field in ("sheet_index", "mapping", "privacy")
+                    }).status_code, 409)
+                with self.subTest(replay=url), patch("src.dashboard.import_api.read_sheet",
+                                                       side_effect=AssertionError("unexpected source read")):
+                    receipt = self.client.post(url + "/confirm", json=confirm)
+                    self.assertEqual(receipt.status_code, 201)
+                    self.assertEqual(receipt.json()["batch_id"], batch)
+                    self.assertEqual(receipt.json()["summary"]["source_types"], {})
+        self.assertEqual(self.get(valid)["duplicate"]["record_count"], 1)
+
+    def test_legacy_approval_cannot_restore_a_withdrawn_license(self):
+        batch, [record] = self.import_rows([ROW])
+        alias_batch, [alias] = self.import_rows([ROW], privacy="public", filename="许可副本.csv")
+        authorized_row = [*ROW[:2], "https://authorized-source.invalid/post/2", *ROW[3:]]
+        _, [authorized] = self.import_rows([authorized_row])
+        self.verify(record)
+        self.verify(authorized)
+        self.verify(record, decision="excluded", reason="License revoked", retention_until=None)
+
+        # Emulate a v4 workbench that accepted another verification after withdrawal.
+        with self.app.state.store.db() as db:
+            db.execute("""INSERT INTO corpus_reviews
+                          (record_id, decision, role, reason, basis, retention_until, dedupe_group, reviewed_at)
+                          SELECT record_id, decision, role, reason, basis, retention_until, dedupe_group, reviewed_at
+                          FROM corpus_reviews WHERE record_id=? AND decision='verified'""", (record,))
+        status = self.get(record)
+        self.assertEqual(status["decision"], "verified")
+        self.assertEqual(status["status"], "policy_restricted")
+        self.assertTrue(status["source_permission_revoked"])
+        self.assertIsNone(status["raw_text"])
+        self.assertEqual(self.get(alias)["status"], "source_restricted")
+        self.assertEqual(self.get(authorized)["duplicate"]["record_count"], 1)
+        for ident in (batch, alias_batch):
+            with self.subTest(batch=ident):
+                result = self.client.get(f"/api/imports/{self.study}/batches/{ident}")
+                result.raise_for_status()
+                self.assertIsNone(result.json()["rows"][0]["raw_text"])
+        self.assertEqual(self.client.get(
+            f"/api/imports/{self.study}/uploads/{status['trace']['file_id']}"
+        ).status_code, 409)
 
     def test_review_requires_same_origin_and_does_not_echo_invalid_body(self):
         _, [record] = self.import_rows([ROW])

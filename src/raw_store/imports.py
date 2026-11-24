@@ -17,15 +17,31 @@ BATCH_SELECT = """SELECT b.*, f.filename, f.kind, f.sha256, length(f.source_byte
     JOIN study_scopes s ON s.study_id=b.study_id AND s.scope_id=b.scope_id
     JOIN study_projects p ON p.study_id=b.study_id"""
 MAX_DRAFTS = 8
-RESTRICTED_SOURCE_ROWS = """
+
+
+def source_withdrawal(record_id):
+    return f"""EXISTS (
+        SELECT 1 FROM corpus_reviews withdrawal WHERE withdrawal.record_id={record_id}
+        AND withdrawal.decision='excluded' AND source_permission_revoked(withdrawal.reason)
+    )"""
+
+
+RESTRICTED_SOURCE_ROWS = f"""
     FROM import_files restricted_file
     JOIN import_batches restricted_batch ON restricted_batch.file_id=restricted_file.file_id
     JOIN import_rows restricted_row ON restricted_row.batch_id=restricted_batch.batch_id
+    JOIN study_scopes restricted_scope ON restricted_scope.study_id=restricted_batch.study_id
+        AND restricted_scope.scope_id=restricted_batch.scope_id
     JOIN corpus_reviews restricted_review ON restricted_review.review_id=(
         SELECT MAX(h.review_id) FROM corpus_reviews h WHERE h.record_id=restricted_row.record_id
     )
     WHERE (restricted_review.decision='excluded' OR restricted_review.retention_until<:today
-           OR restricted_batch.revoked_at IS NOT NULL)
+           OR restricted_batch.revoked_at IS NOT NULL
+           OR {source_withdrawal("restricted_row.record_id")}
+           OR CASE WHEN restricted_review.decision='verified' THEN NOT valid_snapshot_source(
+               restricted_row.privacy, restricted_row.raw_text, restricted_review.role,
+               restricted_row.fields_json, restricted_scope.content_json
+           ) ELSE 0 END)
 """
 
 
@@ -34,9 +50,12 @@ def decoded(row):
             for key, value in dict(row).items()}
 
 
-def batch_record(row):
+def batch_record(db, row):
     batch = decoded(row)
     batch.pop("signature")
+    if restricted_source_lines(db, batch, batch["sheet_index"]):
+        # Source type labels come from user-mapped cells and may contain original text.
+        batch["summary"]["source_types"] = {}
     return {**batch, "status": "revoked" if batch["revoked_at"] else "imported", "research_eligible": False}
 
 
@@ -116,14 +135,30 @@ class ImportStore:
     def get_file(self, study_id, file_id, sheet_index):
         with self.store.db() as db:
             db.execute("BEGIN")
-            row = db.execute(f"SELECT {FILE_COLUMNS}, source_bytes FROM import_files WHERE study_id=? AND file_id=?",
+            row = db.execute(f"SELECT {FILE_COLUMNS} FROM import_files WHERE study_id=? AND file_id=?",
                              (study_id, file_id)).fetchone()
             if row is None:
                 raise KeyError(file_id)
             result = decoded(row)
             target = self.target(db, study_id, result["scope_id"])
             check_sheet_access(db, result, sheet_index)
+            result["source_bytes"] = db.execute("SELECT source_bytes FROM import_files WHERE file_id=?",
+                                                (file_id,)).fetchone()["source_bytes"]
             return result, target
+
+    def confirmation_receipt(self, study_id, file_id, sheet_index, mapping, privacy, signature):
+        with self.store.db() as db:
+            db.execute("BEGIN")
+            row = db.execute(BATCH_SELECT + """
+                JOIN import_files requested ON requested.study_id=b.study_id
+                    AND requested.scope_id=b.scope_id AND requested.sha256=f.sha256
+                WHERE requested.study_id=? AND requested.file_id=? AND b.sheet_index=?
+                    AND b.mapping_json=? AND b.privacy=? AND b.signature=?""",
+                (study_id, file_id, sheet_index, dump(mapping), privacy, signature)).fetchone()
+            if row is None:
+                return None
+            self.target(db, study_id, row["scope_id"])
+            return batch_record(db, row)
 
     def discard(self, study_id, file_id):
         with self.write() as db:
@@ -138,20 +173,20 @@ class ImportStore:
         row = db.execute(BATCH_SELECT + " WHERE b.study_id=? AND b.batch_id=?", (study_id, batch_id)).fetchone()
         if row is None:
             raise KeyError(batch_id)
-        return batch_record(row)
+        return batch_record(db, row)
 
     def commit(self, file, sheet, index, mapping, privacy, signature, rows, summary):
         study_id, scope_id, file_id = (file[field] for field in ("study_id", "scope_id", "file_id"))
         with self.write() as db:
             self.target(db, study_id, scope_id)
+            if not db.execute("SELECT 1 FROM import_files WHERE study_id=? AND file_id=?",
+                              (study_id, file_id)).fetchone():
+                raise KeyError(file_id)
             previous = db.execute("""SELECT batch_id FROM import_batches
                                      WHERE study_id=? AND scope_id=? AND signature=?""",
                                   (study_id, scope_id, signature)).fetchone()
             if previous:
                 return self.saved_batch(db, study_id, previous["batch_id"])
-            if not db.execute("SELECT 1 FROM import_files WHERE study_id=? AND file_id=?",
-                              (study_id, file_id)).fetchone():
-                raise KeyError(file_id)
             check_sheet_access(db, file, index)
             ident = str(uuid4())
             db.execute("""INSERT INTO import_batches
@@ -171,6 +206,7 @@ class ImportStore:
 
     def history(self, study_id, offset):
         with self.store.db() as db:
+            db.execute("BEGIN")
             StudyStore.project_row(db, study_id)
             rows = db.execute(BATCH_SELECT + """ WHERE b.study_id=?
                               ORDER BY b.created_at DESC, b.rowid DESC LIMIT 21 OFFSET ?""", (study_id, offset)).fetchall()
@@ -180,7 +216,7 @@ class ImportStore:
                                    WHERE f.study_id=? AND NOT EXISTS
                                       (SELECT 1 FROM import_batches b WHERE b.file_id=f.file_id)
                                    ORDER BY f.uploaded_at DESC""", (study_id,))
-            return {"batches": [batch_record(row) for row in rows[:20]],
+            return {"batches": [batch_record(db, row) for row in rows[:20]],
                     "more": len(rows) > 20, "drafts": [decoded(row) for row in drafts]}
 
     def get_batch(self, study_id, batch_id, status, offset):

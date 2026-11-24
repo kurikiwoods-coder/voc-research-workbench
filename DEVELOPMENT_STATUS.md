@@ -2,7 +2,11 @@
 
 核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，远端基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## 本轮 M05 原始语料库、去重及溯源
+## 本轮 M05-R 独立工程复审
+
+复审基线为 `f279c7e0075b07e581d528709ffd5c9824e1a811`。排除和到期继续受原留存限制，批次确认重试复用原回执，读取入口应用脱敏及来源核验规则。冻结状态待本轮修复提交的远端 CI 核对。[合成回归证据](docs/evidence/m05/review.md) · [M06 数据契约](HANDOVER.md#m05--m06-数据契约)
+
+## 上轮 M05 原始语料库、去重及溯源
 
 本机工作台已接入原始语料审核。记录绑定冻结范围与导入文件行，保存原话快照摘要、角色、许可核验依据、保留期限和历史。跨批次按项目聚合重复原话，撤销、排除及到期会重算可用组成员。原话审核走回环 FastAPI 和 SQLite v4，正式统计和外发资格均关闭。[本机操作与接入](docs/imports.md#m05-原始语料审核) · [工程测试记录](docs/evidence/m05/README.md)
 

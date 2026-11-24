@@ -6,6 +6,7 @@ const statuses = {
   revoked: ["已撤销", "FAIL"],
   retention_expired: ["保留期限已过", "BLOCKED"],
   source_restricted: ["同源原文受限", "BLOCKED"],
+  policy_restricted: ["来源资格受限", "BLOCKED"],
 };
 const privacyLabels = { public: "公开", private: "非公开", internal: "内部 / CX", unknown: "未确认" };
 const roles = {

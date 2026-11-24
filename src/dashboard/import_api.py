@@ -187,8 +187,15 @@ def register_imports(app):
 
     @router.post("/{study_id}/uploads/{file_id}/confirm", status_code=201)
     def confirm(study_id: UUID, file_id: UUID, plan=Depends(form(Confirm)), db=Depends(store)):
+        study, upload_id = str(study_id), str(file_id)
+        with errors():
+            receipt = db.confirmation_receipt(
+                study, upload_id, plan.sheet_index, plan.mapping, plan.privacy, plan.preview_token,
+            )
+            if receipt is not None:
+                return receipt
         with errors(), parse_slot():
-            file, scope = db.get_file(str(study_id), str(file_id), plan.sheet_index)
+            file, scope = db.get_file(study, upload_id, plan.sheet_index)
             signature = preview_signature(file, plan)
             if plan.preview_token != signature:
                 raise Conflict("导入配置已变化，请重新运行质量检查。")

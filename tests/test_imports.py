@@ -5,6 +5,7 @@ from io import BytesIO, StringIO
 from pathlib import Path
 import sqlite3
 from tempfile import TemporaryDirectory
+from threading import Barrier
 import unittest
 import warnings
 from unittest.mock import patch
@@ -315,6 +316,8 @@ class ImportTest(unittest.TestCase):
                 data = make_csv(rows=[restricted, VALID])
                 url, _, plan = self.prepare(data, f"原文件-{restriction}.csv")
                 preview = self.check(url, plan)
+                new_plan = {**plan, "privacy": "private"}
+                new_preview = self.check(url, new_plan)
                 receipt = self.confirm(url, plan)
                 original_path = self.root + "/batches/" + receipt["batch_id"]
                 alias_url, _, alias_plan = self.prepare(data, f"同内容-{restriction}.csv")
@@ -349,8 +352,51 @@ class ImportTest(unittest.TestCase):
                     for path in (url, alias_url):
                         self.assertEqual(self.client.get(path).status_code, 409)
                         self.assertEqual(self.client.post(path + "/preview", json=plan).status_code, 409)
-                    confirm = self.client.post(url + "/confirm", json={**plan, "preview_token": preview["preview_token"]})
-                    self.assertEqual(confirm.status_code, 409)
+                    self.assertEqual(self.client.post(url + "/confirm", json={
+                        **new_plan, "preview_token": new_preview["preview_token"],
+                    }).status_code, 409)
+                    self.assertEqual(self.client.post(url + "/confirm", json={
+                        **new_plan, "preview_token": preview["preview_token"],
+                    }).status_code, 409)
+                    with patch("src.dashboard.import_api.read_sheet", side_effect=AssertionError("unexpected file read")):
+                        for path in (url, alias_url):
+                            replay = self.client.post(path + "/confirm", json={
+                                **plan, "preview_token": preview["preview_token"],
+                            })
+                            self.assertEqual(replay.status_code, 201, replay.text)
+                            self.assertEqual(replay.json()["batch_id"], receipt["batch_id"])
+                            self.assertEqual(replay.json()["status"], "revoked" if restriction == "revoked" else "imported")
+                            self.assertNotIn(restricted[0], replay.text)
+                    self.assertEqual(self.db.one("SELECT COUNT(*) n FROM import_batches WHERE file_id IN (?, ?)",
+                                                 (receipt["file_id"], alias["file_id"]))["n"], 2)
+
+    def test_restricted_rows_cannot_appear_in_import_source_composition(self):
+        protected = "这是只用于测试摘要遮蔽的合成原话。"
+        row = [protected, *VALID[1:], protected]
+        data = make_csv(headers=[*BASE, "extension"], rows=[row])
+        url, _, plan = self.prepare(data)
+        receipt = self.confirm(url, plan)
+        path = self.root + "/batches/" + receipt["batch_id"]
+        alias_url, _, alias_plan = self.prepare(data, "副本.csv")
+        alias_plan["mapping"]["source_type"] = len(BASE)
+        checked = self.check(alias_url, alias_plan)
+        alias = self.confirm(alias_url, alias_plan)
+        alias_path = self.root + "/batches/" + alias["batch_id"]
+        self.assertIn(protected, alias["summary"]["source_types"])
+        record_id = self.client.get(path).json()["rows"][0]["record_id"]
+        self.client.post(f"/api/corpus/{self.study}/records/{record_id}/review", json={
+            "decision": "excluded", "role": "user_quote", "reason": "合成语料遮蔽测试",
+            "basis": "合成数据保留限制", "retention_until": "2090-01-01",
+        }).raise_for_status()
+
+        for endpoint in (self.root + "/batches", alias_path):
+            result = self.client.get(endpoint)
+            result.raise_for_status()
+            self.assertNotIn(protected, result.text)
+        replay = self.client.post(alias_url + "/confirm", json={**alias_plan, "preview_token": checked["preview_token"]})
+        self.assertEqual(replay.status_code, 201, replay.text)
+        self.assertEqual(replay.json()["batch_id"], alias["batch_id"])
+        self.assertNotIn(protected, replay.text)
 
     def test_error_report_download_has_no_quotes_and_prevents_spreadsheet_formulas(self):
         raw = "机密的测试句"
@@ -379,6 +425,45 @@ class ImportTest(unittest.TestCase):
         retry_url, _, retry = self.prepare(name="重命名再试.csv")
         self.assertEqual(self.confirm(retry_url, retry)["batch_id"], results[0].json()["batch_id"])
         self.assertEqual(self.db.one("SELECT COUNT(*) n FROM import_rows")["n"], 1)
+
+    def test_reviewed_batch_revocation_survives_concurrent_confirmation_retry(self):
+        row = [*VALID]
+        row[4] = "CC BY-SA 4.0"
+        url, _, plan = self.prepare(make_csv(rows=[row]))
+        preview = self.check(url, plan)
+        form = {**plan, "preview_token": preview["preview_token"]}
+        receipt = self.confirm(url, plan)
+        path = self.root + "/batches/" + receipt["batch_id"]
+        record_id = self.client.get(path).json()["rows"][0]["record_id"]
+        self.client.post(f"/api/corpus/{self.study}/records/{record_id}/review", json={
+            "decision": "verified", "role": "user_quote", "reason": "并发撤销测试",
+            "basis": "核对合成原话、合成许可与范围", "retention_until": "2090-01-01",
+        }).raise_for_status()
+
+        start = Barrier(2, timeout=5)
+
+        def post(endpoint, payload=None):
+            start.wait()
+            response = self.client.post(endpoint, json=payload)
+            response.raise_for_status()
+            return response.json()
+
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            retry = pool.submit(post, url + "/confirm", form)
+            revocation = pool.submit(post, path + "/revoke")
+            self.assertEqual(retry.result()["batch_id"], receipt["batch_id"])
+            revoked = revocation.result()
+
+        current = self.client.post(url + "/confirm", json=form)
+        self.assertEqual(current.status_code, 201, current.text)
+        self.assertEqual(current.json(), revoked)
+        self.assertEqual(revoked["status"], "revoked")
+        self.assertEqual(revoked["summary"]["total"], receipt["summary"]["total"])
+        self.assertEqual(revoked["summary"]["staged"], receipt["summary"]["staged"])
+        history = self.client.get(self.root + "/batches").json()
+        self.assertEqual(history, {"batches": [revoked], "more": False, "drafts": []})
+        self.assertIsNone(self.client.get(path).json()["rows"][0]["raw_text"])
+        self.assertEqual(self.db.rows("SELECT * FROM import_candidates"), [])
 
     def test_failed_insert_rolls_back_entire_batch_and_can_retry(self):
         url, _, plan = self.prepare(make_csv(rows=[VALID, ["第二条", *VALID[1:]]]))

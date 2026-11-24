@@ -7,6 +7,8 @@ from pathlib import Path
 import sqlite3
 import uuid
 
+from src.raw_store.corpus_policy import source_permission_revoked, valid_snapshot_source
+
 
 def now():
     return datetime.now(timezone.utc).isoformat(timespec="milliseconds")
@@ -55,6 +57,9 @@ class Store:
         db = sqlite3.connect(self.path, timeout=12)
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
+        if not (self.fixture or self.diagnostic):
+            db.create_function("valid_snapshot_source", 5, valid_snapshot_source, deterministic=True)
+            db.create_function("source_permission_revoked", 1, source_permission_revoked, deterministic=True)
         return db
 
     @contextmanager

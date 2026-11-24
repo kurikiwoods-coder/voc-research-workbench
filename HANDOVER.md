@@ -10,6 +10,19 @@ M03 和 M04 已完成独立工程验收。M04 代码复测为 `336e68c`，本机
 
 仓库保留 PDT v1.3.1 Word 正文和专案 v2.2 的 Markdown 摘要。27 页专案 PDF 的 SHA-256 登记在需求矩阵，复核原件时从其授权来源取得。[PDT 正文](docs/pdt/PDT-v1.3.1.docx) · [专案摘要](docs/proposal/voc-workbench-proposal-2026-11-23.md) · [原件指纹](docs/requirements-matrix.md)
 
+## M05 → M06 数据契约
+
+| 数据 | 交接约束 |
+|---|---|
+| 原始语料 | `record_id` 稳定标识 M05 原始导入行。通过 `batch_id`、`file_id`、文件 SHA-256、工作表和物理行号回查。使用 `raw_sha256` 核对核验快照，派生文本与分类结果另存。 |
+| 研究范围 | 以 `study_id` 和冻结的 `scope_id` 校验归属，记录 `scope_version` 和冻结时间窗。范围中的品类仅供抽样和范围检查。 |
+| 来源与许可 | 使用采集时间和方法、提取规则、可核对 URL、发布时间及本机审核依据。读取当前审核、隐私、许可、有效期限及批次撤销状态。许可到期、撤销或证据不足时暂停后续使用。正式许可须有逐源审批记录。 |
+| 重复组 | `duplicate.group_id` 为研究项目内的有效原话分组。当前主记录和成员数随排除、到期及批次撤销重算。历史引用继续指向原始 `record_id`。 |
+| 后续处理 | 检查 M05 当前生效的 `status`，并同时校验来源、角色、隐私和冻结范围。`verified` 记录通过本机审核，其正式研究和外发字段仍为 `false`。待审、排除、撤销、到期、缺证据及许可未确认的记录留在审核或审计流程。背景证据按角色独立使用。内部 CX 仅限授权本机的处理或人工编码。合成数据进入独立工程夹具。 |
+| 语义片段与证据 | PDT §6.6、§6.9、§9.3 的 `mention_id` 标识去重后的语义片段。后续证据记录用独立 `evidence_id` 引用 M05 原话及来源，供片段与品类关系使用。分段规则、片段标识生成、证据持久化和版本设计留待 M06 的授权工作。 |
+
+M06 复用原话与来源记录，使用证据确定产品品类关系。意图保有一个已确认的有效主任务大类。正式分母只纳入 `published_classified` 的 distinct `mention_id`，按使用的研究范围及注册表版本复算。读取历史片段或证据时重新核对当前上游资格，审计状态和引用可继续追溯。处理路径与正式门槛详见需求矩阵。[PDT 正文](docs/pdt/PDT-v1.3.1.docx) · [原始语料接口](docs/imports.md#m05-原始语料审核) · [需求验收矩阵](docs/requirements-matrix.md)
+
 ## 复建开发环境
 
 在每台电脑或云端工作区使用 Git、Python 3.12 和 Node 24。新设备克隆现有仓库，已有工作区先执行 `git status --short --branch`、`git fetch origin`，核对与 [PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) 最新 head 的差异。分支与工作区核对后，用 `git merge --ff-only origin/codex/p0-0-connectivity` 更新同名开发分支。出现本地改动或分叉时保留现场并查看两侧提交。新设备可用以下命令。

@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M05 本机原始语料治理已完成工程交付。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 BLOCKED。后续模块等待开发指令。[开发状态](DEVELOPMENT_STATUS.md)
+M05 已交付本机原始语料治理，独立复审的工程冻结等待对应远端 CI。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 BLOCKED。后续模块等待开发指令。[开发状态](DEVELOPMENT_STATUS.md)
 
 ## M01 基础工程与连通性
 
@@ -92,6 +92,7 @@ M05 本机原始语料治理已完成工程交付。M04 已通过独立工程验
 | 验收标准 | 3 批来源、≥100 条真实片段，30/30 可回源。许可、采样窗口、角色、重复与剔除原因可查。 |
 | 最近相关提交 | [M05 实现 `b02a2b6`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/b02a2b647bff67f7e091b51fcdfc46cc719077e8)，已推送到 `codex/p0-0-connectivity`。 |
 | 测试结果与证据 | [本机验收记录](docs/evidence/m05/README.md) · [M05 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45352022477) · [历史正式连通性归档](docs/evidence/p0-0/tavily-live/README.md) |
+| M05-R 独立复审 | 收据幂等、撤销、留存、来源许可和遮蔽已补回归。工程冻结等待对应远端 CI。[复审证据](docs/evidence/m05/review.md) |
 | 剩余问题 | 逐源许可与实际清理审计，SQLite 和备份的受控清理，接入线上批次与正式证据关系。 |
 
 ## M06 三层用户需求数据关系
@@ -100,7 +101,7 @@ M05 本机原始语料治理已完成工程交付。M04 已通过独立工程验
 |---|---|
 | PDT 与矩阵编号 | §6、§6.6、§6.9、§9.3；C0-6、CAT-1～CAT-3、CAT-5～CAT-10 |
 | 模块职责 | 维护 Product Category、Task Category、Intent 以及证据驱动的双向关系。 |
-| 前置依赖 | M03 范围和 M05 合格原话。与 M07 共享注册表约束，与 M11 协作候选事务。 |
+| 前置依赖 | M03 冻结范围和 M05 原话及来源契约。使用独立合成夹具预开发时等待授权。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
 | 工程开发 | 已有 JSON Schema、内存 SQLite 三层召回演练。正式关系服务未实现。 |
 | 工程测试 | C0-6 冒烟通过，正式关系 API 未测试。 |
 | 正式业务验收 | CAT 系列待验。 |
