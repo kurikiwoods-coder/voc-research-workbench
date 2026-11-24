@@ -2,7 +2,11 @@
 
 核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，远端基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## 本轮 M05-R2 许可与数据资格复修
+## 本轮 Pre-M06 独立工程审计
+
+基线 `04049b375f8b0e281c5f09f51d2fb07b5f1c3463`。修复 10 项缺陷并新增 16 项独立测试。实现 `d64fb4f29094be9a3fc9b91e2910830ea0c1c8c2` 的 Ubuntu、Windows Server 2022 各通过 Python 140/140、Node 2/2、三次冷启动及四份档案，Chromium 8/8。Windows 11 实机为 NOT_TESTED。**PRE_M06_GATE_BLOCKED**，G-1 仍为 BLOCKED。 [报告](docs/audits/pre-m06-audit.md) · [缺陷台账](docs/audits/bug-register.md) · [实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45373503587)
+
+## 上轮 M05-R2 许可与数据资格复修
 
 M05-R2 为 **ENGINEERING_PASS**。BUG-01、BUG-02 及旧库同文件行副本互相锁住复核的问题均已关闭。SQLite v5 保留历史并追加不可变许可事件。缺少结构化授权的旧核验记录可逐条复核，原文经当前资格校验后显示。
 

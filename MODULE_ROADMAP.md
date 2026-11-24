@@ -10,6 +10,8 @@
 
 M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06 等待授权。[开发状态](DEVELOPMENT_STATUS.md)
 
+M01–M05 Pre-M06 独立审计完成已可运行部分。实现 CI 通过，确认的 P0/P1 阻塞性代码缺陷均关闭。**PRE_M06_GATE_BLOCKED**，Windows 11 实机复测为 NOT_TESTED。M06 等项目负责人授权，正式 G-1 为 BLOCKED。[审计及证据](docs/audits/pre-m06-audit.md)
+
 ## M01 基础工程与连通性
 
 | 项目 | 记录 |

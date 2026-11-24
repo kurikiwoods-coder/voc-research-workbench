@@ -1,0 +1,52 @@
+# Synthetic audit baseline (sanitized Actions excerpts)
+
+Commit abe5c781ff60609e86ff2ff50b0e9612de29bb5d
+Ubuntu 45371258390
+ERROR: test_csv_xlsx_scope_history_project_isolation_and_m06_contract (test_pre_m06_audit.CrossModuleAudit.test_csv_xlsx_scope_history_project_isolation_and_m06_contract)
+KeyError: 'source_permission_revoked'
+ERROR: test_same_file_renamed_reuses_confirmed_batch_without_spending_draft_slots (test_pre_m06_audit.CrossModuleAudit.test_same_file_renamed_reuses_confirmed_batch_without_spending_draft_slots)
+httpx.HTTPStatusError: Client error '409 Conflict' for url '<loopback-fixture>
+ERROR: test_truncated_provider_response_enters_offline_failure_handling (test_pre_m06_audit.TransportAudit.test_truncated_provider_response_enters_offline_failure_handling)
+http.client.IncompleteRead: IncompleteRead(7 bytes read, 12 more expected)
+FAIL: test_fragment_of_old_evidence_cannot_become_a_new_grant (test_pre_m06_audit.CrossModuleAudit.test_fragment_of_old_evidence_cannot_become_a_new_grant)
+AssertionError: 200 != 422
+FAIL: test_jev_approval_cannot_follow_type_safe_key_rotation (test_pre_m06_audit.CrossModuleAudit.test_jev_approval_cannot_follow_type_safe_key_rotation)
+AssertionError: 'NOT_TESTED' != 'REVIEW_REQUIRED'
+- NOT_TESTED
++ REVIEW_REQUIRED
+FAIL: test_r2_known_cases_and_independent_license_variants (test_pre_m06_audit.CrossModuleAudit.test_r2_known_cases_and_independent_license_variants) (variant=1)
+AssertionError: 200 != 422
+FAIL: test_r2_known_cases_and_independent_license_variants (test_pre_m06_audit.CrossModuleAudit.test_r2_known_cases_and_independent_license_variants) (variant=2)
+AssertionError: 200 != 422
+FAIL: test_r2_known_cases_and_independent_license_variants (test_pre_m06_audit.CrossModuleAudit.test_r2_known_cases_and_independent_license_variants) (variant=3)
+AssertionError: 200 != 422
+FAIL: test_r2_known_cases_and_independent_license_variants (test_pre_m06_audit.CrossModuleAudit.test_r2_known_cases_and_independent_license_variants) (variant=4)
+AssertionError: 200 != 422
+FAIL: test_r2_known_cases_and_independent_license_variants (test_pre_m06_audit.CrossModuleAudit.test_r2_known_cases_and_independent_license_variants) (variant=5)
+AssertionError: 200 != 422
+FAIL: test_r2_known_cases_and_independent_license_variants (test_pre_m06_audit.CrossModuleAudit.test_r2_known_cases_and_independent_license_variants) (variant=6)
+AssertionError: 200 != 422
+FAIL: test_runtime_and_run_evidence_require_a_loopback_peer (test_pre_m06_audit.CrossModuleAudit.test_runtime_and_run_evidence_require_a_loopback_peer) (path='/api/workspace')
+AssertionError: 200 != 403
+FAIL: test_runtime_and_run_evidence_require_a_loopback_peer (test_pre_m06_audit.CrossModuleAudit.test_runtime_and_run_evidence_require_a_loopback_peer) (path='/api/runs/<fixture-id>/evidence')
+AssertionError: 200 != 403
+FAIL: test_runtime_and_run_evidence_require_a_loopback_peer (test_pre_m06_audit.CrossModuleAudit.test_runtime_and_run_evidence_require_a_loopback_peer)
+AssertionError: 200 != 403
+FAIL: test_source_fragment_copies_remain_restricted_after_restart_and_reimport (test_pre_m06_audit.CrossModuleAudit.test_source_fragment_copies_remain_restricted_after_restart_and_reimport)
+AssertionError: 200 != 409
+FAIL: test_staging_duplicates_respect_privacy_and_corpus_role (test_pre_m06_audit.CrossModuleAudit.test_staging_duplicates_respect_privacy_and_corpus_role)
+AssertionError: Lists differ: ['pending_review', 'duplicate', 'duplicate', 'duplicate'] != ['pending_review', 'pending_review', 'staged', 'duplicate']
+- ['pending_review', 'duplicate', 'duplicate', 'duplicate']
++ ['pending_review', 'pending_review', 'staged', 'duplicate']
+Ran 136 tests in 14.236s
+FAILED (failures=13, errors=3)
+
+Commit df2306584b4d13ea92b70b5dab57177032bcd47b
+Ubuntu 45373165462
+test_corrupt_workspace_startup_fails_without_overwriting_database (test_pre_m06_audit.CrossModuleAudit.test_corrupt_workspace_startup_fails_without_overwriting_database) ... ok
+FAIL: test_preexisting_approval_with_now_recognized_denial_is_no_longer_eligible (test_pre_m06_audit.CrossModuleAudit.test_preexisting_approval_with_now_recognized_denial_is_no_longer_eligible)
+AssertionError: 200 != 409
+FAIL: test_preexisting_unclassified_withdrawal_restricts_the_source_after_upgrade (test_pre_m06_audit.CrossModuleAudit.test_preexisting_unclassified_withdrawal_restricts_the_source_after_upgrade)
+AssertionError: 200 != 409
+Ran 140 tests in 9.162s
+FAILED (failures=2)

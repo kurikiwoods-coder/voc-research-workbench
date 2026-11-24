@@ -1,5 +1,9 @@
 # 开发交接
 
+## Pre-M06 工程审计
+
+开发分支按 `d64fb4f29094be9a3fc9b91e2910830ea0c1c8c2` 的修复实现和对应 CI 核对。M01–M05 跨模块场景 A–H 及 M05-R2-V 已通过，10 个确认缺陷已关闭。**PRE_M06_GATE_BLOCKED**，本轮 Windows 11 实机为 NOT_TESTED。M06 等实际验证及授权。G-1 继续 BLOCKED。 [审计报告](docs/audits/pre-m06-audit.md) · [实际日志](docs/evidence/pre-m06/README.md)
+
 ## 接管基线
 
 2026-11-24 接管时，开发分支为 `codex/p0-0-connectivity`，远端提交为 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。`main` 当时为 `f849242c5c37a2dc6a03a30215dd335424738c61`。开发成果汇集在指向 `main` 的草稿 PR #1，接管提交的 Ubuntu、Windows Server 2022 和 Chromium 工程检查均通过。[接管提交](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/bca93639043e176f4159b9bf9fb98b4b2e2b32d8) · [PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管提交 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949)
@@ -22,7 +26,7 @@ M05-R2 许可与数据资格复修为 **ENGINEERING_PASS**。两项缺陷和旧�
 | 研究范围 | 以 `study_id` 和冻结的 `scope_id` 校验归属，记录 `scope_version` 和冻结时间窗。范围中的品类仅供抽样和范围检查。 |
 | 来源与许可 | 使用采集时间和方法、提取规则、可核对 URL、发布时间及本机审核依据。统一资格服务在每次读取时核对当前结构化许可、最近审核、隐私、有效期限、范围及撤销。许可到期、撤销或证据不足时暂停使用。同项目同来源的副本遵守当前限制，历史撤销保留。正式许可须有逐源审批记录。 |
 | 重复组 | `duplicate.group_id` 为研究项目内的有效原话分组。当前主记录和成员数随排除、到期、来源或批次撤销及重新核验而重算。历史引用继续指向原始 `record_id`。 |
-| 后续处理 | 通过 `CorpusStore.qualified_record(study_id, record_id)` 或 `GET /api/corpus/{study_id}/records/{record_id}/eligible` 读取本机工程合格公开原话，校验返回的冻结范围和 `engineering_eligible`。禁止直接用历史 `verified` 放行，禁止通过 `import_rows`、暂存、历史或附件绕过资格。待审、受限与不合格原话只进入授权审计或清理流程。内部 CX 限授权本机，背景证据按角色使用，合成测试使用独立夹具。 |
+| 后续处理 | 通过 `CorpusStore.qualified_record(study_id, record_id)` 或 `GET /api/corpus/{study_id}/records/{record_id}/eligible` 读取本机工程合格公开原话，校验返回的冻结范围、`license_status`、`source_permission_revoked` 和 `engineering_eligible`。禁止直接用历史 `verified` 放行，禁止通过 `import_rows`、暂存、历史或附件绕过资格。待审、受限与不合格原话只进入授权审计或清理流程。内部 CX 限授权本机，背景证据按角色使用，合成测试使用独立夹具。 |
 | 语义片段与证据 | PDT §6.6、§6.9、§9.3 的 `mention_id` 标识去重后的语义片段。后续证据记录用独立 `evidence_id` 引用 M05 原话及来源，供片段与品类关系使用。分段规则、片段标识生成、证据持久化和版本设计留待 M06 的授权工作。 |
 
 M06 复用原话与来源记录，使用证据确定产品品类关系。意图保有一个已确认的有效主任务大类。正式分母只纳入 `published_classified` 的 distinct `mention_id`，按使用的研究范围及注册表版本复算。读取历史片段或证据时重新核对当前上游资格，审计状态和引用可继续追溯。本机工程资格、正式统计资格和外发资格分别判定。当前服务始终返回 `research_eligible=false`、`outbound_allowed=false`。处理路径与正式门槛详见需求矩阵。[PDT 正文](docs/pdt/PDT-v1.3.1.docx) · [原始语料接口](docs/imports.md#m05-原始语料审核) · [需求验收矩阵](docs/requirements-matrix.md)

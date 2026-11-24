@@ -159,3 +159,7 @@ CSV / XLSX 暂存绑定冻结项目范围，记录原文、文件行、工作表
 | CAT-6、CAT-7、§6.6、§9.3 | 已记录原始行、冻结范围、来源证据和后续稳定标识的交接约束。下游读取经过统一的当前资格服务，导入暂存仅供状态和定位。 | 按后续模块验收证据支持的三层关系、统计与正式发布。 |
 
 M05-R2 工程状态为 **ENGINEERING_PASS**。许可、撤销及旧库副本复核通过最终实现的 Ubuntu、Windows Server 2022 与 Chromium 检查。正式验收依上表证据核定，G-1 保持 **BLOCKED**，C0-1、C0-2、C0-4 和供应商审查沿用原标准。[最终实现 `62a7c1c`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/62a7c1c132b72a8e07679f1713e6834aa7893c91) · [实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45367761470) · [修复前后证据](evidence/m05/permissions-review.md) · [M05 → M06 数据契约](../HANDOVER.md#m05--m06-数据契约)
+
+## Pre-M06 独立工程审计
+
+M01–M05 的接口隔离、生命周期回滚、CSV/XLSX、许可与撤销迁移、冻结范围及当前资格契约均有合成回归。**PRE_M06_GATE_BLOCKED**，Windows 11 真机为 NOT_TESTED。工程 CI 与 G-1 的正式连通性、G0 和 G1/G2 的业务验收分别记录。G-1 保持 BLOCKED，正式条款照原标准执行。 [审计范围](audits/pre-m06-audit.md) · [Bug 台账](audits/bug-register.md) · [试验记录](evidence/pre-m06/README.md)
