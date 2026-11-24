@@ -28,6 +28,8 @@ const labels = {
 };
 const modes = {
   live_http: "真实 HTTP",
+  archived_live_http: "归档真实 HTTP",
+  archive_recovery: "归档恢复",
   configuration: "配置核验",
   local_sqlite: "SQLite 回读",
   contract_check: "契约校验",
@@ -41,6 +43,7 @@ const sources = {
   brave: "Brave 搜索",
   forum_search: "论坛公开检索",
   forum_post: "公开原话快照",
+  source_archive_recovery: "同批来源恢复",
   source_contract: "发现与原话分项核验",
   jev_admission: "Jev 调用条件",
   jev_shard: "Jev 分片响应",

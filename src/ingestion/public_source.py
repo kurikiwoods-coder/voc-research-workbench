@@ -62,6 +62,73 @@ def published_at(value):
     return None
 
 
+def fetch_forum_post(ident, engine, *, secrets=(), diagnostic=False, transport=network):
+    """Fetch a single allowlisted forum record and apply the normal licensing checks."""
+    params = {"site": SITE, "filter": "withbody"}
+    reply = outbound("stackexchange", labels=PUBLIC, path=ident, query=params, transport=transport)
+    obj = reply.body if isinstance(reply.body, dict) else {}
+    items = obj.get("items")
+    item = (
+        items[0]
+        if reply.status == 200 and isinstance(items, list) and items and isinstance(items[0], dict)
+        else {}
+    )
+    license_name = item.get("content_license")
+    quote = first_sentence(item.get("body", "")) if isinstance(item.get("body"), str) else ""
+    original = item.get("link")
+    owner = item.get("owner")
+    display_name = owner.get("display_name") if isinstance(owner, dict) else None
+    author = unescape(display_name).strip() if isinstance(display_name, str) else ""
+    date = published_at(item.get("creation_date"))
+    source_matches = post_id(original) == ident and str(item.get("question_id")) == ident
+    permitted = source_matches and isinstance(license_name, str) and license_name in LICENSES
+    verified = (
+        permitted
+        and bool(quote and author)
+        and date is not None
+        and redact(quote, secrets) == quote
+    )
+    citation = {
+        "search": engine,
+        "post_id": ident,
+        "url": original,
+        "text": quote,
+        "author": author,
+        "license": license_name,
+        "license_url": LICENSES.get(license_name) if verified else None,
+        "method": "Stack Exchange API /questions/{id}",
+        "published_at": date,
+        "last_activity_epoch": item.get("last_activity_date"),
+        "verified": verified,
+        "role": "public_connectivity_sample",
+        "research_denominator": 0,
+    }
+    citation.update(
+        response_sha256=sha256(dump(obj).encode()).hexdigest(),
+        source_policy="SE-public-API-CC-BY-SA-v1",
+        terms_url="https://stackoverflow.com/legal/api-terms-of-use",
+        permitted_fields=["source URL", "author attribution", "licensed excerpt", "timestamps"],
+        retention="local connectivity evidence; remove the local batch database at end of study",
+    )
+    request = {
+        "endpoint": ENDPOINTS["stackexchange"] + ident,
+        "method": "GET",
+        "question_id": ident,
+        **params,
+    }
+    response = citation if verified else {
+        "verified": False,
+        "error": obj.get("error_message") or obj.get("error"),
+    }
+    if diagnostic and not verified:
+        response.update(
+            content_received=source_matches,
+            license_recognized=permitted,
+            excerpt_confirmed=False,
+        )
+    return reply.status, request, redact(response, secrets)
+
+
 def discover(settings, store, attempt, transport=network, *, engines=ENGINES):
     if (transport is network) == store.fixture:
         raise ValueError("在线传输和合成测试必须使用独立数据库")
@@ -185,77 +252,12 @@ def discover(settings, store, attempt, transport=network, *, engines=ENGINES):
         if ident in tried or len(tried) >= limit:
             continue
         tried.add(ident)
-        params = {"site": SITE, "filter": "withbody"}
-        reply = outbound("stackexchange", labels=PUBLIC, path=ident, query=params, transport=transport)
-        obj = reply.body if isinstance(reply.body, dict) else {}
-        items = obj.get("items")
-        item = (
-            items[0]
-            if reply.status == 200 and isinstance(items, list) and items and isinstance(items[0], dict)
-            else {}
+        code, request, citation = fetch_forum_post(
+            ident, engine, secrets=secrets, diagnostic=store.diagnostic, transport=transport
         )
-        license_name = item.get("content_license")
-        quote = first_sentence(item.get("body", "")) if isinstance(item.get("body"), str) else ""
-        original = item.get("link")
-        owner = item.get("owner")
-        display_name = owner.get("display_name") if isinstance(owner, dict) else None
-        author = unescape(display_name).strip() if isinstance(display_name, str) else ""
-        date = published_at(item.get("creation_date"))
-        source_matches = post_id(original) == ident and str(item.get("question_id")) == ident
-        permitted = source_matches and isinstance(license_name, str) and license_name in LICENSES
-        verified = (
-            permitted
-            and bool(quote and author)
-            and date is not None
-            and redact(quote, secrets) == quote
-        )
-        citation = {
-            "search": engine,
-            "post_id": ident,
-            "url": original,
-            "text": quote,
-            "author": author,
-            "license": license_name,
-            "license_url": LICENSES.get(license_name) if verified else None,
-            "method": "Stack Exchange API /questions/{id}",
-            "published_at": date,
-            "last_activity_epoch": item.get("last_activity_date"),
-            "verified": verified,
-            "role": "public_connectivity_sample",
-            "research_denominator": 0,
-        }
-        citation.update(
-            response_sha256=sha256(dump(obj).encode()).hexdigest(),
-            source_policy="SE-public-API-CC-BY-SA-v1",
-            terms_url="https://stackoverflow.com/legal/api-terms-of-use",
-            permitted_fields=["source URL", "author attribution", "licensed excerpt", "timestamps"],
-            retention="local connectivity evidence; remove the local batch database at end of study",
-        )
-        ref = store.record(
-            attempt,
-            "forum_post",
-            "live_http",
-            {
-                "endpoint": ENDPOINTS["stackexchange"] + ident,
-                "method": "GET",
-                "question_id": ident,
-                **params,
-            },
-            redact(
-                citation if verified else {
-                    "verified": False, "error": obj.get("error_message") or obj.get("error"),
-                    **({
-                        "content_received": source_matches,
-                        "license_recognized": permitted,
-                        "excerpt_confirmed": False,
-                    } if store.diagnostic else {}),
-                }, secrets
-            ),
-            reply.status,
-        )
-        refs.append(ref)
-        if verified:
+        refs.append(store.record(attempt, "forum_post", "live_http", request, citation, code))
+        if citation["verified"]:
             return citation, refs, engine in {"tavily", "brave"}, errors
-        status = f"HTTP {reply.status}" if reply.status else "未收到响应"
+        status = f"HTTP {code}" if code else "未收到响应"
         errors.append(f"原帖 {ident} 未核验（{status}）")
     return None, refs, False, errors

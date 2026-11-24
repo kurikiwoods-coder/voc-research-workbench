@@ -47,7 +47,7 @@ def public_evidence(row):
         allowed = ("model","answers","usage")
         response = {"X-Tokens-Remaining":response.get("X-Tokens-Remaining"),"body_sha256":fingerprint(obj),
                     "body":{k:obj[k] for k in allowed if k in obj} if isinstance(obj,dict) else None}
-    elif name not in {"jev_admission","sqlite_readback","outbound_isolation","global_recall","stage_gate","schema_gap","source_contract","probe_error"}:
+    elif name not in {"jev_admission","sqlite_readback","outbound_isolation","global_recall","stage_gate","schema_gap","source_contract","probe_error","source_archive_recovery"}:
         # New connector types must be explicitly reviewed before publishing free-text payloads.
         request, response = {"sha256":fingerprint(request)}, {"sha256":fingerprint(response)}
     return {k:row[k] for k in ("id","attempt_id","name","mode","checked_at","status_code")} | {

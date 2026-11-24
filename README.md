@@ -2,6 +2,8 @@
 
 > **当前处于 P0-0，G-1 为 BLOCKED。** Tavily 认证搜索及原帖回源已通过 C0-3。Jev 固定模型、返回契约和真实用量等待供应商留存审查。[Tavily 实测](docs/evidence/p0-0/tavily-live/README.md) · [API 接入实测](docs/evidence/p0-0/api-setup/README.md)
 
+[模块路线图](MODULE_ROADMAP.md) · [开发与验收状态](DEVELOPMENT_STATUS.md)
+
 ## 目的
 
 VOC 工作台用于研究任意产品、服务或跨品类用户需求。一个研究项目可选择多个品类，也可以只指定研究问题。原话、用户任务和意图分别建模。营养秤是历史试点之一。

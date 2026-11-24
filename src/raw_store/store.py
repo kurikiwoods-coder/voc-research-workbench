@@ -116,6 +116,43 @@ class Store:
             ).lastrowid
             return run_id, attempt
 
+    def restore_search_batch(self, run, account_tag, search, post_request, citation, archive):
+        """Write a verified restoration atomically while the caller holds the writer lock."""
+        run_id = run["id"]
+        checked = now()
+        with self.db() as db:
+            db.execute(
+                """INSERT INTO runs(id,request_key,provider,account_tag,started_at,finished_at,state)
+                   VALUES (?,?,?,?,?,?,'paused')""",
+                (run_id, "archive:" + run_id, run["provider"], account_tag, run["started_at"], checked),
+            )
+            attempt = db.execute(
+                "INSERT INTO attempts(run_id,started_at,finished_at) VALUES (?,?,?)",
+                (run_id, checked, checked),
+            ).lastrowid
+            search_id = self._record(
+                db, attempt, search["name"], "archived_live_http",
+                search["request"], search["response"], search["status_code"],
+                checked_at=search["checked_at"],
+            )
+            post_id = self._record(db, attempt, "forum_post", "live_http", post_request, citation, 200)
+            proof_id = self._record(
+                db, attempt, "source_archive_recovery", "archive_recovery",
+                archive,
+                {"restored_search_id": search_id, "rechecked_post_id": post_id, "tavily_requests": 0},
+                None,
+            )
+            db.executemany(
+                "INSERT INTO results VALUES (?,?,?,?,?,?,?)",
+                [
+                    (attempt, "C0-3", "PASS", "同批搜索证据已复用，许可原帖已重新核对。",
+                     None, dump([search_id, post_id, proof_id]), checked),
+                    (attempt, "G-1", "BLOCKED", "恢复后等待同一批的完整验收。",
+                     "待重新执行 C0-1 至 C0-6 和供应商留存审查。", dump([proof_id]), checked),
+                ],
+            )
+        return proof_id
+
     def finish(self, run_id, attempt, passed):
         with self.db() as db:
             ts = now()
@@ -125,13 +162,13 @@ class Store:
             )
             db.execute("UPDATE attempts SET finished_at=? WHERE id=?", (ts, attempt))
 
-    def _record(self, db, attempt, name, mode, request, response, status):
+    def _record(self, db, attempt, name, mode, request, response, status, *, checked_at=None):
         if self.fixture and mode == "live_http":
             mode = "synthetic_contract"
         return db.execute(
             """INSERT INTO evidence(attempt_id,name,mode,checked_at,status_code,request_json,response_json)
                VALUES (?,?,?,?,?,?,?)""",
-            (attempt, name, mode, now(), status, dump(request), dump(response)),
+            (attempt, name, mode, checked_at or now(), status, dump(request), dump(response)),
         ).lastrowid
 
     def record(self, attempt, name, mode, request, response, status=None):

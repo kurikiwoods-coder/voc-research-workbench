@@ -110,6 +110,28 @@ def test_gate_requires_all_six(statuses, review):
     )
 
 
+def reuse_paid_source(store, previous):
+    """Return a licensed quote and its paid-search evidence from the same batch."""
+    for record in previous:
+        quote = json.loads(record["response_json"])
+        engine = quote.get("search")
+        if record["status_code"] != 200 or not quote.get("verified") or engine not in {"tavily", "brave"}:
+            continue
+        rows = store.rows(
+            """SELECT id,name,status_code,response_json FROM evidence WHERE attempt_id=?
+               AND name IN ('tavily','brave','forum_search','forum_post','source_archive_recovery')
+               ORDER BY id""",
+            (record["attempt_id"],),
+        )
+        for search in rows:
+            if search["name"] != engine or search["status_code"] != 200:
+                continue
+            hits = json.loads(search["response_json"]).get("hits", ())
+            if any(hit.get("id") == quote["post_id"] for hit in hits):
+                return quote, [row["id"] for row in rows], True, []
+    return None
+
+
 def run_checks(settings, store, request_key, resume_id=None, transport=network):
     if store.fixture or store.diagnostic or transport is not network:
         raise ValueError("正式阶段验收仅允许真实后端传输")
@@ -133,33 +155,17 @@ def run_checks(settings, store, request_key, resume_id=None, transport=network):
                                      WHERE a.run_id=? AND a.id<? AND e.name='forum_post' ORDER BY e.id DESC""",
                 (run, attempt),
             )
-            old = next(
-                (
-                    (e, json.loads(e["response_json"]))
-                    for e in previous
-                    if json.loads(e["response_json"]).get("verified")
-                ),
-                None,
+            prior = reuse_paid_source(store, previous)
+            quote, refs, external_hit, errors = (
+                prior if prior is not None else discover(settings, store, attempt, transport)
             )
-            if old and old[1]["search"] in {"tavily", "brave"}:
-                quote = old[1]
-                refs = [
-                    row["id"]
-                    for row in store.rows(
-                        "SELECT id FROM evidence WHERE attempt_id=? AND name IN ('tavily','brave','forum_search','forum_post')",
-                        (old[0]["attempt_id"],),
-                    )
-                ]
-                external_hit, errors = True, []
-            else:
-                quote, refs, external_hit, errors = discover(settings, store, attempt, transport)
             source_proof = store.record(
                 attempt, "source_contract", "contract_check",
                 {"pdt":"§13.0 C0-3", "project":"v2.2 §5"},
                 {"search_to_licensed_quote":"PASS" if quote else "BLOCKED",
                  "tavily_or_brave_to_licensed_quote":"PASS" if external_hit and quote else "BLOCKED",
                  "source_post_id":quote["post_id"] if quote else None,
-                 "source_evidence":refs.copy(), "blockers":errors},
+                 "source_evidence":refs.copy(), "reused_prior_evidence":prior is not None, "blockers":errors},
             )
             refs = [*refs,source_proof]
             if quote and external_hit:
