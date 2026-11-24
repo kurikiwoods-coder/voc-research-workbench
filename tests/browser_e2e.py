@@ -27,6 +27,58 @@ def serve(data, port):
     uvicorn.run(create_app(Settings(Path(data))), host="127.0.0.1", port=port, log_level="warning")
 
 
+def api_setup_checks(page, output):
+    initial_key = "browser-offline-fixture-first"
+    rotated_key = "browser-offline-fixture-rotated"
+    wizard = page.get_by_role("dialog")
+    expect(wizard.get_by_role("heading", name="首次配置 API")).to_be_visible()
+    page.screenshot(path=str(output / "api-wizard.png"))
+    wizard.get_by_label("API Key", exact=True).fill(initial_key)
+    wizard.get_by_role("button", name="保存密钥").click()
+    expect(wizard.get_by_text("凭证 已配置", exact=False)).to_be_visible()
+    wizard.get_by_role("button", name="检查连接").click()
+    expect(wizard.get_by_role("status").get_by_text("请先导入此供应商", exact=False)).to_be_visible()
+    wizard.get_by_role("button", name="下一步").click()
+    expect(wizard.get_by_role("heading", name="配置一个搜索引擎")).to_be_visible()
+    tavily = wizard.get_by_role("article", name="Tavily")
+    tavily.get_by_role("button", name="检查连接").click()
+    expect(tavily.get_by_role("status").get_by_text("请先在本机工作台保存", exact=False)).to_be_visible()
+    wizard.get_by_role("button", name="下一步").click()
+    expect(wizard.get_by_role("heading", name="核对验收准备")).to_be_visible()
+    wizard.get_by_role("button", name="打开 API 接入").click()
+    expect(page.get_by_role("heading", name="API 接入", exact=True)).to_be_visible()
+    for name in ("TypeSafe", "JevModel", "Tavily", "Brave", "YouTube", "Google Forms"):
+        expect(page.get_by_role("article", name=name)).to_be_visible()
+    for name in ("YouTube", "Google Forms"):
+        expect(page.get_by_role("article", name=name).get_by_text("待开发", exact=True)).to_be_visible()
+        expect(page.get_by_role("article", name=name).get_by_role("button")).to_have_count(0)
+    jev = page.get_by_role("article", name="JevModel")
+    jev.get_by_text("更换密钥", exact=True).click()
+    jev.get_by_label("API Key", exact=True).fill(rotated_key)
+    jev.get_by_role("button", name="保存密钥").click()
+    expect(page.locator("#toast")).to_have_text("密钥已保存并生效。")
+    page.reload()
+    expect(wizard).to_be_hidden()
+    expect(jev.get_by_text("凭证 已配置", exact=False)).to_be_visible()
+    expect(jev.get_by_role("status").get_by_text("尚无当前凭证", exact=False)).to_be_visible()
+    workspace = page.request.get("/api/workspace").text()
+    assert initial_key not in workspace and rotated_key not in workspace
+    assert initial_key not in page.content() and rotated_key not in page.content()
+    stored = page.evaluate("JSON.stringify([localStorage, sessionStorage])")
+    assert initial_key not in stored and rotated_key not in stored
+    page.screenshot(path=str(output / "connection-settings.png"), full_page=True)
+    page.set_viewport_size({"width": 390, "height": 844})
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    page.screenshot(path=str(output / "mobile-api-setup.png"))
+    page.set_viewport_size({"width": 320, "height": 740})
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    page.set_viewport_size({"width": 1440, "height": 960})
+    page.once("dialog", lambda dialog: dialog.accept())
+    jev.get_by_role("button", name="删除密钥").click()
+    expect(jev.get_by_text("凭证 未配置", exact=False)).to_be_visible()
+    print("API setup E2E passed: wizard, local key save/rotation/delete, preflight evidence, and 320/390 layouts.")
+
+
 def browser_checks(base, output):
     output.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as pw:
@@ -38,6 +90,8 @@ def browser_checks(base, output):
         button = lambda name: page.get_by_role("button", name=name, exact=True)
         heading = lambda name: page.get_by_role("heading", name=name, exact=True)
         link = lambda name: page.get_by_role("link", name=name, exact=True)
+        api_setup_checks(page, output)
+        link("连通性检查").click()
         expect(heading("等待首次运行")).to_be_visible()
         expect(page.get_by_text("Jev 未连接 · 未同步", exact=True)).to_be_visible()
         progress = page.get_by_role("progressbar", name="Jev 余额进度")
@@ -50,19 +104,11 @@ def browser_checks(base, output):
         assert page.url.endswith("#tokens")
         expect(link("补充额度 ↗").first).to_have_attribute("href", "https://jevmodel.org/zh/pricing/")
         button("连接配置").click()
-        connections = page.get_by_role("dialog")
-        for key in ("JEVMODEL_API_KEY", "TYPESAFE_API_KEY", "TAVILY_API_KEY", "BRAVE_API_KEY"):
-            expect(connections.get_by_text(key, exact=True)).to_be_visible()
-        expect(connections.get_by_text("未配置 · 审核未完成", exact=True)).to_be_visible()
-        expect(connections.get_by_text("未测试", exact=True)).to_have_count(4)
-        expect(connections.get_by_text("正式验收未测试", exact=False)).to_be_visible()
-        expect(connections.get_by_role("link", name="TypeSafe 控制台 ↗")).to_have_attribute(
+        expect(heading("API 接入")).to_be_visible()
+        expect(page.get_by_role("article", name="TypeSafe").get_by_role("link", name="官方控制台 ↗")).to_have_attribute(
             "href", "https://console.typesafe.ai/login"
         )
-        page.screenshot(path=str(output / "connection-settings.png"))
-        button("关闭侧栏").click()
-        link("连通性检查").click()
-        button("运行检查").click()
+        button("运行正式验收").click()
         button("开始运行").click()
         expect(heading("P0 准入暂缓")).to_be_visible(timeout=120_000)
         expect(button("C0-5 通过")).to_be_visible()

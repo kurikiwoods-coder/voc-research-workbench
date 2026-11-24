@@ -111,9 +111,11 @@ def test_gate_requires_all_six(statuses, review):
 
 
 def run_checks(settings, store, request_key, resume_id=None, transport=network):
-    if store.fixture or transport is not network:
+    if store.fixture or store.diagnostic or transport is not network:
         raise ValueError("正式阶段验收仅允许真实后端传输")
     with store.writer():
+        if callable(settings):
+            settings = settings()
         run, attempt = store.begin(request_key, settings, resume_id)
         if attempt is None:
             return run

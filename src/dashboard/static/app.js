@@ -13,6 +13,7 @@ const pages = {
   matrix: ["验收矩阵", "grid"],
   history: ["运行记录", "clock"],
   tokens: ["额度中心", "meter"],
+  setup: ["API 接入", "sliders"],
 };
 function pageFromLocation() {
   const page = location.hash.slice(1);
@@ -170,7 +171,7 @@ function nav() {
   el("nav").innerHTML = Object.entries(pages)
     .map(
       ([key, [name, icon]]) =>
-        `<a class="navlink" href="#${key}" ${current === key ? 'aria-current="page"' : ""}>${ic(icon)}${name}</a>`,
+        `${key === "setup" ? '<div class="rail-label setup-nav-label">设置</div>' : ""}<a class="navlink" href="#${key}" ${current === key ? 'aria-current="page"' : ""}>${ic(icon)}${name}</a>`,
     )
     .join("");
   el("crumb").textContent = pages[current][0];
@@ -335,7 +336,7 @@ function tokens() {
     [
       "本机累计消耗",
       number(t.input_tokens),
-      "按唯一成功分片合计 · input tokens",
+      "本机验收及连接诊断 · input tokens",
     ],
     [
       "最近余额同步",
@@ -359,15 +360,15 @@ function tokens() {
     ) +
     (t.warning
       ? `<div class="warning">${esc(t.warning)} · 请核对供应商账户或查看最近分片。</div>`
-      : t.key_configured ? "" : '<div class="warning">Jev 未连接。请在后端配置供应商密钥，余额等待同步。</div>') +
+      : t.key_configured ? "" : '<div class="warning">Jev 未连接。请在 API 接入页保存密钥，余额等待同步。</div>') +
     metrics +
-    shellPanel("最近分片", "按当前供应商与本机凭证隔离，最多 20 次。", table)
+    shellPanel("最近验收分片", "按当前供应商与本机凭证隔离，最多 20 次。连接诊断在 API 接入页查看。", table)
   );
 }
 function render() {
   nav();
   renderQuota();
-  el("main").innerHTML = { checks, matrix, history, tokens }[current]();
+  el("main").innerHTML = { checks, matrix, history, tokens, setup }[current]();
 }
 function openDrawer(title, kicker, html) {
   el("drawer-title").textContent = title;
@@ -392,45 +393,129 @@ function detail(id) {
   const content = `<section class="drawer-section">${badge(r.status)}<p>${esc(r.detail || r.description)}</p>${r.blocker ? `<div class="warning">${esc(r.blocker)}</div>` : ""}<dl><dt>研究阶段</dt><dd>${esc(r.stage)}</dd><dt>最近核验</dt><dd>${esc(ts(r.last_checked_at))}</dd><dt>实现位置</dt><dd class="mono">${esc(r.implementation)}</dd><dt>测试用例</dt><dd class="mono">${esc(r.test_case)}</dd></dl></section><section class="drawer-section"><h3>验收标准</h3><p>${esc(r.description)}</p></section><section class="drawer-section"><h3>执行证据 · ${evidence.length}</h3>${evidence.map((e) => evidenceCard(e)).join("") || "<p>此项尚无执行证据。</p>"}</section>`;
   openDrawer(r.title, id + " / 验收详情", content);
 }
-function config() {
-  const { connections, acceptance, provider } = state.config;
-  const statusText = {
-    NOT_TESTED: "未测试",
-    CONNECTED: "已连接",
-    MISMATCH: "能力不满足",
-    VERIFIED: "能力已核验",
-  };
-  const httpHints = {
-    400: "请求被拒绝，请核对供应商错误详情",
-    401: "请核对密钥",
-    402: "请核对额度",
-    403: "请核对权限",
-    422: "请核对请求字段和模型权限",
-    429: "供应商限流",
-  };
-  const providers = connections.map((entry) => {
-    let result = statusText[entry.connection];
-    if (entry.connection === "ERROR") {
-      const code = entry.http_status;
-      result = code ? `HTTP ${code} · ${httpHints[code] || "接口异常"}` : "未收到 HTTP 响应";
-    }
-    if (entry.capability !== "NOT_TESTED") result += " · " + statusText[entry.capability];
-    const review = entry.review === "PENDING" ? " · 审核未完成"
-      : entry.review === "APPROVED" ? " · 审核已完成" : "";
-    const active = entry.selected_for_jev ? " · 当前使用" : "";
-    return `<div class="connector-row"><div class="connector-heading"><strong>${esc(entry.label + active)}</strong>${link(entry.signup, entry.label + " 控制台")}</div><small class="mono">${esc(entry.env_var)}</small><div class="connector-status"><span>${entry.configured ? "已配置" : "未配置"}${review}</span><span>${esc(result)}${entry.checked_at ? " · " + esc(ts(entry.checked_at)) : ""}</span></div></div>`;
-  }).join("");
-  const gateLabel = {
-    PASS: "正式验收通过",
-    FAIL: "正式验收失败",
-    BLOCKED: "正式验收阻塞",
-    NOT_TESTED: "正式验收未测试",
-  }[acceptance];
+const connectionLabels = {
+  NOT_CONFIGURED: "未配置", NOT_TESTED: "未测试", CONNECTED: "已连接",
+  CAPABILITY_BLOCKED: "能力不满足", REVIEW_REQUIRED: "审核未完成",
+  READY: "连接条件已核验", ERROR: "请求失败", PLANNED: "待开发",
+};
+const sourceLabels = { local: "本机凭证库", environment: "后端环境", disabled: "已停用环境凭证" };
+const docReview = "https://github.com/kurikiwoods-coder/voc-research-workbench/blob/codex/p0-0-connectivity/docs/connectivity.md#变量与审核凭证";
+let wizardStep = null, setupBusy = false, lastProbeProvider = null;
+const diagnosticKeys = new Map();
+
+function connectionBadge(status) {
+  const tone = { READY: "PASS", CONNECTED: "PASS", ERROR: "FAIL",
+    CAPABILITY_BLOCKED: "BLOCKED", REVIEW_REQUIRED: "BLOCKED" }[status] || "NOT_TESTED";
+  return `<span class="status ${tone}" title="${esc(status)}">${esc(connectionLabels[status])}</span>`;
+}
+function prerequisiteStrip() {
+  const p = state.setup.prerequisites;
+  return `<ol class="setup-track"><li><b>Jev 密钥</b><span>${p.jev_key ? "已配置" : "请选择一个 Jev 供应商"}</span></li><li><b>搜索密钥</b><span>${p.search_key ? "已配置至少一家" : "Tavily 或 Brave 任一即可"}</span></li><li><b>留存审核</b><span>${p.jev_review ? "审查记录已核验" : "导入所选 Jev 供应商的审查记录"}</span></li></ol>`;
+}
+function credentialForm(p, prefix) {
+  const id = prefix + "-" + p.id;
+  return `<form method="post" class="setup-form" data-setup-form="key" data-provider="${p.id}" autocomplete="off"><label for="${id}">API Key</label><div class="setup-form-row"><input class="field" id="${id}" name="key" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="512" required><button type="submit" class="primary">保存密钥</button></div></form>`;
+}
+function reviewForm(p) {
+  return `<details class="connector-detail"><summary>${p.review.approved ? "留存审核已核验" : "导入留存审核"}</summary><p>选择已审核的 JSON 记录与对应附件。工作台会核对供应商、审批字段和附件摘要。</p><p>${link(docReview, "审查材料格式")} ${p.review_docs ? link(p.review_docs, "申请零数据留存") : ""}</p><form method="post" class="setup-form" data-setup-form="review" data-provider="${p.id}"><label>审查 JSON <input type="file" name="record" accept=".json,application/json" required></label><label>证明附件 <input type="file" name="attachment" required></label><button class="secondary" type="submit">导入审查材料</button></form></details>`;
+}
+function diagnosticEvidence(test) {
+  const status = test.http_status == null ? "未收到 HTTP" : "HTTP " + test.http_status;
+  const groups = test.source
+    ? `<dl class="setup-evidence"><dt>搜索结果</dt><dd>${number(test.source.result_count)} 条，合规候选 ${number(test.source.eligible_links)} 条</dd><dt>原始网页</dt><dd>${test.source.original_fetched ? "已回源" : "待核验"}${test.source.source_http.length ? " · " + esc(test.source.source_http.map((x) => x == null ? "无 HTTP" : "HTTP " + x).join(" / ")) : ""}</dd><dt>许可审核</dt><dd>${test.source.license_verified ? esc(test.source.license || "识别到公开许可") : "待核验"}</dd><dt>真实引用</dt><dd>${test.source.excerpt_verified ? "已核验原句" : "暂无原句证据"}</dd></dl>`
+    : "";
+  const { message, ...projection } = test;
+  return `<details class="connector-detail"><summary>${esc(ts(test.checked_at, true))} · ${esc(status)} · 证据 #${test.evidence_id}</summary><p>${esc(message)}</p>${groups}<p>记录范围为连接诊断，正式研究分母为 0。</p><pre>${esc(JSON.stringify(projection, null, 2))}</pre></details>`;
+}
+function providerCard(p, compact = false) {
+  const report = p.recent_tests?.[0];
+  const attrs = 'data-id="' + p.id + '"';
+  const editing = !p.configured;
+  const testHint = report
+    ? `${esc(report.message)} <span class="connector-time">${esc(ts(report.checked_at, true))}${report.http_status == null ? "" : " · HTTP " + report.http_status}</span>`
+    : "尚无当前凭证的连接诊断。";
+  const guides = `<p class="connector-purpose">${esc(p.purpose)} ${link(p.signup, "官方控制台")} ${link(p.docs, "接入文档")}</p><p class="connector-guide">${esc(p.guide)}</p>`;
+  if (p.status === "PLANNED") {
+    return `<article class="provider-row" aria-label="${esc(p.label)}"><header><h3>${esc(p.label)}</h3><span class="connector-time">${esc(p.stage)} 接入</span>${connectionBadge(p.status)}</header>${guides}<p class="connector-time">计量单位 ${esc(p.unit)}</p></article>`;
+  }
+  const useAction = p.group === "jev" && !p.selected ? act("setup-choose", "选为 Jev 通道", "secondary", attrs) : "";
+  const actions = `${useAction}${act("setup-test", "检查连接", "secondary", attrs)}${p.configured ? act("setup-delete", "删除密钥", "quiet remove-key", attrs) : ""}`;
+  const quota = `<dl class="setup-quota"><div><dt>计量单位</dt><dd>${esc(p.unit)}</dd></div><div><dt>已知余额</dt><dd>${p.remaining == null ? "未同步" : number(p.remaining)}</dd></div><div><dt>额度上限</dt><dd>${p.capacity == null ? "未提供" : number(p.capacity)}</dd></div><div><dt>${esc(p.usage_scope)}用量</dt><dd>${p.local_usage == null ? "未记录" : number(p.local_usage)}</dd></div></dl><p class="connector-time">最近余额同步 ${esc(ts(p.last_synced_at, true))}${p.warning ? " · " + esc(p.warning) : ""}</p>`;
+  return `<article class="provider-row" aria-label="${esc(p.label)}"><header><h3>${esc(p.label)}</h3>${p.selected ? '<span class="connector-time">当前 Jev 通道</span>' : ""}${connectionBadge(p.status)}</header>${guides}<p class="connector-time">凭证 ${p.configured ? "已配置" : "未配置"}${p.credential_source ? " · " + esc(sourceLabels[p.credential_source]) : ""} <code>${esc(p.env_var)}</code></p>${compact ? "" : quota}<div class="actions connector-actions">${actions}</div><details class="connector-detail" ${editing ? "open" : ""}><summary>${editing ? "填写密钥" : "更换密钥"}</summary>${credentialForm(p, compact ? "wizard-key" : "api-key")}</details>${p.review ? reviewForm(p) : ""}<div class="connector-result" role="status">${testHint}</div>${p.recent_tests.length ? `<details class="connector-detail" ${lastProbeProvider === p.id ? "open" : ""}><summary>最近测试证据</summary>${p.recent_tests.map(diagnosticEvidence).join("")}</details>` : ""}</article>`;
+}
+function setup() {
+  const { providers, future, error } = state.setup;
+  const gate = state.config.acceptance;
+  return `<section class="page-head setup-head"><div><h1>API 接入</h1><p>在本机保存密钥，逐一检查服务，然后运行 P0-0 正式验收。</p></div><div class="actions">${act("setup-wizard", "配置向导")}</div></section>${error ? '<p class="warning" role="alert">' + esc(error) + '</p>' : ""}<section class="panel setup-summary"><div><h2>开始 P0-0 验收</h2><p>连接诊断与正式验收分别记录。当前所选批次的 G-1 ${badge(gate)}</p></div>${prerequisiteStrip()}<div class="actions">${act("run", "运行正式验收", "primary", busy || error ? "disabled" : "")}${act("goto-checks", "查看连通性检查")}</div></section>${shellPanel("Jev 模型", "选一种通道，固定使用 jev-1.14.0。两家可分别保存密钥与审核材料。", providers.filter(p => p.group === "jev").map(p => providerCard(p)).join(""))}${shellPanel("公开搜索", "Tavily 或 Brave 任一可用于 P0-0。搜索命中会继续核对原始网页、许可和引用。", providers.filter(p => p.group === "search").map(p => providerCard(p)).join(""))}${shellPanel("后续接入", "首次设置可跳过，当前阶段无需凭证。", future.map(p => providerCard(p)).join(""))}`;
+}
+function showWizard(step) {
+  wizardStep = step;
+  const providers = state.setup.providers;
+  const active = providers.find(p => p.selected);
+  const caption = ["选择 Jev 通道", "配置一个搜索引擎", "核对验收准备"][step];
+  const cards = step === 0
+    ? `<label class="wizard-choice">当前 Jev 通道 <select id="wizard-jev" class="field">${choices(providers.filter(p => p.group === "jev").map(p => [p.id, p.label]), active.id)}</select></label>${providerCard(active, true)}`
+    : step === 1
+      ? providers.filter(p => p.group === "search").map(p => providerCard(p, true)).join("")
+      : prerequisiteStrip();
+  const next = step === 2
+    ? act("wizard-finish", "打开 API 接入", "primary")
+    : act("wizard-next", "下一步", "primary");
   openDrawer(
-    "连接配置",
-    "本机服务",
-    `<section class="drawer-section"><h3>后端环境变量</h3><p>在项目根目录复制 .env.example 为 .env，填好后重启服务。连通和能力状态来自所选批次，更换密钥后请复跑。</p><div class="connector-list">${providers}</div></section><section class="drawer-section"><h3>公开语料的留存审查</h3><p>当前 Jev 供应商 ${esc(provider)} · G-1 ${esc(gateLabel)}。在本机设置 JEV_REVIEW_FILE，格式见仓库 docs/connectivity.md。内部 CX 与非公开材料仅在本机处理。</p></section>`,
+    "首次配置 API",
+    "第 " + (step + 1) + " 步，共 3 步",
+    `<section class="drawer-section wizard-body"><h3>${caption}</h3><p>${step === 0 ? "TypeSafe 和 JevModel 二选一。每一步都可以稍后配置。" : step === 1 ? "配置其中一家即可。YouTube 和 Google Forms 等后续阶段再接入。" : "你现在可以打开配置页，继续检查连接或运行正式验收。"}</p>${cards}<div class="actions wizard-actions">${next}${step ? act("wizard-back", "上一步") : ""}${act("wizard-skip", "稍后配置", "quiet")}</div></section>`,
   );
+}
+function setupRequest(path, method, data) {
+  return api("/api/setup/" + path, {
+    method,
+    headers: { "X-VOC-Action": "connectivity", "Content-Type": "application/json" },
+    ...(data ? { body: JSON.stringify(data) } : {}),
+  });
+}
+async function updateSetup(path, method, data, message, control, after) {
+  if (setupBusy) return;
+  setupBusy = true;
+  const originalLabel = control?.tagName === "BUTTON" ? control.textContent : null;
+  if (control) {
+    control.disabled = true;
+    control.setAttribute("aria-busy", "true");
+    if (originalLabel && path.endsWith("/diagnostics")) control.textContent = "检查中…";
+  }
+  try {
+    const reply = await setupRequest(path, method, data);
+    if (after) after(reply);
+    await refresh();
+    if (wizardStep !== null && el("drawer").open) showWizard(wizardStep);
+    tell(typeof message === "function" ? message(reply) : message);
+  } finally {
+    setupBusy = false;
+    if (control) {
+      control.disabled = false;
+      control.removeAttribute("aria-busy");
+      if (originalLabel && path.endsWith("/diagnostics")) control.textContent = originalLabel;
+    }
+  }
+}
+function setupError(error) {
+  if (el("drawer").open) {
+    el("drawer-body").querySelector("[role=alert]")?.remove();
+    const message = document.createElement("p");
+    message.className = "warning";
+    message.setAttribute("role", "alert");
+    message.textContent = error.message;
+    el("drawer-body").prepend(message);
+  } else tell(error.message);
+}
+async function readReviewFile(file, limit) {
+  if (!file || file.size > limit) throw new Error("审查记录最多 32 KB，证明附件最多 1 MB。");
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  let text = "";
+  for (let offset = 0; offset < bytes.length; offset += 8192) {
+    text += String.fromCharCode(...bytes.subarray(offset, offset + 8192));
+  }
+  return btoa(text);
 }
 function save(name, content) {
   const url = URL.createObjectURL(
@@ -443,6 +528,7 @@ function save(name, content) {
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 function runDialog(resume = false) {
+  wizardStep = null;
   const action = resume ? "commit-resume" : "commit-run";
   openDrawer(
     resume ? "恢复此批次" : "运行六项连接检查",
@@ -511,6 +597,7 @@ async function execute(resume) {
   }
 }
 function gotoPage(page) {
+  wizardStep = null;
   if (el("drawer").open) el("drawer").close();
   location.hash = page;
   if (current === page) render();
@@ -543,6 +630,7 @@ document.addEventListener("click", async (event) => {
       return;
     }
     if (a === "close") {
+      wizardStep = null;
       el("drawer").close();
       return;
     }
@@ -552,7 +640,33 @@ document.addEventListener("click", async (event) => {
       tell("已刷新本地记录");
       return;
     }
-    if (a === "config") config();
+    if (a === "config") gotoPage("setup");
+    if (a === "setup-wizard") showWizard(0);
+    if (a === "wizard-next" && !setupBusy) showWizard(wizardStep + 1);
+    if (a === "wizard-back" && !setupBusy) showWizard(wizardStep - 1);
+    if (a === "wizard-skip" || a === "wizard-finish") {
+      await updateSetup("wizard", "POST", null, a === "wizard-skip" ? "可随时从 API 接入继续配置。" : "配置向导已完成。", b, () => {
+        if (a === "wizard-finish") gotoPage("setup");
+        else {
+          wizardStep = null;
+          el("drawer").close();
+        }
+      });
+    }
+    if (a === "setup-choose") {
+      await updateSetup("jev/" + id, "PUT", null, "已切换 Jev 通道。", b);
+    }
+    if (a === "setup-delete" && !setupBusy && window.confirm("停止在本机工作台使用此密钥？要同时撤销供应商的密钥，请前往其控制台。")) {
+      await updateSetup(id + "/key", "DELETE", null, "本机已停止使用该密钥。", b, () => diagnosticKeys.delete(id));
+    }
+    if (a === "setup-test" && !setupBusy) {
+      const key = diagnosticKeys.get(id) || crypto.randomUUID();
+      diagnosticKeys.set(id, key);
+      await updateSetup(id + "/diagnostics", "POST", { request_key: key }, result => result.message, b, () => {
+        diagnosticKeys.delete(id);
+        lastProbeProvider = id;
+      });
+    }
     if (a === "detail") detail(id);
     if (a === "token-view") gotoPage("tokens");
     if (a === "goto-checks") gotoPage("checks");
@@ -581,25 +695,57 @@ document.addEventListener("click", async (event) => {
   } catch (error) {
     if (a === "retry-load") {
       loadError(error);
-    } else if (el("drawer").open) {
-      el("drawer-body").querySelector("[role=alert]")?.remove();
-      const message = document.createElement("p");
-      message.className = "warning";
-      message.setAttribute("role", "alert");
-      message.textContent = error.message;
-      el("drawer-body").prepend(message);
-    } else {
-      tell(error.message);
-    }
+    } else setupError(error);
   }
 });
+document.addEventListener("submit", async (event) => {
+  const form = event.target;
+  const kind = form.dataset.setupForm;
+  if (!kind) return;
+  event.preventDefault();
+  if (setupBusy) return;
+  const provider = form.dataset.provider;
+  try {
+    if (kind === "key") {
+      const input = form.elements.namedItem("key");
+      const key = input.value;
+      input.value = "";
+      await updateSetup(provider + "/key", "PUT", { key }, "密钥已保存并生效。", event.submitter, () => diagnosticKeys.delete(provider));
+    } else {
+      const [record, attachment] = await Promise.all([
+        readReviewFile(form.elements.namedItem("record").files[0], 32 * 1024),
+        readReviewFile(form.elements.namedItem("attachment").files[0], 1024 * 1024),
+      ]);
+      form.reset();
+      await updateSetup(provider + "/review", "PUT", { record, attachment }, "留存审查材料已核验并保存在本机。", event.submitter);
+    }
+  } catch (error) {
+    setupError(error);
+  }
+});
+document.addEventListener("cancel", (event) => {
+  if (event.target.id === "drawer") wizardStep = null;
+}, true);
 document.addEventListener("input", (e) => {
   if (e.target.id === "matrix-search") {
     search = e.target.value;
     el("matrix-rows").innerHTML = matrixRows();
   }
 });
-document.addEventListener("change", (e) => {
+document.addEventListener("change", async (e) => {
+  if (e.target.id === "wizard-jev") {
+    const old = state.setup.provider;
+    if (setupBusy) {
+      e.target.value = old;
+      return;
+    }
+    try {
+      await updateSetup("jev/" + e.target.value, "PUT", null, "已切换 Jev 通道。", e.target);
+    } catch (error) {
+      e.target.value = old;
+      setupError(error);
+    }
+  }
   if (e.target.id === "stage-filter" || e.target.id === "status-filter") {
     stage = el("stage-filter").value;
     statusFilter = el("status-filter").value;
@@ -608,7 +754,10 @@ document.addEventListener("change", (e) => {
 });
 window.addEventListener("hashchange", () => {
   const next = pageFromLocation();
-  if (next !== current && el("drawer").open) el("drawer").close();
+  if (next !== current && el("drawer").open) {
+    wizardStep = null;
+    el("drawer").close();
+  }
   current = next;
   el("rail").classList.remove("open");
   document.querySelector(".menu-btn").setAttribute("aria-expanded", "false");
@@ -620,4 +769,6 @@ function loadError(error) {
     `<div class="panel state-box"><b>无法读取本地工作台</b><p>${esc(error.message)}</p>${act("retry-load", "重新读取")}</div>`;
 }
 nav();
-refresh(null).catch(loadError);
+refresh(null).then((loaded) => {
+  if (loaded && state?.setup && !state.setup.wizard_seen && !state.setup.error) showWizard(0);
+}).catch(loadError);

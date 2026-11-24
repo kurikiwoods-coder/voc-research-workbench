@@ -13,7 +13,7 @@ if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 .\.venv\Scripts\python.exe -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
 ```
 
-已有 .env 时请直接编辑原文件。macOS/Linux 使用 Python 3.12。
+macOS/Linux 使用 Python 3.12。
 
 ```sh
 python3 -m venv .venv
@@ -25,11 +25,19 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
 
 打开「连通性检查」，点「运行检查」后确认本次范围。连通性运行会尝试当前可用的服务。查看页面、刷新余额和下载现有证据只访问本机。批次中断后从「运行记录 → 查看批次 → 恢复此批次」继续。成功分片重放缓存，结果保留此前各次执行的时间与证据 ID。缺失凭证的批次可在首次配置密钥后恢复；已有 Jev 请求的批次绑定原账户。更换账户请建新批次。
 
-## 后端配置
+## 从工作台配置 API
+
+1. 在本机打开工作台。首次启动会提示选择 Jev 通道和搜索引擎。「稍后配置」可直接进入工作台，从「设置 → API 接入」能再次打开向导。
+2. 在 TypeSafe 和 JevModel 之间选择一个当前通道。通过供应商卡片的「官方控制台」取钥，粘贴到密码框并点「保存密钥」。同样配置 Tavily 或 Brave 中的至少一个。保存、更换和删除立即生效。两种 Jev 通道的凭证和审核材料各自保留。
+3. 在所选 Jev 通道点「导入留存审核」。选择已有的审查 JSON 和对应证明附件。JSON 上限 32 KB，附件上限 1 MB。工作台核对供应商、审批字段、日期和附件摘要，将材料保存在本机。审查由实际管理人员根据供应商账户和条款完成。[审查材料格式](#变量与审核凭证)
+4. 在对应卡片点「检查连接」，展开「最近测试证据」。Jev 只发送程序内置的合成句子，按 8 + 3 题检查固定模型、三类字段、逐档概率、用量和分片键。遇到留存审核未完成时，检查保存阻塞证据。搜索检查先查看命中，再向允许的原帖接口核对出处、许可和原句。
+5. 点击「运行正式验收」并确认。只有正式批次的六项检查和留存审核全部满足，G-1 才通过。诊断记录的正式研究分母为零。
+
+YouTube 和 Google Forms 卡片可查看官方入口。公开视频采集安排在 P0，Forms OAuth 和问卷回流安排在 P1。[YouTube 授权文档](https://developers.google.com/youtube/data/guides/authentication) · [Google Forms 快速入门](https://developers.google.com/workspace/forms/api/quickstart/python)
 
 ### 注册与创建密钥
 
-在项目根目录把 `.env.example` 复制为 `.env`，用本机编辑器填写后端变量，再重启服务。密钥和审查附件留在本机。Windows 启动器会在缺少 `.env` 时创建模板。
+从工作台保存密钥是日常配置入口。已有后端环境变量可继续使用，界面会注明来源。
 
 | 供应商 | 注册与取钥 | P0-0 所需能力 |
 |---|---|---|
@@ -38,14 +46,32 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
 | Tavily · `TAVILY_API_KEY` | 从官方文档的 **Get API key** 进入平台，注册或登录并创建 API key。[控制台](https://app.tavily.com/home) · [Search 文档](https://docs.tavily.com/documentation/api-reference/endpoint/search) | 账户允许 Search 请求。需通过 Tavily 实际发现允许回源的 URL 并核对原文许可。 |
 | Brave · `BRAVE_API_KEY` | 在 Brave Search API 注册，按控制台的套餐和 API Keys 指引创建密钥。[注册链接](https://api-dashboard.search.brave.com/register) · [API 快速入门](https://api-dashboard.search.brave.com/documentation/quickstart) | 账户启用 Web Search API，支持 `X-Subscription-Token`，实际发现的 URL 可用于许可回源。 |
 
-TypeSafe 与 JevModel 二选一调用。P0-0 先配置 Tavily 或 Brave 之一即可核查指定搜索源。打开「连接配置」检查 **未配置** 和 **已配置**。**未测试**、**已连接**、**能力不满足** 与 **能力已核验**描述所选批次的实际记录。**审核未完成**描述当前 Jev 供应商的留存审核。G-1 单独显示**正式验收通过**、**阻塞**、**失败**或**未测试**。密钥更换后按新账户复跑。
+### 保存与删除
+
+工作台通过回环地址接受同源配置操作。凭证库位于工作区的 `credentials/` 目录（默认 `runtime/credentials/`），配置以原子替换方式保存。Windows 用当前系统用户的 DPAPI 加密。Linux 和 macOS 以文件系统权限保护凭证，目录限当前用户访问（0700），文件限当前用户读写（0600）。浏览器只在提交时发送密钥至本机后端。前端存储、公开接口、日志和证据导出不含原始密钥。[Windows DPAPI](https://learn.microsoft.com/en-us/windows/win32/api/dpapi/nf-dpapi-cryptprotectdata)
+
+界面设置优先于环境变量。删除环境来源的密钥时，工作台停用该值，环境文件中的原记录由部署人员管理。要在供应商侧撤销密钥，请使用供应商控制台。更换账户后，请从配置页重新检查连接并创建正式批次。旧批次仍可回看。
+
+### 状态和额度
+
+| 状态 | 含义 |
+|---|---|
+| NOT_CONFIGURED | 未配置凭证 |
+| NOT_TESTED | 当前凭证尚无有效的诊断结果 |
+| CONNECTED | 服务已响应。搜索还没有同时通过来源、许可和原话核验 |
+| CAPABILITY_BLOCKED | 实际响应的模型或字段缺失。查看证据的 `schema_gap` |
+| REVIEW_REQUIRED | 对应 Jev 通道的留存审查尚未完成 |
+| READY | 当前供应商的连接条件与诊断契约已核验 |
+| ERROR | 连接或请求失败。按 HTTP 状态采取操作 |
+
+额度栏显示返回的余额、最近一次同步、已知上限和本机用量。缺可信余额时显示「未同步」。Jev 使用实际 `usage.input_tokens` 核对本机消耗，JevModel 从 `X-Tokens-Remaining` 读取余额。Tavily 使用实际返回的 credits 汇总本机诊断。Brave 显示可识别的月配额，诊断用量按成功请求计数。界面保留 G-1 单独状态。预算闸门在 P0 范围内。[JevModel 计费](https://jevmodel.org/zh/docs/) · [Tavily Search](https://docs.tavily.com/documentation/api-reference/endpoint/search) · [Brave 限流响应头](https://api-dashboard.search.brave.com/documentation/guides/rate-limiting)
 
 ### 变量与审核凭证
 
 | 变量 | 用途 |
 |---|---|
 | JEV_PROVIDER | jevmodel 为默认第三方通道，typesafe 为官方通道。选择哪个就只调用哪个。固定模型写入程序。 |
-| JEVMODEL_API_KEY / TYPESAFE_API_KEY | 填写所选服务商的账户凭证。服务重启时读取。 |
+| JEVMODEL_API_KEY / TYPESAFE_API_KEY | 可选部署方式，提供账户凭证。服务启动时读取，工作台可覆盖或停用。 |
 | TAVILY_API_KEY / BRAVE_API_KEY | C0-3 综合验收至少一个指定引擎须实际发现允许回源的链接。两个引擎各自留证。 |
 | JEV_REVIEW_FILE | 本机 JSON 审查记录的路径。凭证文件保留在仓库之外。 |
 | JEV_TOKEN_CAPACITY | 可选的、已核对的第三方账户额度上限，用于进度百分比和 20% / 5% 预警。余额未知时保留空值。官方货币账户单独展示。 |
@@ -58,7 +84,7 @@ TypeSafe 与 JevModel 二选一调用。P0-0 先配置 Tavily 或 Brave 之一�
 |---|---|
 | provider / checked_at | 所选通道，及带时区的实际审核时间 |
 | reviewer / region / terms_reference | 实际审查人、处理地区、已审条款版本或地址 |
-| evidence_file / evidence_sha256 | 审查文件的本地路径（可相对 JSON）及文件 SHA-256。Windows 可用 Get-FileHash 查值，使用小写十六进制。 |
+| evidence_file / evidence_sha256 | 审查附件的文件名或本地路径及 SHA-256。界面使用你选中的附件。环境变量方式下，会按 JSON 指定的路径读取。Windows 可用 Get-FileHash 查值，使用小写十六进制。 |
 | public_text_approved | 实际批准发送经许可、脱敏公开原话时填写 true |
 | zdr_enabled | TypeSafe 需要真实组织控制台的启用记录 |
 | retention_reviewed / subprocessors_reviewed | 独立第三方 JevModel 的留存及转发链分别审查 |
@@ -77,6 +103,11 @@ SQLite 迁移位于 `src/raw_store/migrations/`。服务从空库启动时自动
 | POST /api/runs | JSON 含 request_key（UUID）；同键返回原批次 |
 | POST /api/runs/{id}/resume | 恢复同一批次，保留各次尝试 |
 | GET /api/runs/{id}/evidence | 本地完整的脱敏证据、时间、HTTP 状态和历次验收结果 |
+| PUT /api/setup/{provider}/key | 在本机保存或更新密钥，只返回配置状态 |
+| DELETE /api/setup/{provider}/key | 删除本机密钥或停用该环境凭证 |
+| PUT /api/setup/jev/{provider} | 选择当前 Jev 通道 |
+| PUT /api/setup/{provider}/review | 本机导入审查 JSON 与附件，核对后生效 |
+| POST /api/setup/{provider}/diagnostics | 使用唯一请求键执行一次连接诊断，独立保留脱敏证据 |
 
 写接口要求同源，使用请求头 `X-VOC-Action: connectivity`。本机信任 localhost 和 127.0.0.1。Jev 每片响应独立保留，输出概率须有合法范围与完整分布。不能确认是否已扣费的传输中断会暂停该分片并要求核对。401、402、422 会记录具体原因；429 和有幂等保证的 502 使用同键限次退避。长 Retry-After 留待后续恢复。Token Center 跳转供应商购买页，用量和余额的留存来源分别是 usage.input_tokens 与真实余额头。
 
@@ -84,11 +115,12 @@ SQLite 迁移位于 `src/raw_store/migrations/`。服务从空库启动时自动
 
 | 页面状态或响应 | 检查位置 |
 |---|---|
-| 未配置 / 未测试 | 检查本机 `.env` 的变量名和所选供应商。重启服务后新建批次取证。 |
-| 审核未完成 | 核对 `JEV_REVIEW_FILE`、审批类型、附件和 SHA-256。 |
+| 未配置 / 未测试 | 在 API 接入页核对当前通道，保存密钥后点击「检查连接」。 |
+| 审核未完成 | 核对供应商、审批类型、实际附件和 SHA-256 后重新导入。 |
 | HTTP 401 / 403 | 核对密钥所属账户、模型或搜索权限，以及账户状态。 |
 | HTTP 402 / 429 | 在供应商控制台核对余额或限流。有 Retry-After 时按响应等待。 |
 | HTTP 422 / 能力不满足 | 查看当前批次的模型、请求字段和 `schema_gap`。文档中的示例响应可用于对照。 |
+| HTTP 5xx | 核对供应商服务状态。供应商可能已接单时，先核对请求和账单，再发起检查。 |
 | 传输中断、计费待核对 | 一旦结果可能已经被供应商接收，用原分片键核对供应商账单或请求记录。本地只自动重放已落盘成功片，未落盘时把批次保留在待核对状态。 |
 
 ## 来源边界
@@ -110,7 +142,7 @@ python -m playwright install chromium
 python tests/browser_e2e.py
 ```
 
-有真实密钥、供应商留存审查和指定搜索源权限后，使用已配置的后端环境执行 `python tests/live_gate.py`。CI 只运行工程检查及无需密钥的匿名公开来源浏览器测试。Node 24 用于前端状态回归。
+有真实密钥、供应商留存审查和指定搜索源权限后，可在界面执行正式验收，也可运行 `python tests/live_gate.py`（读取同一个本机凭证库）。CI 运行工程检查和无需密钥的匿名公开来源浏览器测试。Node 24 用于前端状态回归。
 
 已发布批次可离线交叉核对 SQLite 与 JSON，也可向原帖接口重新取证。后者返回 0 表示原句及许可一致，1 表示观察到差异，2 表示无可用响应或原帖不可读取。独立复核不会修改已发布的批次。
 

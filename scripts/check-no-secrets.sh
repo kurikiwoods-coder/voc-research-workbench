@@ -12,7 +12,9 @@ rules = [r"sk-[A-Za-z0-9]{16,}",r"AKIA[0-9A-Z]{16}",r"xox[baprs]-[A-Za-z0-9-]{10
 bad = set()
 for name in filter(None, paths):
     path = Path(name)
-    if ((path.name.startswith(".env") and path.name!=".env.example") or name.startswith(("data/raw/","data/private/","data/cx/","runtime/","credentials/"))):
+    if ((path.name.startswith(".env") and path.name!=".env.example")
+            or name.startswith(("data/raw/","data/private/","data/cx/","runtime/"))
+            or {"credentials", "api-diagnostics"}.intersection(path.parts)):
         bad.add(name)
     if name == "scripts/check-no-secrets.sh":
         continue

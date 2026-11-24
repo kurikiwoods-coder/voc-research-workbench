@@ -24,6 +24,8 @@ class Response:
     body: object
     remaining: int | None = None
     retry_after: str | None = None
+    monthly_remaining: int | None = None
+    monthly_limit: int | None = None
 
 
 class Denied(ValueError):
@@ -51,7 +53,7 @@ def finite_float(value):
 def redact(value, secrets=()):
     if isinstance(value, dict):
         return {
-            str(k): redact(v, secrets)
+            redact(str(k), secrets): redact(v, secrets)
             for k, v in value.items()
             if str(k).lower()
             not in {
@@ -63,6 +65,9 @@ def redact(value, secrets=()):
                 "access-token",
                 "cookie",
                 "set-cookie",
+                "api-key",
+                "x-api-key",
+                "token",
             }
         }
     if isinstance(value, list):
@@ -73,6 +78,22 @@ def redact(value, secrets=()):
                 value = value.replace(secret, "[REDACTED]")
         return re.sub(r"[\w.+-]+@[\w.-]+\.[a-zA-Z]{2,}", "[REDACTED]", value)
     return value
+
+
+def brave_monthly_quota(headers):
+    def integers(header):
+        return [int(v.strip()) if re.fullmatch(r"\d{1,18}", v.strip()) else None
+                for v in headers.get(header, "").split(",")]
+
+    limits = integers("X-RateLimit-Limit")
+    remaining = integers("X-RateLimit-Remaining")
+    policies = headers.get("X-RateLimit-Policy", "").split(",")
+    if len(policies) != len(remaining) or len(limits) != len(remaining):
+        return None, None
+    for policy, limit, left in zip(policies, limits, remaining):
+        if re.fullmatch(r"\s*\d{1,18}\s*;\s*w=2592000\s*", policy) and limit and left is not None and left <= limit:
+            return left, limit
+    return None, None
 
 
 def network(method, url, body, headers):
@@ -102,12 +123,15 @@ def network(method, url, body, headers):
                 obj = {"error": "non_json_response"}
             header = response.headers.get("X-Tokens-Remaining", "")
             remaining = int(header) if re.fullmatch(r"\d{1,18}", header) else None
-            return Response(response.status, obj, remaining, response.headers.get("Retry-After"))
+            monthly = brave_monthly_quota(response.headers) if urlsplit(url).hostname == "api.search.brave.com" else (None, None)
+            return Response(response.status, obj, remaining, response.headers.get("Retry-After"), *monthly)
     except (URLError, TimeoutError, ConnectionError, OSError):
         return Response(None, {"error": "connection_interrupted"})
 
 
 def failure(code):
+    if code is not None and 500 <= code <= 599:
+        return "upstream_error"
     return {
         None: "offline",
         401: "invalid_key",
@@ -115,7 +139,6 @@ def failure(code):
         403: "permission_denied",
         422: "invalid_contract",
         429: "rate_limited",
-        502: "upstream_error",
     }.get(code, "provider_error")
 
 

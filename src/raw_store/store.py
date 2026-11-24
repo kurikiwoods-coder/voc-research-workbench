@@ -25,10 +25,11 @@ class Conflict(ValueError):
 
 
 class Store:
-    def __init__(self, directory, *, fixture=False):
-        self.directory = Path(directory)
+    def __init__(self, directory, *, fixture=False, diagnostic=False):
+        self.directory = Path(directory) / "api-diagnostics" if diagnostic else Path(directory)
         self.directory.mkdir(parents=True, exist_ok=True)
         self.fixture = fixture
+        self.diagnostic = diagnostic
         self.path = self.directory / (
             "synthetic_contract.sqlite3" if fixture else "connectivity.sqlite3"
         )

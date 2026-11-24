@@ -8,7 +8,7 @@ import re
 from hashlib import sha256
 from urllib.parse import urlsplit
 
-from src.execution.transport import ENDPOINTS, network, outbound, redact
+from src.execution.transport import ENDPOINTS, network, number, outbound, redact
 from src.raw_store.store import dump
 
 SITE = "cooking"
@@ -62,13 +62,13 @@ def published_at(value):
     return None
 
 
-def discover(settings, store, attempt, transport=network):
+def discover(settings, store, attempt, transport=network, *, engines=ENGINES):
     if (transport is network) == store.fixture:
         raise ValueError("在线传输和合成测试必须使用独立数据库")
     secrets = list(settings.keys.values())
     refs, errors = [], []
     candidates = {engine: [] for engine in ENGINES}
-    for engine in ENGINES:
+    for engine in engines:
         key = settings.keys.get(engine)
         if engine != "forum_search" and not key:
             errors.append(f"{engine} 未配置")
@@ -89,6 +89,8 @@ def discover(settings, store, attempt, transport=network):
                 "max_results": 5,
                 "include_answer": False,
             }
+            if store.diagnostic:
+                params["include_usage"] = True
             reply = outbound(
                 engine,
                 labels=PUBLIC,
@@ -110,11 +112,11 @@ def discover(settings, store, attempt, transport=network):
             params = {"site": SITE, "title": TOPIC, "sort": "votes", "order": "desc", "pagesize": 4}
             reply = outbound("forum_search", labels=PUBLIC, query=params, transport=transport)
         obj = reply.body if isinstance(reply.body, dict) else {}
-        listings = (
-            (obj.get("web") or {}).get("results", [])
-            if engine == "brave" and isinstance(obj.get("web"), dict)
-            else obj.get("items" if engine == "forum_search" else "results", [])
-        )
+        if engine == "brave":
+            web = obj.get("web")
+            listings = web.get("results") if isinstance(web, dict) else [] if obj.get("type") == "search" and web is None else None
+        else:
+            listings = obj.get("items" if engine == "forum_search" else "results")
         hits = []
         if reply.status == 200 and isinstance(listings, list):
             for item in listings:
@@ -126,6 +128,16 @@ def discover(settings, store, attempt, transport=network):
                         {"id": ident, "url": link, "title": unescape(str(item.get("title", "")))[:240]}
                     )
                     candidates[engine].append(ident)
+        extra = {}
+        if store.diagnostic:
+            usage = obj.get("usage")
+            extra = {
+                "result_list_valid": isinstance(listings, list),
+                "result_count": len(listings) if isinstance(listings, list) else None,
+                "credits": number(usage.get("credits")) if engine == "tavily" and isinstance(usage, dict) else None,
+                "monthly_remaining": number(reply.monthly_remaining) if engine == "brave" else None,
+                "monthly_limit": number(reply.monthly_limit) if engine == "brave" else None,
+            }
         refs.append(
             store.record(
                 attempt,
@@ -143,6 +155,7 @@ def discover(settings, store, attempt, transport=network):
                         "projection": "eligible URLs and titles, no search snippets",
                         "error": obj.get("error") or obj.get("error_message"),
                         "quota_remaining": obj.get("quota_remaining"),
+                        **extra,
                     },
                     secrets,
                 ),
@@ -183,10 +196,10 @@ def discover(settings, store, attempt, transport=network):
         display_name = owner.get("display_name") if isinstance(owner, dict) else None
         author = unescape(display_name).strip() if isinstance(display_name, str) else ""
         date = published_at(item.get("creation_date"))
+        source_matches = post_id(original) == ident and str(item.get("question_id")) == ident
+        permitted = source_matches and isinstance(license_name, str) and license_name in LICENSES
         verified = (
-            isinstance(license_name, str) and license_name in LICENSES
-            and post_id(original) == ident
-            and str(item.get("question_id")) == ident
+            permitted
             and bool(quote and author)
             and date is not None
             and redact(quote, secrets) == quote
@@ -224,7 +237,14 @@ def discover(settings, store, attempt, transport=network):
                 **params,
             },
             redact(
-                citation if verified else {"verified": False, "error": obj.get("error_message") or obj.get("error")}, secrets
+                citation if verified else {
+                    "verified": False, "error": obj.get("error_message") or obj.get("error"),
+                    **({
+                        "content_received": source_matches,
+                        "license_recognized": permitted,
+                        "excerpt_confirmed": False,
+                    } if store.diagnostic else {}),
+                }, secrets
             ),
             reply.status,
         )

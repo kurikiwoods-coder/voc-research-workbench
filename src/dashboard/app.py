@@ -1,4 +1,6 @@
 from contextlib import asynccontextmanager
+from dataclasses import replace
+from ipaddress import ip_address
 import json
 from pathlib import Path
 from uuid import UUID
@@ -10,7 +12,9 @@ from pydantic import BaseModel, ConfigDict
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from src.config import CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, MODEL, PROVIDERS, ROOT, Settings
+from src.dashboard.api_setup import register_setup, setup_view
 from src.execution.checks import run_checks
+from src.raw_store.credentials import CredentialVault, VaultError
 from src.raw_store.store import Busy, Conflict, Store
 
 STATIC = Path(__file__).parent / "static"
@@ -77,33 +81,28 @@ def requirements(db, run=None):
     return rows
 
 
-def balance(db, settings):
+def balance(db, settings, diagnostics=None):
     tag = (settings.account_tag(),)
-    records = db.rows(
-        """SELECT s.shard_no,s.state,s.tokens,s.remaining,s.updated_at,s.run_id,e.status_code FROM shards s
+    records_query = """SELECT s.shard_no,s.state,s.tokens,s.remaining,s.updated_at,s.run_id,e.status_code FROM shards s
                          JOIN runs r ON r.id=s.run_id LEFT JOIN evidence e ON e.id=s.evidence_id
-                         WHERE r.account_tag=? ORDER BY s.updated_at DESC,s.rowid DESC LIMIT 20""",
-        tag,
-    )
-    total = db.one(
-        """SELECT COUNT(*) AS n, COUNT(s.tokens) AS metered, SUM(s.tokens) AS tokens
-                      FROM shards s JOIN runs r ON r.id=s.run_id WHERE r.account_tag=? AND s.state='received'""",
-        tag,
-    )
-    latest = db.one(
-        """SELECT s.remaining FROM shards s JOIN runs r ON r.id=s.run_id
-           WHERE r.account_tag=? AND s.state='received' ORDER BY s.updated_at DESC,s.rowid DESC LIMIT 1""",
-        tag,
-    )
+                         WHERE r.account_tag=? ORDER BY s.updated_at DESC,s.rowid DESC LIMIT 20"""
+    total_query = """SELECT COUNT(*) AS n, COUNT(s.tokens) AS metered, SUM(s.tokens) AS tokens
+                    FROM shards s JOIN runs r ON r.id=s.run_id WHERE r.account_tag=? AND s.state='received'"""
+    records = db.rows(records_query, tag)
+    formal = db.one(total_query, tag)
+    diagnostic = diagnostics.one(total_query, tag) if diagnostics else {"n": 0, "metered": 0, "tokens": None}
+    counts = formal["n"] + diagnostic["n"]
+    measured = formal["metered"] + diagnostic["metered"]
     token_account = settings.provider == "jevmodel"
-    last_synced = db.one(
-        """SELECT s.updated_at FROM shards s JOIN runs r ON r.id=s.run_id
+    sync_query = """SELECT MAX(s.updated_at) AS at FROM shards s JOIN runs r ON r.id=s.run_id
            WHERE r.account_tag=? AND s.state='received' AND s.remaining IS NOT NULL
-           ORDER BY s.updated_at DESC,s.rowid DESC LIMIT 1""",
-        tag,
-    ) if token_account else None
-    last_code = records[0]["status_code"] if records else None
-    remaining = latest["remaining"] if latest and token_account and last_code not in (401, 403) else None
+           """
+    stores = (db, diagnostics) if diagnostics else (db,)
+    synced = max((source.one(sync_query, tag)["at"] or "" for source in stores), default="") if token_account else ""
+    probe_records = diagnostics.rows(records_query, tag) if diagnostics else []
+    latest = max(records[:1] + probe_records[:1], key=lambda row: row["updated_at"], default=None)
+    last_code = latest["status_code"] if latest else None
+    remaining = latest["remaining"] if latest and token_account and last_code == 200 else None
     cap = settings.capacity if token_account else None
     percent = 100 * remaining / cap if remaining is not None and cap else None
     warning = {
@@ -114,7 +113,7 @@ def balance(db, settings):
         429: "供应商限流",
         502: "上游服务异常",
     }.get(last_code)
-    if not warning and records and records[0]["state"] == "uncertain":
+    if not warning and latest and latest["state"] in ("uncertain", "sending"):
         warning = "传输结果或计费待核对"
     if not warning and percent is not None and percent < 20:
         warning = "余额告急" if percent < 5 else "低余额预警"
@@ -126,9 +125,10 @@ def balance(db, settings):
         "capacity": cap,
         "percent": percent,
         "sync_method": "header" if remaining is not None else None,
-        "last_synced_at": last_synced["updated_at"] if last_synced else None,
-        "input_tokens": total["tokens"] if total["n"] and total["n"] == total["metered"] else None,
-        "successful_shards": total["n"],
+        "last_synced_at": synced or None,
+        "input_tokens": (formal["tokens"] or 0) + (diagnostic["tokens"] or 0) if counts and counts == measured else None,
+        "diagnostic_input_tokens": diagnostic["tokens"] if diagnostic["n"] == diagnostic["metered"] else None,
+        "successful_shards": counts,
         "unit": "input tokens" if token_account else "供应商货币账户",
         "warning": warning,
         "records": records,
@@ -203,8 +203,10 @@ class Batch(BaseModel):
 def create_app(settings=None):
     @asynccontextmanager
     async def lifespan(app):
-        app.state.settings = settings or Settings.load()
+        app.state.settings = settings or Settings.load_base()
         app.state.store = Store(app.state.settings.directory)
+        app.state.diagnostics = Store(app.state.settings.directory, diagnostic=True)
+        app.state.vault = CredentialVault(app.state.settings.directory)
         yield
 
     app = FastAPI(
@@ -214,16 +216,24 @@ def create_app(settings=None):
 
     @app.middleware("http")
     async def local_controls(request: Request, call_next):
+        setup = request.url.path.startswith("/api/setup/")
+        if setup:
+            try:
+                loopback = request.client is not None and ip_address(request.client.host).is_loopback
+            except ValueError:
+                loopback = False
+            if not loopback:
+                return JSONResponse({"detail": "请从本机 localhost 打开工作台。"}, status_code=403)
         if request.method not in ("GET", "HEAD", "OPTIONS"):
             origin = request.headers.get("origin")
             expected = f"{request.url.scheme}://{request.headers.get('host')}"
-            if request.headers.get("X-VOC-Action") != "connectivity" or (origin and origin != expected):
+            if request.headers.get("X-VOC-Action") != "connectivity" or ((origin or setup) and origin != expected):
                 return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403)
         reply = await call_next(request)
         reply.headers["Referrer-Policy"] = "no-referrer"
         reply.headers["X-Content-Type-Options"] = "nosniff"
         reply.headers["Content-Security-Policy"] = (
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"
         )
         if request.url.path.startswith("/api/"):
             reply.headers["Cache-Control"] = "no-store"
@@ -242,7 +252,15 @@ def create_app(settings=None):
 
     @app.get("/api/workspace")
     def workspace(run_id: UUID | None = None):
-        db, cfg = app.state.store, app.state.settings
+        db, base, diagnostics = app.state.store, app.state.settings, app.state.diagnostics
+        error = None
+        try:
+            local = app.state.vault.read()
+            cfg = base.with_local(local)
+        except VaultError as exc:
+            error = str(exc)
+            cfg = replace(base, keys={}, review="", local_reviews={})
+            local = {"keys": {}, "wizard_seen": True}
         history = db.history()
         selected = (
             next((r for r in history if r["id"] == str(run_id)), None)
@@ -257,8 +275,9 @@ def create_app(settings=None):
             "selected": selected,
             "history": history,
             "requirements": matrix,
-            "token": balance(db, cfg),
+            "token": balance(db, cfg, diagnostics),
             "config": connection_diagnostics(db, cfg, selected, matrix),
+            "setup": setup_view(base, cfg, local, diagnostics, lambda s: balance(db, s, diagnostics), error),
         }
 
     @app.get("/api/runs/{run_id}/evidence")
@@ -269,8 +288,11 @@ def create_app(settings=None):
             raise HTTPException(404, "批次不存在")
 
     def execute(key, run=None):
+        def current_settings():
+            return app.state.settings.with_local(app.state.vault.read())
+
         try:
-            rid = run_checks(app.state.settings, app.state.store, key, run)
+            rid = run_checks(current_settings, app.state.store, key, run)
             return {"run_id": rid}
         except Busy as exc:
             raise HTTPException(409, str(exc))
@@ -278,6 +300,8 @@ def create_app(settings=None):
             raise HTTPException(409, str(exc))
         except KeyError:
             raise HTTPException(404, "批次不存在")
+        except VaultError as exc:
+            raise HTTPException(503, str(exc)) from None
 
     @app.post("/api/runs", status_code=201)
     def create_run(body: Batch):
@@ -287,6 +311,7 @@ def create_app(settings=None):
     def resume(run_id: UUID):
         return execute(None, str(run_id))
 
+    register_setup(app)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
 

@@ -109,6 +109,7 @@ def validate(asked, obj):
 def call_shards(settings, store, run, attempt, quote, transport=network, sleep=time.sleep):
     if (transport is network) == store.fixture:
         raise ValueError("在线传输和合成测试必须使用独立数据库")
+    synthetic_probe = bool(store.diagnostic and quote and quote.get("role") == "synthetic_api_probe")
     refs, checks, gaps = [], [], []
     review = settings.review_status()
     admission = {
@@ -116,6 +117,7 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
         "model": MODEL,
         "key_configured": bool(settings.keys.get(settings.provider)),
         "public_source_verified": bool(quote and quote["verified"]),
+        "synthetic_probe": synthetic_probe,
         "review": review,
         "planned_shards": [len(group) for group in split(questions())],
     }
@@ -132,7 +134,7 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
         reasons.append(PROVIDERS[settings.provider][1] + " 未配置")
     if not review["approved"]:
         reasons.append("缺少该供应商的公开语料留存审查记录")
-    if not admission["public_source_verified"]:
+    if not admission["public_source_verified"] and not synthetic_probe:
         reasons.append("未取得可核验公开原话")
     if reasons:
         return refs, checks, gaps, "；".join(reasons)
@@ -158,7 +160,8 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
         elif prev and prev["state"] not in ("retryable",):
             return refs, checks, gaps, "上次请求的计费或契约状态待核对，请查看原始证据。"
         else:
-            for n in range(3):
+            maximum_attempts = 1 if store.diagnostic else 3
+            for n in range(maximum_attempts):
                 response = outbound(
                     settings.provider,
                     labels=PUBLIC,
@@ -171,7 +174,8 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
                     },
                     transport=transport,
                 )
-                obj = redact(response.body, list(settings.keys.values()))
+                secrets = list(settings.keys.values())
+                obj = redact(response.body, secrets)
                 meta = {
                     "endpoint": PROVIDERS[settings.provider][0],
                     "provider": settings.provider,
@@ -180,7 +184,7 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
                     "idempotency_key": key,
                     "registry_version": REGISTRY,
                     "question_set_version": VERSION,
-                    "mention_id": "forum-" + quote["post_id"],
+                    "mention_id": "synthetic-api-probe" if synthetic_probe else "forum-" + quote["post_id"],
                 }
                 state, tokens = "received", input_tokens(obj)
                 if response.status != 200:
@@ -189,9 +193,9 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
                         settings.provider == "jevmodel" and response.status == 502
                     )
                     retry_after = response.retry_after or ""
-                    wait = int(retry_after) if retry_after.isdecimal() else 2**n
+                    wait = int(retry_after) if retry_after.isdecimal() and len(retry_after) <= 8 else 2**n
                     tokens = None
-                    if n < 2 and safe_retry and wait <= 8:
+                    if n + 1 < maximum_attempts and safe_retry and wait <= 8:
                         state = None
                     else:
                         state = (
@@ -206,7 +210,7 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
                     {
                         "body": obj,
                         "X-Tokens-Remaining": response.remaining,
-                        "retry_after": response.retry_after,
+                        "retry_after": redact(response.retry_after, secrets),
                     },
                     response.status,
                     state=state,

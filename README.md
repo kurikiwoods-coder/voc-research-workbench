@@ -8,7 +8,7 @@ VOC 工作台用于研究任意产品、服务或跨品类用户需求。一个�
 
 ## 启动当前版本
 
-开发分支交付 P0-0 本机工作台，包含连通性检查、验收矩阵、批次记录和 Jev 额度中心。浏览器通过 FastAPI 访问本地 SQLite。没有供应商凭证也能启动并查看可执行的检查。
+开发分支交付 P0-0 本机工作台，包含 API 接入、连通性检查、验收矩阵、批次记录和 Jev 额度中心。浏览器通过 FastAPI 访问本地 SQLite。没有供应商凭证也能启动并完成配置向导。
 
 **Windows** 安装 Python 3.12 后双击 `scripts/start-windows.cmd`，浏览器打开 **http://127.0.0.1:8765/**。Linux 或 macOS 可在 Python 虚拟环境执行以下命令。
 
@@ -17,9 +17,9 @@ python -m pip install -r requirements.txt
 python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
 ```
 
-选择「运行检查」后逐项查看结果；在「运行记录」可恢复批次或导出脱敏证据。后端凭证与审查凭据留在本机。当前实测、配置与差异分别见 [阶段验收记录](docs/evidence/p0-0/README.md)、[运行与配置](docs/connectivity.md)、[需求与冲突矩阵](docs/requirements-matrix.md)。
+首次启动可跟随向导，也可以从「设置 → API 接入」继续。选择 TypeSafe 或 JevModel，配置 Tavily 或 Brave 中的至少一家。粘贴密钥后点「保存密钥」，立即生效。导入所选 Jev 通道的留存审查，再逐服务点「检查连接」。[用户操作说明](docs/connectivity.md#从工作台配置-api) · [供应商注册与取钥](docs/connectivity.md#注册与创建密钥)
 
-「连接配置」提供 TypeSafe、JevModel、Tavily 和 Brave 的注册入口，分别展示本机配置、所选批次的接口记录及 G-1。注册后在项目根目录的 `.env` 配置后端变量。[注册、取钥与排错](docs/connectivity.md#注册与创建密钥)
+点「运行正式验收」执行原有六项检查。可在「运行记录」恢复批次或导出脱敏证据。YouTube 和 Google Forms 当前提供接入资料，分别等待 P0 和 P1。[阶段验收记录](docs/evidence/p0-0/README.md) · [需求与冲突矩阵](docs/requirements-matrix.md)
 
 ## 工程回归
 
