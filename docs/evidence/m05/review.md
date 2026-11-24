@@ -26,3 +26,7 @@ Windows 11 Enterprise 25H2（构建 26200.8655）、Python 3.12.9、Node 24.19.0
 | Node | 2/2 通过。 |
 | Chromium | 8/8 通过，涵盖 M05 核验、去重、撤销与重启回查。 |
 | SQLite | 3/3 次空库冷启动，4/4 份原有脱敏归档完整性校验。既有迁移、事务回滚及外键回归通过。 |
+
+## 远端工程验收
+
+最终实现 `d0414f5e7b978460d7dec3784c0862d7f1f0bdd0` 已同步至 `codex/p0-0-connectivity`，Ubuntu、Windows Server 2022 和 Chromium 作业全部通过。M05 为 **ENGINEERING_PASS**，正式阶段为 P0-0，G-1 **BLOCKED**。[草稿 PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019)

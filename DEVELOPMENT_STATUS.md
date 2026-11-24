@@ -4,7 +4,7 @@
 
 ## 本轮 M05-R 独立工程复审
 
-复审基线为 `f279c7e0075b07e581d528709ffd5c9824e1a811`。排除和到期继续受原留存限制，批次确认重试复用原回执，读取入口应用脱敏及来源核验规则。冻结状态待本轮修复提交的远端 CI 核对。[合成回归证据](docs/evidence/m05/review.md) · [M06 数据契约](HANDOVER.md#m05--m06-数据契约)
+M05 为 **ENGINEERING_PASS**。复审基线为 `f279c7e0075b07e581d528709ffd5c9824e1a811`，最终实现为 `d0414f5e7b978460d7dec3784c0862d7f1f0bdd0`。原留存期限、许可撤销、跨文件来源限制、批次重试和遮蔽均有回归。Windows 11 实机通过 Python 114/114（基线 104，新增 10）、Node 2/2、冷启动 3/3、Chromium 8/8 和归档 4/4。对应 Ubuntu、Windows Server 2022、Chromium 作业全部通过。真实研究 API 调用 0 次。正式阶段仍为 P0-0，G-1 **BLOCKED**。[M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019) · [合成回归证据](docs/evidence/m05/review.md) · [M06 数据契约](HANDOVER.md#m05--m06-数据契约)
 
 ## 上轮 M05 原始语料库、去重及溯源
 

@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M05 已交付本机原始语料治理，独立复审的工程冻结等待对应远端 CI。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 BLOCKED。后续模块等待开发指令。[开发状态](DEVELOPMENT_STATUS.md)
+M05 已通过独立工程复审，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。后续模块等待开发指令。[开发状态](DEVELOPMENT_STATUS.md)
 
 ## M01 基础工程与连通性
 
@@ -90,9 +90,9 @@ M05 已交付本机原始语料治理，独立复审的工程冻结等待对应�
 | 数据库及 API | SQLite v4 增量迁移，新增 corpus_snapshots、corpus_reviews 和 /api/corpus。原文通过 M04 的稳定行号引用回放。 |
 | 前端页面 | 原始语料、批次候选、原文溯源与审核详情。 |
 | 验收标准 | 3 批来源、≥100 条真实片段，30/30 可回源。许可、采样窗口、角色、重复与剔除原因可查。 |
-| 最近相关提交 | [M05 实现 `b02a2b6`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/b02a2b647bff67f7e091b51fcdfc46cc719077e8)，已推送到 `codex/p0-0-connectivity`。 |
+| 最近相关提交 | [M05 原始实现 `b02a2b6`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/b02a2b647bff67f7e091b51fcdfc46cc719077e8) · [M05-R 最终实现 `d0414f5`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/d0414f5e7b978460d7dec3784c0862d7f1f0bdd0)，均已推送到 `codex/p0-0-connectivity`。 |
 | 测试结果与证据 | [本机验收记录](docs/evidence/m05/README.md) · [M05 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45352022477) · [历史正式连通性归档](docs/evidence/p0-0/tavily-live/README.md) |
-| M05-R 独立复审 | 收据幂等、撤销、留存、来源许可和遮蔽已补回归。工程冻结等待对应远端 CI。[复审证据](docs/evidence/m05/review.md) |
+| M05-R 独立复审 | **ENGINEERING_PASS**。新增 10 项 Python 回归，Windows 11 全量 114/114。Ubuntu、Windows Server 2022 和 Chromium 作业全部通过。[复审证据](docs/evidence/m05/review.md) · [M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019) |
 | 剩余问题 | 逐源许可与实际清理审计，SQLite 和备份的受控清理，接入线上批次与正式证据关系。 |
 
 ## M06 三层用户需求数据关系
@@ -101,7 +101,7 @@ M05 已交付本机原始语料治理，独立复审的工程冻结等待对应�
 |---|---|
 | PDT 与矩阵编号 | §6、§6.6、§6.9、§9.3；C0-6、CAT-1～CAT-3、CAT-5～CAT-10 |
 | 模块职责 | 维护 Product Category、Task Category、Intent 以及证据驱动的双向关系。 |
-| 前置依赖 | M03 冻结范围和 M05 原话及来源契约。使用独立合成夹具预开发时等待授权。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
+| 前置依赖 | M03 冻结范围、M05 工程冻结和数据契约均已具备。使用独立合成夹具预开发时等待下一轮开发指令。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
 | 工程开发 | 已有 JSON Schema、内存 SQLite 三层召回演练。正式关系服务未实现。 |
 | 工程测试 | C0-6 冒烟通过，正式关系 API 未测试。 |
 | 正式业务验收 | CAT 系列待验。 |
