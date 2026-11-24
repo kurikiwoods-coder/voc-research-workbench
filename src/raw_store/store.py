@@ -36,7 +36,7 @@ class Store:
         with closing(self.connect()) as db:
             db.execute("PRAGMA journal_mode=WAL")
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            migrations = ("001_connectivity.sql", "002_research_studies.sql")
+            migrations = ("001_connectivity.sql", "002_research_studies.sql", "003_research_imports.sql")
             if version > len(migrations):
                 raise ValueError("数据库版本高于当前程序")
             target = 1 if fixture or diagnostic else len(migrations)

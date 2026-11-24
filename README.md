@@ -27,6 +27,10 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
 
 进入「研究项目 → 新建项目」，可管理产品、服务、跨品类和开放式课题。项目详情可切换当前项目、冻结范围和查看历次快照。归档前会提示，恢复后仍能查看原研究范围。M03 已获准独立预开发，可在没有 API Key 时使用。[项目操作与接口](docs/studies.md)
 
+## 本机研究数据导入
+
+先冻结项目范围，在「数据导入中心」选择 CSV 或 XLSX。可检查工作表、调整字段映射、确认质量并回查批次。暂存数据留在本地，正式研究证据需按 PDT 核验。[操作说明、模板与接口](docs/imports.md)
+
 ## 工程回归
 
 安装 Python 3.12、Node 24 和 `requirements-dev.txt`，执行 `bash scripts/smoke-test.sh`。本地 Chromium 回归执行 `python -m playwright install chromium` 和 `python tests/browser_e2e.py`。GitHub Actions 在 PR 上运行 Linux、Windows Server 和 Chromium 工程测试，保存日志和截图。Windows 10/11 真机验收单独登记。[CI 工作流](.github/workflows/p0-0-ci.yml) · [Actions 运行记录](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/workflows/p0-0-ci.yml)

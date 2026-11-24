@@ -15,6 +15,7 @@ from urllib.error import URLError
 from urllib.parse import urljoin
 
 from playwright.sync_api import expect, sync_playwright
+from imports_browser import imports_browser_checks, imports_restart_checks
 from studies_browser import study_browser_checks, study_restart_checks
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -196,7 +197,9 @@ def browser_checks(base, output, studies_only=False):
         expect(failing.get_by_role("heading", name="P0 准入暂缓")).to_be_visible()
         assert not errors, errors
         print("M01 connectivity E2E passed: navigation, batch evidence and recovery, Token Center, and 320/390 layouts.")
-        return study_browser_checks(browser, base, output)
+        study_ids = study_browser_checks(browser, base, output)
+        import_ids = imports_browser_checks(browser, base, output)
+        return study_ids, import_ids
 
 
 @contextmanager
@@ -234,10 +237,15 @@ def main():
             port_probe.bind(("127.0.0.1", 0))
             port = port_probe.getsockname()[1]
         with server(directory, port) as base:
-            ids = browser_checks(base, args.output, args.studies_only)
+            result = browser_checks(base, args.output, args.studies_only)
         with server(directory, port) as base, sync_playwright() as pw:
             browser = pw.chromium.launch(executable_path=os.getenv("VOC_CHROMIUM") or None)
-            study_restart_checks(browser, base, ids)
+            if args.studies_only:
+                study_restart_checks(browser, base, result)
+            else:
+                study_ids, import_ids = result
+                study_restart_checks(browser, base, study_ids)
+                imports_restart_checks(browser, base, import_ids)
             browser.close()
     print("Chromium E2E passed. Screenshots:", args.output)
 

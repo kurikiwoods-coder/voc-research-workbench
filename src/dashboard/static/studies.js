@@ -338,7 +338,8 @@ export function mountStudies(root, route, { api, esc, ic, choices, tell }) {
           <section class="panel study-section">
             <header><h2>研究记录</h2></header>
             <p>范围版本 <strong>${p.scope_history.length}</strong> 个，已冻结 <strong>${p.scope_history.filter(s => s.frozen_at).length}</strong> 个。</p>
-            <p class="study-muted">导入、采集与分析记录将在对应模块接入后显示。</p>
+            <div class="actions">${href("#imports/" + p.study_id, "查看数据导入")}</div>
+            <p class="study-muted">采集与分析记录将在对应模块接入后显示。</p>
           </section>
         </aside>
       </div>`;

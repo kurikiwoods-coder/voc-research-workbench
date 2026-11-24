@@ -10,6 +10,7 @@ const esc = (value) =>
   );
 const pages = {
   studies: ["研究项目", "folder"],
+  imports: ["数据导入中心", "download"],
   checks: ["连通性检查", "pulse"],
   matrix: ["验收矩阵", "grid"],
   history: ["运行记录", "clock"],
@@ -18,6 +19,7 @@ const pages = {
 };
 function pageFromLocation() {
   const page = location.hash.slice(1);
+  if (/^imports\/[a-f0-9-]{36}(?:\/batches\/[a-f0-9-]{36})?$/.test(page)) return "imports";
   if (/^studies\/(?:new|[a-f0-9-]{36}(?:\/(?:edit|scopes\/[a-f0-9-]{36}))?)$/.test(page)) return "studies";
   return Object.hasOwn(pages, page) ? page : "checks";
 }
@@ -375,21 +377,25 @@ function render() {
   nav();
   renderQuota();
   const main = el("main");
-  if (current !== "studies") {
+  if (!["studies", "imports"].includes(current)) {
     main.innerHTML = { checks, matrix, history, tokens, setup }[current]();
     return;
   }
   const hash = location.hash;
-  if (main.firstElementChild?.dataset.studyRoute === hash) return;
+  if (main.firstElementChild?.dataset.workspaceRoute === hash) return;
   const view = document.createElement("div");
-  view.className = "study-root";
-  view.dataset.studyRoute = hash;
-  view.innerHTML = '<p class="panel state-box" role="status">正在读取研究项目…</p>';
+  const research = current === "studies";
+  const title = pages[current][0];
+  view.className = research ? "study-root" : "import-root";
+  view.dataset.workspaceRoute = hash;
+  view.innerHTML = '<p class="panel state-box" role="status">正在读取' + title + '…</p>';
   main.replaceChildren(view);
-  import("./studies.js").then(({ mountStudies }) => {
-    if (view.isConnected) mountStudies(view, hash.slice(1), { api, esc, ic, choices, tell });
+  (research ? import("./studies.js") : import("./imports.js")).then(module => {
+    if (view.isConnected) (research ? module.mountStudies : module.mountImports)(
+      view, hash.slice(1), { api, esc, ic, choices, tell }
+    );
   }).catch(() => {
-    if (view.isConnected) view.textContent = "无法加载研究项目页面。请刷新工作台。";
+    if (view.isConnected) view.textContent = "无法加载" + title + "。请刷新工作台。";
   });
 }
 function openDrawer(title, kicker, html) {

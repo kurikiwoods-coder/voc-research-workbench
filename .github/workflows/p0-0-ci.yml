@@ -87,7 +87,7 @@ jobs:
                 Start-Sleep -Seconds 1
               }
             }
-            if ($health.status -ne 'ok' -or $health.schema_version -ne 2) { throw 'API startup failed' }
+            if ($health.status -ne 'ok' -or $health.schema_version -ne 3) { throw 'API startup failed' }
             $workspace = Invoke-RestMethod http://127.0.0.1:8765/api/workspace -TimeoutSec 5
             if ($null -eq $workspace.history -or @($workspace.history).Count -ne 0) {
               throw 'Cold-start database should be empty'

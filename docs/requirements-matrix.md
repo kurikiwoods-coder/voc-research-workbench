@@ -109,7 +109,7 @@ P0-0 补充的设置向导、本机凭证保存与诊断均有独立工程测试
 | G6 | P1 | 问卷闭环。生成一份问卷→人工改题→Forms 发布→测试回收。每题回链证据；人工审批；回收数据写入验证状态；无样本不宣称普遍率。 | PDT 附录 C / 六层模块 | 真实验收 G6 |
 | G7 | P0 | 故障与安全。断网、搜索源超额、Jev Key 错误、余额耗尽、安全扫描。既有数据可读；暂停新编码；Key 不外泄；内部数据无未经允许外发。 | PDT 附录 C / 六层模块 | 真实验收 G7 |
 | BIZ-SCOPE | P0 | 冻结研究范围、公开站点及第二品类，文本判断只用 Choice、Score、Noul | docs/decisions/、src/raw_store/studies.py、src/dashboard/study_api.py | D1–D5 记录；M03 工程回归 test_studies.py |
-| INGEST | P0 | Tavily/Brave 双源、YouTube、论坛、备用 Reddit 和 CSV；记录许可与漏斗 | src/ingestion/ | 一源故障后切换、CSV 离线复跑 |
+| INGEST | P0 | Tavily/Brave 双源、YouTube、论坛、备用 Reddit 和 CSV；记录许可与漏斗 | src/ingestion/、src/dashboard/import_api.py | 一源故障后切换、CSV 离线复跑；M04 工程回归 test_imports.py |
 | RAW | P0 | 不可变原文、去重、时间窗、来源角色、批次；≥100 条、三批次 | src/raw_store/ | 快照回放与真实来源抽查 |
 | DISCOVERY | P0 | BERTopic 与 TopicGPT 四步、单轨留痕、残差、新意图人工开放编码与回滚 | src/discovery/ | 隐藏未知的盲测、重算差异 |
 | BASIC-DASH | P0 | 正式互斥桶、采样漏斗、基础情感与问题、主次归属下钻、原话与复核 | src/dashboard/ | 同口径筛选后对账、每个指标回链 |
@@ -141,3 +141,8 @@ P0-0 补充的设置向导、本机凭证保存与诊断均有独立工程测试
 ## M03 独立预开发工程映射
 
 PDT §6.9 的 StudyScope 框定研究边界。项目、当前及历史范围、冻结与复合引用已落地，[工程测试](evidence/m03/README.md)涵盖产品和非产品课题。BIZ-SCOPE 的许可来源、第二品类和正式范围确认继续按 D1–D5 执行。CAT-6 正式跨品类全流程和 CAT-7 注册表验证仍在各自模块验收。G-1 保持 BLOCKED。
+
+
+## M04 独立预开发工程映射
+
+CSV / XLSX 暂存绑定冻结项目范围，记录原文、文件行、工作表、字段映射、许可与隐私状态。[工程证据](evidence/m04/README.md)包含数据隔离、审计、幂等和回滚。INGEST 的线上来源、G1 的三批真实数据与≥100 条语义片段、RAW 的正式原文治理与去重继续按原条款验收。导入暂存、错误报告和合成测试均不进入正式研究分母。G-1 保持 BLOCKED。

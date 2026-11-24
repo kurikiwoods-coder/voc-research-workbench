@@ -1,8 +1,12 @@
 # VOC Research Workbench 开发状态
 
-核查日期 2026-11-24。本轮开发基线 `7a4393f8c43a09bce8decd8d43d102293910c99f`，目标分支 `codex/p0-0-connectivity`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [15 个模块](MODULE_ROADMAP.md)
+核查日期 2026-11-24。本轮开发基线 `d22d56cdce129b1530647cf57dccd4b8f56cafed`，目标分支 `codex/p0-0-connectivity`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [15 个模块](MODULE_ROADMAP.md)
 
-## 本轮 M03 研究项目与范围管理
+## 本轮 M04 CSV / Excel 数据导入
+
+完成本机文件上传、工作表选择、字段映射、质量检查、确认入库、批次查询及撤销。导入写入 SQLite v3 暂存，绑定原项目和冻结范围。真实 Tavily、Brave、Jev 请求 0 次，G-1 保持 BLOCKED。[本机用法、模板与 M05 契约](docs/imports.md) · [工程测试记录](docs/evidence/m04/README.md)
+
+## 上轮 M03 研究项目与范围管理
 
 交付本机项目列表、新建和编辑、搜索排序、当前项目切换、归档恢复、五种研究模式及范围快照冻结。SQLite v2 增量迁移保留 M01 和 M02 存储边界。[本机操作与接口](docs/studies.md) · [工程测试记录](docs/evidence/m03/README.md)
 
@@ -38,4 +42,4 @@ Linux 本机、Ubuntu CI 和 Windows Server 2022 各通过 69 项 Python（含 1
 
 ## 下一轮候选
 
-当前仍处于 P0-0。M04 的批次入口应绑定明确的项目 ID 与已冻结范围版本，接入 M05 原话存储和去重接口。表格导入的独立预开发需新的模块授权，正式流程仍须 G-1 放行。
+当前仍处于 P0-0。M05 开发须经单独授权，使用 M04 的 import_candidates 及原始文件、项目和范围引用，实现正式原文治理、溯源和去重接口。真实业务流程仍按 PDT 和 G-1 放行。
