@@ -17,14 +17,14 @@
 | PDT 与矩阵编号 | C0-1～C0-6、G-1、G0、G7；BATCH-RECOVERY、PRIVACY、UI-STATES |
 | 模块职责 | 构建本机运行、批次审计、公开来源连通、幂等恢复、Jev 固定版本技术门。 |
 | 前置依赖 | Python 与 SQLite、合规原帖。正式 Jev 验收还依赖 M02 凭证和供应商审核。 |
-| 工程开发 | P0-0 工作台及验收程序已实现。本轮交付同批资料恢复，继续使用原批次入口。 |
-| 工程测试 | 本轮工程测试通过。Ubuntu 与 Windows Server 各 53 项 Python、2 项 Node、3 次空库冷启动。Chromium E2E 通过。 |
+| 工程开发 | P0-0 工作台及验收程序已实现。已交付同批资料恢复，继续使用原批次入口。 |
+| 工程测试 | M01 交付时工程测试通过。Ubuntu 与 Windows Server 各 53 项 Python、2 项 Node、3 次空库冷启动。Chromium E2E 通过。 |
 | 正式业务验收 | C0-3、C0-5、C0-6 PASS；C0-1、C0-2、C0-4、G-1 BLOCKED；P0 G0、G7 未完成。 |
 | 数据库及 API | SQLite runs、attempts、results、evidence、shards。GET `/api/health`、`/api/workspace`、`/api/runs/{id}/evidence`，POST `/api/runs`、`/api/runs/{id}/resume`。 归档恢复使用本机 CLI，写入同一批次凭据且无 Schema 迁移。 |
 | 前端页面 | 连通性检查、验收矩阵、运行记录、证据抽屉。 |
 | 验收标准 | 同一批次的六项都通过且供应商审核可追溯才放行 G-1。G0 另有 Windows 本地三次冷启动，G7 按矩阵执行故障与安全实测。 |
 | 最近相关提交 | `47051f3` |
-| 测试结果与证据 | [本轮 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45325025692)记录六个新增恢复回归和四份归档的完整性核验。[认证 Tavily 批次](docs/evidence/p0-0/tavily-live/README.md)记录历史业务结果。 |
+| 测试结果与证据 | [M01 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45325025692)记录六个新增恢复回归和四份归档的完整性核验。[认证 Tavily 批次](docs/evidence/p0-0/tavily-live/README.md)记录历史业务结果。 |
 | 剩余问题 | JevModel 审查、固定模型真实响应和额度实测待补。桌面 Windows 10/11 真机尚无记录。 |
 
 ## M02 API 配置中心
@@ -52,13 +52,13 @@
 | 模块职责 | 本机项目生命周期、当前项目、五种研究范围及冻结快照。 |
 | 前置依赖 | M01 本机 FastAPI、SQLite 和界面。正式发布仍按 G-1。引用的品类有效性在 M06 接入。 |
 | 工程开发 | 已完成独立预开发。支持跨产品、跨品类，也支持不设品类的产品外课题。 |
-| 工程测试 | Linux 本地 Python 69 项（M03 新增 16 项）、Node 2 项、冷启动 3 次已通过。其余见工程证据及 CI。 |
+| 工程测试 | Linux 本地、Ubuntu 和 Windows Server 各通过 Python 69 项（M03 新增 16 项）、Node 2 项、冷启动 3 次。Chromium 四组均通过。 |
 | 正式业务验收 | BIZ-SCOPE 研究范围、许可来源与第二品类的正式决定待验收。G-1 BLOCKED。 |
 | 数据库及 API | SQLite v2 增量迁移，含 study_projects、study_scopes、study_scope_freezes、study_workspace。详见 [项目接口](docs/studies.md#本地接口)。 |
 | 前端页面 | 研究项目列表、项目表单、详情、历史范围快照。 |
 | 验收标准 | 本机范围可冻结和追溯，归档保留数据。引用以 study_id、scope_id 校验归属，范围标签不直接赋给语料。正式统计继续记录 scope_version。 |
-| 最近相关提交 | [M03 提交](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/commits) |
-| 测试结果与证据 | [M03 工程证据](docs/evidence/m03/README.md) |
+| 最近相关提交 | [实现 `3224823`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/322482357ddf7511d62094aad77c5574a27c4a9d)、[工程复测 `dbb131f`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/dbb131f32eaf8f0a58227c33bfa0b4f04e8fe62f) |
+| 测试结果与证据 | [M03 工程证据](docs/evidence/m03/README.md) · [CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45336483119) |
 | 剩余问题 | 实际研究范围和采样来源需正式确认。后续批次关联、来源许可、品类注册表验证随对应模块接入。 |
 
 ## M04 CSV / Excel 数据导入
