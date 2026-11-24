@@ -473,7 +473,7 @@ class LocalTests(unittest.TestCase):
         self.assertFalse(Settings(self.root, review=str(receipt)).review_status()["approved"])
 
     def test_api_empty_workspace_readonly_and_validation(self):
-        with TestClient(create_app(Settings(self.root)), base_url="http://localhost") as client:
+        with TestClient(create_app(Settings(self.root)), base_url="http://localhost", client=("127.0.0.1", 30001)) as client:
             first = client.get("/api/workspace").json()
             self.assertEqual(first["history"], [])
             self.assertIsNone(first["token"]["remaining"])
@@ -515,7 +515,7 @@ class LocalTests(unittest.TestCase):
         store.finish(run, attempt, False)
         with patch(
             "urllib.request.OpenerDirector.open", side_effect=AssertionError("Read must be offline")
-        ), TestClient(create_app(settings), base_url="http://localhost") as client:
+        ), TestClient(create_app(settings), base_url="http://localhost", client=("127.0.0.1", 30001)) as client:
             reply = client.get("/api/workspace")
         self.assertEqual(reply.status_code, 200)
         self.assertNotIn(local_value, reply.text)
@@ -538,7 +538,7 @@ class LocalTests(unittest.TestCase):
         with patch(
             "urllib.request.OpenerDirector.open", side_effect=AssertionError("Read must be offline")
         ):
-            with TestClient(create_app(Settings(self.root)), base_url="http://localhost") as client:
+            with TestClient(create_app(Settings(self.root)), base_url="http://localhost", client=("127.0.0.1", 30001)) as client:
                 row = client.get("/api/workspace").json()["requirements"][3]
                 self.assertEqual(row["status"], "BLOCKED")
                 self.assertEqual(

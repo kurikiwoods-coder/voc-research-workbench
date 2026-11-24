@@ -119,9 +119,10 @@ class ImportStore:
             self.target(db, study_id, scope_id)
             db.execute("""DELETE FROM import_files WHERE uploaded_at < ?
                        AND NOT EXISTS (SELECT 1 FROM import_batches b WHERE b.file_id=import_files.file_id)""", (cutoff,))
-            row = db.execute(f"""SELECT {FILE_COLUMNS} FROM import_files
-                             WHERE study_id=? AND scope_id=? AND sha256=? AND filename=?""",
-                             (study_id, scope_id, digest, filename)).fetchone()
+            row = db.execute(f"""SELECT {FILE_COLUMNS} FROM import_files f
+                             WHERE study_id=? AND scope_id=? AND sha256=? AND kind=?
+                             ORDER BY EXISTS (SELECT 1 FROM import_batches b WHERE b.file_id=f.file_id) DESC,
+                                      f.rowid LIMIT 1""", (study_id, scope_id, digest, kind)).fetchone()
             if row:
                 return decoded(row)
             drafts = db.execute("""SELECT COUNT(*) FROM import_files f

@@ -329,12 +329,13 @@ class CrossModuleAudit(unittest.TestCase):
 
 
 class FixtureStorageAudit(unittest.TestCase):
-    def test_connection_fixture_reopens_only_the_synthetic_ledger(self):
+    def test_connection_fixture_cannot_enter_live_acceptance_or_create_workbench_db(self):
         root = Path(self.enterContext(TemporaryDirectory(prefix="voc-audit fixture storage ")))
         cfg = Settings(root)
         fixture = Store(root, fixture=True)
-        run = run_checks(cfg, fixture, "fixture-readback", transport=lambda *args: Response(None, {}))
-        self.assertTrue(fixture.audit(run)["attempts"])
+        with self.assertRaises(ValueError):
+            run_checks(cfg, fixture, "fixture-readback", transport=lambda *args: Response(None, {}))
+        self.assertEqual(fixture.history(), [])
         self.assertFalse((root / "connectivity.sqlite3").exists())
         self.assertEqual(fixture.rows("PRAGMA foreign_key_check"), [])
 

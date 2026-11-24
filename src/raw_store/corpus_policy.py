@@ -17,21 +17,25 @@ REVIEW_SOURCES = {"amazon", "review", "productreview", "商品评论", "产品�
 AMAZON_HOST = re.compile(r"(?:^|\.)amazon\.[a-z]{2,3}(?:\.[a-z]{2})?$|^amzn\.to$")
 US_MARKETS = {"us", "usa", "unitedstates", "unitedstatesofamerica", "美国", "美國"}
 LICENSE_STATES = {"authorized", "pending", "denied", "revoked", "expired", "unknown"}
-_ZH_VARIANTS = str.maketrans("許權銷審獲經確認無過屆後隨態", "许权销审获经确认无过届后随态")
+_ZH_VARIANTS = str.maketrans("許權銷審獲經確認無過屆後隨態書錄還發現廢從沒", "许权销审获经确认无过届后随态书录还发现废从没")
 _WITHDRAWAL = re.compile(
-    r"撤销|撤回|\b(?:revok(?:ed|e)|withdraw(?:n|al)|rescinded)\b"
+    r"撤销|撤回|吊销|废止|\b(?:revok(?:ed|e)|withdraw(?:n|al)|rescinded)\b|"
+    r"\b(?:licen[cs]e|permission|consent)\b[^.;\n]{0,64}\b(?:cancelled|canceled)\b"
 )
 _DENIAL = re.compile(
     r"未(?:曾|获|经|取得|得到)?(?:许可|授权)|(?:许可|授权)(?:尚|还)?未(?:取得|获取|获得|批准)|"
+    r"(?:尚未|还未|未曾|未能|未)(?:获取|获得|取得|得到).{0,24}(?:许可|授权)|"
     r"无(?:许可|授权)|拒绝(?:许可|授权)|禁止(?:收录|保存|留存)|"
+    r"\bnot(?:\s+(?:yet|been)){0,2}\s+(?:granted|approved|permitted|authori[sz]ed)\b|"
     r"\b(?:unlicensed|unauthori[sz]ed|no permission|no licen[cs]e|without permission|not authori[sz]ed|"
     r"not granted|not approved|permission denied|licen[cs]e denied)\b"
 )
 _EXPIRY = re.compile(
-    r"已(?:到期|过期|届满)|(?:许可|授权|期限)[：:\s]*(?:到期|过期|届满)|\b(?:expired|lapsed)\b"
+    r"已(?:到期|过期|届满|失效)|(?:许可|授权|期限)[：:\s]*(?:到期|过期|届满|失效)|\b(?:expired|lapsed)\b"
 )
 _PENDING = re.compile(
-    r"待(?:核|审|确认|审批)|审批中|等待.{0,8}(?:审批|确认|授权)|未知|不明|无法判断|"
+    r"待(?:核|审|确认|审批)|审批(?:流程)?中|等待.{0,8}(?:审批|确认|授权)|未知|不明|无法判断|"
+    r"\b(?:has|have|had)\s+yet\s+to\s+be\s+(?:granted|approved|authori[sz]ed)\b|"
     r"\b(?:pending|unknown|unconfirmed|unclear|awaiting approval)\b"
 )
 _LOCAL_EVIDENCE = re.compile(r"local:[\w][\w.-]{2,126}")
@@ -71,7 +75,8 @@ def source_identity(value):
     if not host:
         return None
     port = parts.port or (443 if parts.scheme == "https" else 80)
-    return json.dumps((parts.scheme, host, port, parts.path or "/", parts.query, parts.fragment))
+    # A fragment locates a place in the same document; it cannot supply a separate license.
+    return json.dumps((parts.scheme, host, port, parts.path or "/", parts.query))
 
 
 def safe_metadata(raw_fields):
@@ -87,8 +92,8 @@ def license_note_state(value):
     """Historical text can signal a restriction. Authorization requires a review event."""
     note = normalize("NFKC", value).casefold().translate(_ZH_VARIANTS).strip()
     still_valid = re.sub(
-        r"(?:尚未|从未|未曾|没有|未)(?:被)?(?:撤销|撤回)|"
-        r"\b(?:not|never)\s+(?:been\s+)?(?:revoked|withdrawn|expired|lapsed)\b", "", note,
+        r"(?:尚未|从未|未曾|没有|未)(?:被)?(?:撤销|撤回|到期|过期|届满|失效|吊销|废止)|"
+        r"\b(?:not|never)\s+(?:yet\s+)?(?:been\s+)?(?:revoked|withdrawn|expired|lapsed|cancelled|canceled)\b", "", note,
     )
     for state, pattern, text in (
         ("revoked", _WITHDRAWAL, still_valid), ("denied", _DENIAL, note),

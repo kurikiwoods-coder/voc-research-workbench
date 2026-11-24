@@ -227,7 +227,8 @@ def create_app(settings=None):
     async def local_controls(request: Request, call_next):
         path = request.url.path
         private_api = path.startswith(("/api/setup/", "/api/studies/", "/api/imports/", "/api/corpus/")) or path == "/api/studies"
-        if private_api:
+        local_data = private_api or path in {"/api/workspace", "/api/runs"} or path.startswith("/api/runs/")
+        if local_data:
             try:
                 loopback = request.client is not None and ip_address(request.client.host).is_loopback
             except ValueError:

@@ -1,5 +1,6 @@
 """Browser regression using the actual localhost service and blocked provider transport."""
 
+from base64 import b64decode
 from pathlib import Path
 import argparse
 from contextlib import contextmanager
@@ -24,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from src.config import Settings
 from src.dashboard.app import create_app
+from test_api_setup import review_pair
 
 
 def serve(data, port):
@@ -63,6 +65,17 @@ def api_setup_checks(page, output):
         expect(page.get_by_role("article", name=name).get_by_text("待开发", exact=True)).to_be_visible()
         expect(page.get_by_role("article", name=name).get_by_role("button")).to_have_count(0)
     jev = page.get_by_role("article", name="JevModel")
+    jev.get_by_text("导入留存审核", exact=True).click()
+    pair = review_pair("jevmodel")
+    jev.get_by_label("审查 JSON").set_input_files(
+        {"name": "offline-review.json", "mimeType": "application/json", "buffer": b64decode(pair["record"])},
+    )
+    jev.get_by_label("证明附件").set_input_files(
+        {"name": "offline-proof.txt", "mimeType": "text/plain", "buffer": b64decode(pair["attachment"])},
+    )
+    jev.get_by_role("button", name="导入审查材料").click()
+    expect(page.locator("#toast")).to_have_text("留存审查材料已核验并保存在本机。")
+    expect(jev.get_by_text("未测试", exact=True)).to_be_visible()
     jev.get_by_text("更换密钥", exact=True).click()
     jev.get_by_label("API Key", exact=True).fill(rotated_key)
     jev.get_by_role("button", name="保存密钥").click()
@@ -70,6 +83,7 @@ def api_setup_checks(page, output):
     page.reload()
     expect(wizard).to_be_hidden()
     expect(jev.get_by_text("凭证 已配置", exact=False)).to_be_visible()
+    expect(jev.get_by_text("审核未完成", exact=True)).to_be_visible()
     expect(jev.get_by_role("status").get_by_text("尚无当前凭证", exact=False)).to_be_visible()
     response = page.request.get(urljoin(page.url, "/api/workspace"))
     assert response.ok

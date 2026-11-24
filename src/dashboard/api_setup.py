@@ -122,7 +122,12 @@ def register_setup(app):
             raise HTTPException(422, "请输入 1 至 512 个无空格的可打印字符。")
         with edit(app.state):
             config = app.state.vault.read()
+            had_key = bool(app.state.settings.with_local(config).keys.get(provider))
             config["keys"][provider] = key
+            review = config["reviews"].get(provider)
+            if (not had_key and isinstance(review, dict)
+                    and "account_tag" in review and review["account_tag"] is None):
+                review["account_tag"] = app.state.settings.with_local(config).account_tag(provider)
             app.state.vault.write(config)
         return {"configured": True}
 
@@ -162,7 +167,9 @@ def register_setup(app):
         # Persist the original signed-off documents locally. Ignore the JSON's file path.
         with edit(app.state):
             config = app.state.vault.read()
-            config["reviews"][provider] = data.model_dump()
+            settings = app.state.settings.with_local(config)
+            account = settings.account_tag(provider) if settings.keys.get(provider) else None
+            config["reviews"][provider] = {**data.model_dump(), "account_tag": account}
             app.state.vault.write(config)
         return {"approved": True, "checked_at": review["checked_at"]}
 

@@ -175,7 +175,8 @@ class CorpusStore:
             record = self.describe(db, row, today)
             return {name: record[name] for name in (
                 "record_id", "trace", "raw_text", "raw_sha256", "metadata", "duplicate", "status", "license_status",
-                "privacy", "role", "retention_until", "engineering_eligible", "research_eligible", "outbound_allowed",
+                "privacy", "role", "retention_until", "source_permission_revoked",
+                "engineering_eligible", "research_eligible", "outbound_allowed",
             )}
 
     @staticmethod

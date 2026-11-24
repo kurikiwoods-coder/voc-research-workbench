@@ -41,6 +41,7 @@ class Settings:
     review: str = ""
     capacity: int | None = None
     local_reviews: dict = field(default_factory=dict, repr=False)
+    local_key_overrides: frozenset[str] = field(default_factory=frozenset, repr=False)
 
     @classmethod
     def load(cls):
@@ -72,15 +73,20 @@ class Settings:
         return replace(
             self, provider=override if override in PROVIDERS else self.provider,
             keys=keys, local_reviews=config["reviews"],
+            local_key_overrides=frozenset(name for name in CONNECTOR_KEYS if keys[name] != (self.keys.get(name) or "")),
         )
 
     def review_status(self):
         try:
             if self.provider in self.local_reviews:
                 pair = self.local_reviews[self.provider]
+                if pair.get("account_tag") != self.account_tag():
+                    return unapproved_review()
                 raw = b64decode(pair["record"], validate=True)
                 proof = b64decode(pair["attachment"], validate=True)
                 return validate_review(self.provider, raw, proof)
+            if self.provider in self.local_key_overrides:
+                return unapproved_review()
             path = Path(self.review)
             raw = path.read_bytes()
             doc = json.loads(raw)

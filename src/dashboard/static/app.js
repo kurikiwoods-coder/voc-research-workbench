@@ -451,7 +451,7 @@ function credentialForm(p, prefix) {
   return `<form method="post" class="setup-form" data-setup-form="key" data-provider="${p.id}" autocomplete="off"><label for="${id}">API Key</label><div class="setup-form-row"><input class="field" id="${id}" name="key" type="password" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="512" required><button type="submit" class="primary">保存密钥</button></div></form>`;
 }
 function reviewForm(p) {
-  return `<details class="connector-detail"><summary>${p.review.approved ? "留存审核已核验" : "导入留存审核"}</summary><p>选择已审核的 JSON 记录与对应附件。工作台会核对供应商、审批字段和附件摘要。</p><p>${link(docReview, "审查材料格式")} ${p.review_docs ? link(p.review_docs, "申请零数据留存") : ""}</p><form method="post" class="setup-form" data-setup-form="review" data-provider="${p.id}"><label>审查 JSON <input type="file" name="record" accept=".json,application/json" required></label><label>证明附件 <input type="file" name="attachment" required></label><button class="secondary" type="submit">导入审查材料</button></form></details>`;
+  return `<details class="connector-detail"><summary>${p.review.approved ? "留存审核已核验" : "导入留存审核"}</summary><p>选择已审核的 JSON 记录与对应附件。工作台会核对供应商、审批字段和附件摘要。更换密钥后请核对当前账户并重新登记审批材料。</p><p>${link(docReview, "审查材料格式")} ${p.review_docs ? link(p.review_docs, "申请零数据留存") : ""}</p><form method="post" class="setup-form" data-setup-form="review" data-provider="${p.id}"><label>审查 JSON <input type="file" name="record" accept=".json,application/json" required></label><label>证明附件 <input type="file" name="attachment" required></label><button class="secondary" type="submit">导入审查材料</button></form></details>`;
 }
 function diagnosticEvidence(test) {
   const status = test.http_status == null ? "未收到 HTTP" : "HTTP " + test.http_status;

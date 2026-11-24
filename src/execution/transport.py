@@ -1,6 +1,7 @@
 """One outbound boundary for every connector, with an auditable offline drill."""
 
 from dataclasses import dataclass
+from http.client import HTTPException as HTTPProtocolError
 import json
 import math
 import re
@@ -125,7 +126,7 @@ def network(method, url, body, headers):
             remaining = int(header) if re.fullmatch(r"\d{1,18}", header) else None
             monthly = brave_monthly_quota(response.headers) if urlsplit(url).hostname == "api.search.brave.com" else (None, None)
             return Response(response.status, obj, remaining, response.headers.get("Retry-After"), *monthly)
-    except (URLError, TimeoutError, ConnectionError, OSError):
+    except (URLError, TimeoutError, ConnectionError, OSError, HTTPProtocolError):
         return Response(None, {"error": "connection_interrupted"})
 
 

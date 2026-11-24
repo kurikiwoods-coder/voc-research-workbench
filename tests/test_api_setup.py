@@ -219,8 +219,11 @@ class ProbeFixtureTests(unittest.TestCase):
         self.cfg = Settings(
             self.root,
             keys={name: FIRST for name in ("jevmodel", "typesafe", "tavily", "brave")},
-            local_reviews={"jevmodel": review_pair("jevmodel"), "typesafe": review_pair("typesafe")},
         )
+        self.cfg = replace(self.cfg, local_reviews={
+            name: {**review_pair(name), "account_tag": self.cfg.account_tag(name)}
+            for name in ("jevmodel", "typesafe")
+        })
         self.db = Store(self.root, diagnostic=True, fixture=True)
 
     def test_jev_fixed_version_fields_usage_and_same_key_only_send_one_pair(self):

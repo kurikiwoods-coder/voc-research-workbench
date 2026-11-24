@@ -209,9 +209,11 @@ def evaluate(sheet, mapping, scope, privacy):
         raw_text, values, flags, level = evaluate_row(row, mapping, scope, privacy)
         normalized = " ".join(normalize("NFC", raw_text).split())
         digest = hashlib.sha256(normalized.encode()).hexdigest() if normalized else None
-        identity = [("text", digest)] if digest else []
+        declared_role = key(values.get("content_role", ""))
+        role = "user_quote" if declared_role in {"", "userquote", "用户原话", "原话"} else declared_role
+        identity = [(level, role, "text", digest)] if digest else []
         if values.get("external_id") and values.get("source_type"):
-            identity.append(("external", key(values["source_type"]), values["external_id"]))
+            identity.append((level, role, "external", key(values["source_type"]), values["external_id"]))
         first_duplicate = None
         if any(ISSUES[flag][0] == "error" for flag in flags):
             status = "rejected"
