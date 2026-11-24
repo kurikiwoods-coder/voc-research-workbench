@@ -1,5 +1,11 @@
 # 开发交接
 
+## 本轮 M06-A 交接
+
+开发分支 `codex/p0-0-connectivity`，设计依据为 Pre-M06-D 冻结提交 `06a233e157631c9f9a004d8b1311c2948597a429`。M06-A 已获授权并完成文档交付，提交 M06-B 独立评审。设计 READY_FOR_REVIEW，审批 PENDING，实现 NOT_STARTED。Windows 11 实机 NOT_TESTED，Pre-M06 Gate 和 G-1 均 BLOCKED，真实研究 API 调用 0 次。
+
+评审从[总体设计](docs/architecture/m06-design.md)、[决策与风险](docs/architecture/m06-decisions.md)和[反例与验收矩阵](docs/architecture/m06-test-plan.md)开始。需签认转载身份、按证据撤销、旧冻结范围品类映射、M05 同事务复核、正式产品边与排除计数单位。数据库仍为 v6。下文保留当时各轮冻结状态与已实现的 M05 接口。
+
 ## Pre-M06-D 实机验收与工程冻结
 
 本轮验收基线为开发分支 `4e6369b92205c51671866935365678df351ec808`。Windows 10 真机 **PASS**。普通用户会话完成 DPAPI CurrentUser 加解密、Python 140/140 和原版 Chromium 8/8。Codex 会话补齐 Node、冷启动、历史归档、SQLite 迁移、中文空格路径及敏感信息扫描，DPAPI 有独立的执行会话限制记录。[实机验收证据](docs/evidence/pre-m06/windows10-closeout.md)

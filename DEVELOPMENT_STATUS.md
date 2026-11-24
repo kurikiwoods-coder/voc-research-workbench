@@ -2,7 +2,13 @@
 
 核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，远端基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## 本轮 Pre-M06-D 实机验收与工程冻结
+## M06-A 架构设计交付
+
+本轮在 Pre-M06-D 文档冻结提交 `06a233e157631c9f9a004d8b1311c2948597a429` 上完成三层关系设计。六份设计文档包含证据与片段身份、SQLite v6 增量预案、双向查询、六桶、24 个合成反例及 12 项验收映射。反例为纸面推演。M06_ARCHITECTURE=READY_FOR_REVIEW，M06_ARCHITECTURE_APPROVAL=PENDING，M06_IMPLEMENTATION=NOT_STARTED。下一步为另行授权的 M06-B 独立审核。[设计入口](docs/architecture/m06-design.md) · [验收映射](docs/architecture/m06-test-plan.md)
+
+真实研究 API 调用 0 次。正式阶段 P0-0，Windows 11 实机 NOT_TESTED，PRE_M06_GATE=BLOCKED，G-1=BLOCKED。
+
+## 前轮 Pre-M06-D 实机验收与工程冻结
 
 验收代码基线为 `4e6369b92205c51671866935365678df351ec808`，核对时 Windows 10 本机与开发分支远端一致。Windows 10 Home China 22H2 x64 实机工程验收 **PASS**。普通 PowerShell 会话由项目负责人实测，DPAPI CurrentUser 加解密通过，Python 140/140（17.747 秒），原版 Chromium 8/8。Codex 的 Pre-M06-L 本机记录补齐 Node 2/2、空库冷启动 3/3、历史归档 4/4、SQLite v6 迁移、中文空格路径及敏感信息扫描。[实机证据及来源](docs/evidence/pre-m06/windows10-closeout.md)
 
