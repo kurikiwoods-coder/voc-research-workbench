@@ -221,6 +221,45 @@ class CrossModuleAudit(unittest.TestCase):
         self.review(path, license_evidence_ref="local:separately-issued-permit", **new).raise_for_status()
         self.assertEqual(self.client.get(path + "/eligible").json()["raw_text"], TEXT)
 
+    def test_preexisting_approval_with_now_recognized_denial_is_no_longer_eligible(self):
+        _, project = self.new_project()
+        batch, path = self.imported(project, [
+            row(license_note="Reuse permission has not yet been granted."),
+        ])
+        # Keep the same persisted approval an older policy could write for this note.
+        with patch("src.raw_store.corpus.license_note_state", return_value="unknown"):
+            self.review(path).raise_for_status()
+        with self.open() as (_, restarted):
+            self.assertEqual(restarted.get(path + "/eligible").status_code, 409)
+            record = restarted.get(path).raise_for_status().json()
+            self.assertEqual(record["license_status"], "denied")
+            self.assertIsNone(record["raw_text"])
+            root = f"/api/imports/{project['study_id']}/batches/{batch['batch_id']}"
+            self.assertIsNone(restarted.get(root).raise_for_status().json()["rows"][0]["raw_text"])
+
+    def test_preexisting_unclassified_withdrawal_restricts_the_source_after_upgrade(self):
+        _, project = self.new_project()
+        _, original = self.imported(project)
+        _, alias = self.imported(project, [row(source=SOURCE + "#alias")])
+        for path in original, alias:
+            self.review(path).raise_for_status()
+        # Older builds saved this exclusion without a structured revoked state.
+        with patch("src.raw_store.corpus.source_permission_revoked", return_value=False):
+            self.withdraw(original, "The reuse licence was subsequently cancelled.")
+        with self.open() as (_, restarted):
+            self.assertEqual(restarted.get(alias + "/eligible").status_code, 409)
+            self.assertTrue(restarted.get(alias).raise_for_status().json()["source_permission_revoked"])
+
+    def test_corrupt_workspace_startup_fails_without_overwriting_database(self):
+        directory = Path(self.enterContext(TemporaryDirectory(prefix="voc-audit damaged workspace ")))
+        original = b"synthetic damaged SQLite header"
+        archive = directory / "connectivity.sqlite3"
+        archive.write_bytes(original)
+        with self.assertRaisesRegex(sqlite3.DatabaseError, "not a database"):
+            with TestClient(create_app(Settings(directory)), base_url=ORIGIN, client=("127.0.0.1", 27113)):
+                self.fail("An unreadable database must not produce a healthy workspace.")
+        self.assertEqual(archive.read_bytes(), original)
+
     def test_csv_xlsx_scope_history_project_isolation_and_m06_contract(self):
         form, project = self.new_project("场景 A／C")
         _, other = self.new_project("场景 B")
