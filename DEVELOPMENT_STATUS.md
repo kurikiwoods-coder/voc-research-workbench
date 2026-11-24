@@ -2,7 +2,13 @@
 
 核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，远端基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## 本轮 Pre-M06 独立工程审计
+## 本轮 Pre-M06-D 实机验收与工程冻结
+
+验收代码基线为 `4e6369b92205c51671866935365678df351ec808`，核对时 Windows 10 本机与开发分支远端一致。Windows 10 Home China 22H2 x64 实机工程验收 **PASS**。普通 PowerShell 会话由项目负责人实测，DPAPI CurrentUser 加解密通过，Python 140/140（17.747 秒），原版 Chromium 8/8。Codex 的 Pre-M06-L 本机记录补齐 Node 2/2、空库冷启动 3/3、历史归档 4/4、SQLite v6 迁移、中文空格路径及敏感信息扫描。[实机证据及来源](docs/evidence/pre-m06/windows10-closeout.md)
+
+Codex 执行会话的 DPAPI 限制单独登记。Starlette 的 TestClient 弃用提示登记为非阻塞性技术债务。Windows 11 实机仍为 **NOT_TESTED**，**PRE_M06_GATE_BLOCKED**，G-1 **BLOCKED**。M01–M05 的实测基线可支撑另行授权后的 M06-A 架构设计，M06 实现及正式接入继续遵循现有放行条件。[审计报告](docs/audits/pre-m06-audit.md)
+
+## 前期 Pre-M06 独立工程审计
 
 基线 `04049b375f8b0e281c5f09f51d2fb07b5f1c3463`。修复 10 项缺陷并新增 16 项独立测试。实现 `d64fb4f29094be9a3fc9b91e2910830ea0c1c8c2` 的 Ubuntu、Windows Server 2022 各通过 Python 140/140、Node 2/2、三次冷启动及四份档案，Chromium 8/8。Windows 11 实机为 NOT_TESTED。**PRE_M06_GATE_BLOCKED**，G-1 仍为 BLOCKED。 [报告](docs/audits/pre-m06-audit.md) · [缺陷台账](docs/audits/bug-register.md) · [实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45373503587)
 

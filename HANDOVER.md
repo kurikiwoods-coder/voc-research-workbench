@@ -1,5 +1,11 @@
 # 开发交接
 
+## Pre-M06-D 实机验收与工程冻结
+
+本轮验收基线为开发分支 `4e6369b92205c51671866935365678df351ec808`。Windows 10 真机 **PASS**。普通用户会话完成 DPAPI CurrentUser 加解密、Python 140/140 和原版 Chromium 8/8。Codex 会话补齐 Node、冷启动、历史归档、SQLite 迁移、中文空格路径及敏感信息扫描，DPAPI 有独立的执行会话限制记录。[实机验收证据](docs/evidence/pre-m06/windows10-closeout.md)
+
+Windows 11 实机仍为 **NOT_TESTED**，**PRE_M06_GATE_BLOCKED**，G-1 **BLOCKED**。M03 冻结范围和 M05 实时资格契约已具备开展 M06-A 架构设计的工程基础，等项目负责人另行授权。M06 实现、正式准入及正式语料接入沿用原验收条件。[审计报告](docs/audits/pre-m06-audit.md) · [M05 → M06 数据契约](#m05--m06-数据契约)
+
 ## Pre-M06 工程审计
 
 开发分支按 `d64fb4f29094be9a3fc9b91e2910830ea0c1c8c2` 的修复实现和对应 CI 核对。M01–M05 跨模块场景 A–H 及 M05-R2-V 已通过，10 个确认缺陷已关闭。**PRE_M06_GATE_BLOCKED**，本轮 Windows 11 实机为 NOT_TESTED。M06 等实际验证及授权。G-1 继续 BLOCKED。 [审计报告](docs/audits/pre-m06-audit.md) · [实际日志](docs/evidence/pre-m06/README.md)

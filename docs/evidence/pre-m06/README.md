@@ -1,5 +1,7 @@
 # Pre-M06 实测证据
 
+2026-11-24 的 Pre-M06-D Windows 10 真机工程验收为 **PASS**。普通用户会话、Codex 本机证据和 GitHub CI 各自的结果见[实机验收记录](windows10-closeout.md)。
+
 | 执行 | 提交和结果 |
 |---|---|
 | 原远端验证 | `04049b375f8b0e281c5f09f51d2fb07b5f1c3463`。草稿 PR #1，Ubuntu、Windows Server 2022、Chromium 通过 |

@@ -2,7 +2,7 @@
 
 ## 放行状态
 
-**PRE_M06_GATE_BLOCKED**。已核验的代码和 CI 工程检查通过。任务要求的 Windows 11 实机复测在本轮为 **NOT_TESTED**。当前执行环境不可用，无法查看本机改动或使用 Windows 11 设备。Windows Server 2022 的结果单独登记。G-1 保持 **BLOCKED**，M06 等项目负责人另行授权。 [测试证据](../evidence/pre-m06/README.md)
+**PRE_M06_GATE_BLOCKED**。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 完成 Windows 10 实机工程验收，结果为 **PASS**。当前基线的 Windows 11 实机仍为 **NOT_TESTED**，Windows Server 2022 结果单独登记。G-1 保持 **BLOCKED**，M06-A 架构设计具备工程基础，等待项目负责人另行授权。M06 实现和正式接入继续按原条件放行。[Windows 10 实机证据](../evidence/pre-m06/windows10-closeout.md) · [前期审计证据](../evidence/pre-m06/README.md)
 
 审计起点为 `04049b375f8b0e281c5f09f51d2fb07b5f1c3463`，分支为 `codex/p0-0-connectivity`，采用草稿 PR #1 当时的远端提交。其 CI 三项均通过。审计执行基于绑定具体提交的 GitHub Actions、隔离临时库和合成夹具。开发分支采用快进更新。主分支基线为 `f849242c5c37a2dc6a03a30215dd335424738c61`。 [基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45368417661) · [PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1)
 
@@ -50,6 +50,8 @@
 确认 **10 项**，其中 P1 八项、P2 两项，均已修复并回归。已知 M05-R2 两项独立复现的预期行为均通过，新增六个中英文限制、冲突或撤销变体也通过。已有批准与撤销记录在新版资格视图中重新核对，原历史和证据保持可追溯。 [Bug 台账](bug-register.md) · [修复前后日志](../evidence/pre-m06/README.md)
 
 - Windows 11 实机、自定义盘符和人工逐控件遍历留待相应设备。Windows Server 2022 的 CI 覆盖中文及空格路径、DPAPI、冷启动与回滚夹具。
+- **本机执行环境限制**。Pre-M06-L 的 Codex 执行会话中，合成数据的 DPAPI CurrentUser 保护调用失败，应用凭证写入返回 HTTP 503。普通登录用户会话的 DPAPI 加解密和 M02 实测均通过。保留两种执行结果及现有凭证保护实现。[实机证据](../evidence/pre-m06/windows10-closeout.md)
+- **非阻塞性技术债务**。Starlette 在 TestClient 使用 `httpx` 时发出 `StarletteDeprecationWarning`。后续依赖维护时核对推荐客户端和版本兼容性，并复跑相关回归。
 - 损坏库当前在启动终端报 SQLite 错误并保留文件。带人工备份恢复指引的界面是可延后的工程改进。
 - 已绑定的本机留存审批只适用于对应凭证。使用环境密钥和独立审批文件的部署，凭证与组织匹配仍由环境管理者核对。原有未绑定的本机审批必须重新核对并登记。
 - 来源匹配保留完整路径和查询，按同一文档处理 URL 片段。不同路径或实质不同查询的网页是否同源须由运营核对。原话遮蔽保留审计数据，实际删除及备份保留继续依来源政策验收。
@@ -57,4 +59,6 @@
 
 ## 验证记录
 
-修复提交为 `d64fb4f29094be9a3fc9b91e2910830ea0c1c8c2`。Ubuntu、Windows Server 2022 各通过 **140 项 Python**（124 项原有、16 项新增）、**2 项 Node**、**3 次冷启动**和 **4 份历史归档核验**。Chromium 通过 **8 组**，工程测试 **0 失败**。敏感信息扫描通过。Windows 11 实机为 **NOT_TESTED**，当前本机工作区 SHA 未取得。 [实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45373503587) · [当前分支](https://github.com/kurikiwoods-coder/voc-research-workbench/tree/codex/p0-0-connectivity)
+修复提交为 `d64fb4f29094be9a3fc9b91e2910830ea0c1c8c2`。Ubuntu、Windows Server 2022 各通过 **140 项 Python**（124 项原有、16 项新增）、**2 项 Node**、**3 次冷启动**和 **4 份历史归档核验**。Chromium 通过 **8 组**，工程测试 **0 失败**。敏感信息扫描通过。[实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45373503587)
+
+Pre-M06-D 的 Windows 10 普通 PowerShell 会话由项目负责人手动执行，DPAPI 通过，Python **140/140**，原版 Chromium **8/8**。Codex 核验了本地 HEAD、远端 SHA、16 张浏览器截图及已有本机日志，并保留 Pre-M06-L 的部分通过结果。当前基线的 GitHub Actions 三项作业通过，另行记录。[证据与归属](../evidence/pre-m06/windows10-closeout.md) · [基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45374179477)

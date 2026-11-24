@@ -10,7 +10,7 @@
 
 M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06 等待授权。[开发状态](DEVELOPMENT_STATUS.md)
 
-M01–M05 Pre-M06 独立审计完成已可运行部分。实现 CI 通过，确认的 P0/P1 阻塞性代码缺陷均关闭。**PRE_M06_GATE_BLOCKED**，Windows 11 实机复测为 NOT_TESTED。M06 等项目负责人授权，正式 G-1 为 BLOCKED。[审计及证据](docs/audits/pre-m06-audit.md)
+M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。Windows 11 实机为 **NOT_TESTED**，**PRE_M06_GATE_BLOCKED**，G-1 **BLOCKED**。当前基线已具备 M06-A 架构设计的工程基础，等待项目负责人另行授权。[审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
 ## M01 基础工程与连通性
 
@@ -27,7 +27,7 @@ M01–M05 Pre-M06 独立审计完成已可运行部分。实现 CI 通过，确�
 | 验收标准 | 同一批次的六项都通过且供应商审核可追溯才放行 G-1。G0 另有 Windows 本地三次冷启动，G7 按矩阵执行故障与安全实测。 |
 | 最近相关提交 | `47051f3` |
 | 测试结果与证据 | [M01 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45325025692)记录六个新增恢复回归和四份归档的完整性核验。[认证 Tavily 批次](docs/evidence/p0-0/tavily-live/README.md)记录历史业务结果。 |
-| 剩余问题 | JevModel 审查、固定模型真实响应和额度实测待补。桌面 Windows 10/11 真机尚无记录。 |
+| 剩余问题 | JevModel 审查、固定模型真实响应和额度实测待补。当前基线的 Windows 10 实机已通过，Windows 11 实机待补。 |
 
 ## M02 API 配置中心
 
@@ -104,7 +104,7 @@ M01–M05 Pre-M06 独立审计完成已可运行部分。实现 CI 通过，确�
 |---|---|
 | PDT 与矩阵编号 | §6、§6.6、§6.9、§9.3；C0-6、CAT-1～CAT-3、CAT-5～CAT-10 |
 | 模块职责 | 维护 Product Category、Task Category、Intent 以及证据驱动的双向关系。 |
-| 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。使用独立合成夹具预开发时等待下一轮开发指令。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
+| 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。已具备 M06-A 架构设计基础，设计和实现分别等待授权。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
 | 工程开发 | 已有 JSON Schema、内存 SQLite 三层召回演练。正式关系服务未实现。 |
 | 工程测试 | C0-6 冒烟通过，正式关系 API 未测试。 |
 | 正式业务验收 | CAT 系列待验。 |
