@@ -1,12 +1,18 @@
 # VOC Research Workbench 开发状态
 
-核查日期 2026-11-24。本轮开发基线 `d22d56cdce129b1530647cf57dccd4b8f56cafed`，目标分支 `codex/p0-0-connectivity`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [15 个模块](MODULE_ROADMAP.md)
+核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，远端基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## 本轮 M04 CSV / Excel 数据导入
+## 本轮 M05 原始语料库、去重及溯源
+
+本机工作台已接入原始语料审核。记录绑定冻结范围与导入文件行，保存原话快照摘要、角色、许可核验依据、保留期限和历史。跨批次按项目聚合重复原话，撤销、排除及到期会重算可用组成员。原话审核走回环 FastAPI 和 SQLite v4，正式统计和外发资格均关闭。[本机操作与接入](docs/imports.md#m05-原始语料审核) · [工程测试记录](docs/evidence/m05/README.md)
+
+GitHub 发布待具备开发分支写权限的认证。PR #1 当前的 CI 证据覆盖接管基线。本轮验证使用本机合成输入、隔离数据库及既有脱敏归档，真实 Tavily、Brave、Jev 请求均为 0。
+
+## 上轮 M04 CSV / Excel 数据导入
 
 完成本机文件上传、工作表选择、字段映射、质量检查、确认入库、批次查询及撤销。导入写入 SQLite v3 暂存，绑定原项目和冻结范围。真实 Tavily、Brave、Jev 请求 0 次，G-1 保持 BLOCKED。[本机用法、模板与 M05 契约](docs/imports.md) · [工程测试记录](docs/evidence/m04/README.md)
 
-本地 Linux、Ubuntu 和 Windows Server 2022 各通过 95 项 Python（含新增 26 项）、2 项 Node 与 3 次空库冷启动，Chromium 六组通过。四份既有归档核验通过。Windows 10/11 真机 NOT_TESTED。[CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341223418) · [截图和实际输出](docs/evidence/m04/README.md)
+M04 交付时，本地 Linux、Ubuntu 和 Windows Server 2022 各通过 95 项 Python（含新增 26 项）、2 项 Node 与 3 次空库冷启动，Chromium 六组通过。四份既有归档核验通过。[CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341223418) · [截图和实际输出](docs/evidence/m04/README.md)
 
 ## 上轮 M03 研究项目与范围管理
 
@@ -44,4 +50,4 @@ Linux 本机、Ubuntu CI 和 Windows Server 2022 各通过 69 项 Python（含 1
 
 ## 下一轮候选
 
-当前仍处于 P0-0。M05 开发须经单独授权，使用 M04 的 import_candidates 及原始文件、项目和范围引用，实现正式原文治理、溯源和去重接口。真实业务流程仍按 PDT 和 G-1 放行。
+当前正式阶段为 P0-0。恢复发布时核对开发分支远端 head，常规推送 M05 并核验同一提交的 CI。正式语料验收需完成逐源清理审计、三批和至少 100 条真实语义片段，并抽查 30/30 可回源。后续模块等待开发指令。

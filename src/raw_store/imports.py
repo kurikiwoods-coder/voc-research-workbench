@@ -17,6 +17,16 @@ BATCH_SELECT = """SELECT b.*, f.filename, f.kind, f.sha256, length(f.source_byte
     JOIN study_scopes s ON s.study_id=b.study_id AND s.scope_id=b.scope_id
     JOIN study_projects p ON p.study_id=b.study_id"""
 MAX_DRAFTS = 8
+RESTRICTED_SOURCE_ROWS = """
+    FROM import_files restricted_file
+    JOIN import_batches restricted_batch ON restricted_batch.file_id=restricted_file.file_id
+    JOIN import_rows restricted_row ON restricted_row.batch_id=restricted_batch.batch_id
+    JOIN corpus_reviews restricted_review ON restricted_review.review_id=(
+        SELECT MAX(h.review_id) FROM corpus_reviews h WHERE h.record_id=restricted_row.record_id
+    )
+    WHERE (restricted_review.decision='excluded' OR restricted_review.retention_until<:today
+           OR restricted_batch.revoked_at IS NOT NULL)
+"""
 
 
 def decoded(row):
@@ -28,6 +38,28 @@ def batch_record(row):
     batch = decoded(row)
     batch.pop("signature")
     return {**batch, "status": "revoked" if batch["revoked_at"] else "imported", "research_eligible": False}
+
+
+def restricted_source_lines(db, file, sheet_index):
+    # A second import of the same bytes can have a different file ID or field mapping.
+    rows = db.execute(f"""SELECT DISTINCT restricted_row.line_number {RESTRICTED_SOURCE_ROWS}
+                          AND restricted_file.study_id=:study_id AND restricted_file.sha256=:sha256
+                          AND restricted_batch.sheet_index=:sheet_index""",
+                      {"study_id": file["study_id"], "sha256": file["sha256"],
+                       "sheet_index": sheet_index, "today": now()[:10]})
+    return {row["line_number"] for row in rows}
+
+
+def check_sheet_access(db, file, sheet_index):
+    if restricted_source_lines(db, file, sheet_index):
+        raise Conflict("该工作表含受语料审核或保留条件限制的内容，请从批次历史查看可用记录。")
+
+
+def visible_import_row(row, restricted_lines):
+    record = decoded(row)
+    if record["line_number"] in restricted_lines or record["duplicate_of_line"] in restricted_lines:
+        record.update(raw_text=None, originals=[], fields={}, content_restricted=True)
+    return record
 
 
 class ImportStore:
@@ -81,14 +113,17 @@ class ImportStore:
                        (file_id, study_id, scope_id, filename, kind, digest, data, dump(sheets), now()))
             return decoded(db.execute(f"SELECT {FILE_COLUMNS} FROM import_files WHERE file_id=?", (file_id,)).fetchone())
 
-    def get_file(self, study_id, file_id):
+    def get_file(self, study_id, file_id, sheet_index):
         with self.store.db() as db:
+            db.execute("BEGIN")
             row = db.execute(f"SELECT {FILE_COLUMNS}, source_bytes FROM import_files WHERE study_id=? AND file_id=?",
                              (study_id, file_id)).fetchone()
             if row is None:
                 raise KeyError(file_id)
             result = decoded(row)
-            return result, self.target(db, study_id, result["scope_id"])
+            target = self.target(db, study_id, result["scope_id"])
+            check_sheet_access(db, result, sheet_index)
+            return result, target
 
     def discard(self, study_id, file_id):
         with self.write() as db:
@@ -117,6 +152,7 @@ class ImportStore:
             if not db.execute("SELECT 1 FROM import_files WHERE study_id=? AND file_id=?",
                               (study_id, file_id)).fetchone():
                 raise KeyError(file_id)
+            check_sheet_access(db, file, index)
             ident = str(uuid4())
             db.execute("""INSERT INTO import_batches
                        (batch_id, study_id, scope_id, file_id, sheet_index, sheet_name, header_line, headers_json,
@@ -155,7 +191,9 @@ class ImportStore:
                                         privacy, duplicate_of_line, issues_json FROM import_rows
                                  WHERE batch_id=? AND (?='all' OR status=?)
                                  ORDER BY line_number LIMIT 21 OFFSET ?""", (batch_id, status, status, offset)).fetchall()
-            return {"batch": batch, "rows": [decoded(row) for row in rows[:20]], "more": len(rows) > 20}
+            restricted = restricted_source_lines(db, batch, batch["sheet_index"])
+            return {"batch": batch, "rows": [visible_import_row(row, restricted) for row in rows[:20]],
+                    "more": len(rows) > 20}
 
     def report(self, study_id, batch_id):
         with self.store.db() as db:

@@ -295,7 +295,7 @@ class StudyMigrationTest(unittest.TestCase):
 
     def test_v1_upgrade_retains_ledger_and_reopens(self):
         store = Store(self.folder)
-        self.assertEqual(store.one("PRAGMA user_version")["user_version"], 3)
+        self.assertEqual(store.one("PRAGMA user_version")["user_version"], 4)
         self.assertEqual(store.one("SELECT status FROM results")["status"], "BLOCKED")
         self.assertEqual(store.one("SELECT tokens FROM shards")["tokens"], 7)
         self.assertEqual(json.loads(store.one("SELECT response_json FROM evidence")["response_json"]), {})
@@ -318,4 +318,4 @@ class StudyMigrationTest(unittest.TestCase):
             self.assertEqual(old.execute("PRAGMA user_version").fetchone()[0], 1)
             self.assertIsNone(old.execute("SELECT name FROM sqlite_master WHERE name='study_projects'").fetchone())
             self.assertEqual(old.execute("SELECT status FROM results").fetchone()[0], "BLOCKED")
-        self.assertEqual(Store(self.folder).one("PRAGMA user_version")["user_version"], 3)
+        self.assertEqual(Store(self.folder).one("PRAGMA user_version")["user_version"], 4)

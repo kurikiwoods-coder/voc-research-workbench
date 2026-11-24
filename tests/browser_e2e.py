@@ -1,4 +1,4 @@
-"""Browser regression using the actual localhost service. Only anonymous public-source probes run."""
+"""Browser regression using the actual localhost service and blocked provider transport."""
 
 from pathlib import Path
 import argparse
@@ -13,8 +13,10 @@ import time
 from urllib.request import build_opener, ProxyHandler
 from urllib.error import URLError
 from urllib.parse import urljoin
+from unittest.mock import patch
 
 from playwright.sync_api import expect, sync_playwright
+from corpus_browser import corpus_browser_checks, corpus_restart_checks
 from imports_browser import imports_browser_checks, imports_restart_checks
 from studies_browser import study_browser_checks, study_restart_checks
 
@@ -27,8 +29,10 @@ from src.dashboard.app import create_app
 def serve(data, port):
     import uvicorn
 
-    # Ignore real credentials even if the developer's personal .env exists.
-    uvicorn.run(create_app(Settings(Path(data))), host="127.0.0.1", port=port, log_level="warning")
+    # Keep the real service and SQLite, and exercise the unavailable-source path without egress.
+    with patch("src.execution.transport.build_opener", side_effect=URLError("offline browser regression")):
+        uvicorn.run(create_app(Settings(Path(data))), host="127.0.0.1", port=port, log_level="warning",
+                    use_colors=False)
 
 
 def api_setup_checks(page, output):
@@ -51,6 +55,8 @@ def api_setup_checks(page, output):
     expect(wizard.get_by_role("heading", name="核对验收准备")).to_be_visible()
     wizard.get_by_role("button", name="打开 API 接入").click()
     expect(page.get_by_role("heading", name="API 接入", exact=True)).to_be_visible()
+    # The route changes before the wizard finishes refreshing the workspace.
+    expect(page.locator("#toast")).to_have_text("配置向导已完成。")
     for name in ("TypeSafe", "JevModel", "Tavily", "Brave", "YouTube", "Google Forms"):
         expect(page.get_by_role("article", name=name)).to_be_visible()
     for name in ("YouTube", "Google Forms"):
@@ -199,7 +205,8 @@ def browser_checks(base, output, studies_only=False):
         print("M01 connectivity E2E passed: navigation, batch evidence and recovery, Token Center, and 320/390 layouts.")
         study_ids = study_browser_checks(browser, base, output)
         import_ids = imports_browser_checks(browser, base, output)
-        return study_ids, import_ids
+        corpus_ids = corpus_browser_checks(browser, base, output)
+        return study_ids, import_ids, corpus_ids
 
 
 @contextmanager
@@ -243,9 +250,10 @@ def main():
             if args.studies_only:
                 study_restart_checks(browser, base, result)
             else:
-                study_ids, import_ids = result
+                study_ids, import_ids, corpus_ids = result
                 study_restart_checks(browser, base, study_ids)
                 imports_restart_checks(browser, base, import_ids)
+                corpus_restart_checks(browser, base, corpus_ids)
             browser.close()
     print("Chromium E2E passed. Screenshots:", args.output)
 

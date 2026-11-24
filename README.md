@@ -2,7 +2,7 @@
 
 > **当前处于 P0-0，G-1 为 BLOCKED。** Tavily 认证搜索及原帖回源已通过 C0-3。Jev 固定模型、返回契约和真实用量等待供应商留存审查。[Tavily 实测](docs/evidence/p0-0/tavily-live/README.md) · [API 接入实测](docs/evidence/p0-0/api-setup/README.md)
 
-[模块路线图](MODULE_ROADMAP.md) · [开发与验收状态](DEVELOPMENT_STATUS.md)
+[模块路线图](MODULE_ROADMAP.md) · [开发与验收状态](DEVELOPMENT_STATUS.md) · [开发交接](HANDOVER.md)
 
 ## 目的
 
@@ -30,6 +30,8 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
 ## 本机研究数据导入
 
 先冻结项目范围，在「数据导入中心」选择 CSV 或 XLSX。可检查工作表、调整字段映射、确认质量并回查批次。暂存数据留在本地，正式研究证据需按 PDT 核验。[操作说明、模板与接口](docs/imports.md)
+
+在「原始语料」可核对候选原话、回查冻结范围和来源文件行、记录审核依据及保留日期，并查看项目内的重复组。[本机原话审核](docs/imports.md#m05-原始语料审核)
 
 ## 工程回归
 

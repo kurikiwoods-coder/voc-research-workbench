@@ -1,6 +1,6 @@
 # VOC Research Workbench 模块路线图
 
-核查基线 `a650478dc6cc4a0a0baf66debddf141ed4763b0f`，分支 `codex/p0-0-connectivity`，核查日期 2026-11-24。范围来自 [PDT v1.3.1](docs/pdt/PDT-v1.3.1.docx)、[专案 v2.2 摘要](docs/proposal/voc-workbench-proposal-2026-11-23.md)及[需求验收矩阵](docs/requirements-matrix.md)。六层架构和产品品类、任务大类、意图三层关系沿用现有定义。本文登记模块归属、实施顺序与证据，不修订需求编号或原验收条款。需求跨层时可以映射多个模块。
+接管基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`，分支 `codex/p0-0-connectivity`，核查日期 2026-11-24。范围来自 [PDT v1.3.1](docs/pdt/PDT-v1.3.1.docx)、[专案 v2.2 摘要](docs/proposal/voc-workbench-proposal-2026-11-23.md)及[需求验收矩阵](docs/requirements-matrix.md)。六层架构和产品品类、任务大类、意图三层关系沿用现有定义。本文登记模块归属、实施顺序与证据。需求跨层时可以映射多个模块。
 
 每个模块分别记录工程开发、工程测试、正式业务验收。工程通过意味着对应代码与测试已执行，正式验收状态由需求矩阵和真实证据决定。Schema、样例、隔离夹具与计划路径均据实标注。
 
@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-本轮获准独立预开发 M04，基于远端 M03 工程验收完成的 `d22d56c`。G-1 保持 BLOCKED。
+本轮接续 M05 本机原始语料治理。M04 已通过独立工程验收。正式阶段仍为 P0-0，G-1 为 BLOCKED。具体交付和发布状态见 [DEVELOPMENT_STATUS.md](DEVELOPMENT_STATUS.md)。
 
 ## M01 基础工程与连通性
 
@@ -75,7 +75,7 @@
 | 前端页面 | 数据导入中心、字段映射、质量检查、结果与项目批次历史。 |
 | 验收标准 | 结构、出处、时间与许可分别校验。原话字节和文件行保留，待审、重复、拒收不进入正式研究统计。 |
 | 最近相关提交 | [M04 代码复测 `336e68c`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/336e68c7e02bda08e00210e02958ed02250fc80e) · [CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341223418) |
-| 剩余问题 | 按 M05 接入正式证据核验与跨批次去重，按原标准完成 G1、RAW。 |
+| 剩余问题 | 本机核验与跨批次去重由 M05 提供，G1、RAW 仍需按原标准复验真实语料。 |
 
 ## M05 原始语料库、去重及溯源
 
@@ -83,16 +83,16 @@
 |---|---|
 | PDT 与矩阵编号 | §6.6、§9.3；RAW、G1、G2、RAW-ROLES、SOURCE-POLICY、J-6 |
 | 模块职责 | 存储不可变原文、出处和时间窗，治理语料资格与重复引用。 |
-| 前置依赖 | M03 范围版本；M04/M08 提供正式批次；M06 提供证据关系。 |
-| 工程开发 | 已有诊断证据留存和审计回放，正式原始语料未实现。 |
-| 工程测试 | 诊断证据 SQLite 与 JSON 校验通过。 |
-| 正式业务验收 | 正式 G1/G2 待验。 |
-| 数据库及 API | 诊断 evidence 与 SQLite 审计收据。待建原始记录、快照、批次、去重组与证据追溯 API。 |
-| 前端页面 | 现有诊断证据抽屉。正式语料库页未实现。 |
+| 前置依赖 | M03 冻结范围与 M04 本机导入。线上批次和证据关系分别依赖 M08、M06。 |
+| 工程开发 | 已实现本机核验、快照摘要、角色隔离、按项目去重、溯源、保留期限和可追查的审核历史。 |
+| 工程测试 | 本机测试和发布进度见 [工程记录](docs/evidence/m05/README.md)。 |
+| 正式业务验收 | G1、G2、RAW、SOURCE-POLICY 待正式核验。当前语料的正式统计及外发资格均关闭。 |
+| 数据库及 API | SQLite v4 增量迁移，新增 corpus_snapshots、corpus_reviews 和 /api/corpus。原文通过 M04 的稳定行号引用回放。 |
+| 前端页面 | 原始语料、批次候选、原文溯源与审核详情。 |
 | 验收标准 | 3 批来源、≥100 条真实片段，30/30 可回源。许可、采样窗口、角色、重复与剔除原因可查。 |
-| 最近相关提交 | `a650478` |
-| 测试结果与证据 | [正式连通性归档](docs/evidence/p0-0/tavily-live/README.md)的研究分母为 0。 |
-| 剩余问题 | 正式语料持久化、跨站点去重、角色分域和保留策略演练。 |
+| 最近相关提交 | 引入本节的 M05 提交。远端基线为 `bca9363`，上传状态见 [开发状态](DEVELOPMENT_STATUS.md)。 |
+| 测试结果与证据 | [本机验收记录](docs/evidence/m05/README.md) · [历史正式连通性归档](docs/evidence/p0-0/tavily-live/README.md) |
+| 剩余问题 | 逐源许可与实际清理审计，SQLite 和备份的受控清理，接入线上批次与正式证据关系。 |
 
 ## M06 三层用户需求数据关系
 

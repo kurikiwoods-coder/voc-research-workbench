@@ -307,6 +307,51 @@ class ImportTest(unittest.TestCase):
         self.assertEqual(self.client.delete(url).status_code, 409)
         self.assertEqual(self.confirm(url, plan)["status"], "revoked")
 
+    def test_corpus_restriction_applies_to_import_rows_and_original_file_previews(self):
+        for restriction in ("excluded", "expired", "revoked"):
+            with self.subTest(restriction=restriction):
+                restricted = [f"这是一条需要限制浏览的合成评论 {restriction}。", *VALID[1:]]
+                restricted[4] = "CC BY-SA 4.0"
+                data = make_csv(rows=[restricted, VALID])
+                url, _, plan = self.prepare(data, f"原文件-{restriction}.csv")
+                preview = self.check(url, plan)
+                receipt = self.confirm(url, plan)
+                original_path = self.root + "/batches/" + receipt["batch_id"]
+                alias_url, _, alias_plan = self.prepare(data, f"同内容-{restriction}.csv")
+                alias = self.confirm(alias_url, {**alias_plan, "privacy": "public"})
+                alias_path = self.root + "/batches/" + alias["batch_id"]
+                row = self.client.get(original_path).json()["rows"][0]
+                self.assertEqual(row["raw_text"], restricted[0])
+                self.assertEqual(self.client.get(alias_path).json()["rows"][0]["raw_text"], restricted[0])
+                decision = "excluded" if restriction == "excluded" else "verified"
+                review = self.client.post(f"/api/corpus/{self.study}/records/{row['record_id']}/review", json={
+                    "decision": decision, "role": "user_quote", "reason": "测试导入遮蔽",
+                    "basis": "对照合成原文、公开许可和研究范围", "retention_until": "2090-01-01",
+                })
+                self.assertEqual(review.status_code, 200, review.text)
+                if restriction == "revoked":
+                    self.client.post(original_path + "/revoke").raise_for_status()
+                day = "2090-01-02T00:00:00+00:00" if restriction == "expired" else "2090-01-01T00:00:00+00:00"
+                with patch("src.raw_store.imports.now", return_value=day):
+                    for path in (original_path, alias_path):
+                        detail = self.client.get(path)
+                        detail.raise_for_status()
+                        rows = detail.json()["rows"]
+                        self.assertNotIn(restricted[0], detail.text)
+                        self.assertTrue(rows[0]["content_restricted"])
+                        self.assertIsNone(rows[0]["raw_text"])
+                        self.assertEqual(rows[0]["originals"], [])
+                        self.assertEqual(rows[0]["fields"], {})
+                        self.assertEqual(rows[1]["raw_text"], VALID[0])
+                        report = self.client.get(path + "/errors.csv")
+                        self.assertEqual(report.status_code, 200)
+                        self.assertNotIn(restricted[0], report.content.decode("utf-8-sig"))
+                    for path in (url, alias_url):
+                        self.assertEqual(self.client.get(path).status_code, 409)
+                        self.assertEqual(self.client.post(path + "/preview", json=plan).status_code, 409)
+                    confirm = self.client.post(url + "/confirm", json={**plan, "preview_token": preview["preview_token"]})
+                    self.assertEqual(confirm.status_code, 409)
+
     def test_error_report_download_has_no_quotes_and_prevents_spreadsheet_formulas(self):
         raw = "机密的测试句"
         data = make_xlsx([[raw, "", "", "", "", ""]], sheet_name="=待核实")
@@ -433,7 +478,7 @@ class ImportMigrationTest(unittest.TestCase):
                 self.assertEqual(old.execute("PRAGMA user_version").fetchone()[0], 2)
                 self.assertIsNone(old.execute("SELECT name FROM sqlite_master WHERE name='import_batches'").fetchone())
             store = Store(root)
-            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 3)
+            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 4)
             self.assertEqual(store.one("SELECT study_id, scope_id FROM study_scope_freezes"), {"study_id": "p", "scope_id": "s"})
             self.assertEqual(Store(root).one("PRAGMA integrity_check")["integrity_check"], "ok")
 

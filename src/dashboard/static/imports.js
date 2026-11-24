@@ -251,10 +251,11 @@ export function mountImports(root, route, { api, esc, ic, choices, tell }) {
     const list = rows.length ? '<ul class="import-history">' + rows.map(r => `<li><div>
       <b>第 ${r.line_number} 行</b> ${badge(r.status)} <small>${esc(labels[r.privacy])}</small>
       ${r.issues.length ? "<p>" + esc(r.issues.map(issue => issue.message).join("；")) + "</p>" : ""}
-      <details><summary>查看本机原始字段</summary><p class="import-quote">${esc(r.raw_text) || "原话为空"}</p>
+      ${r.content_restricted ? '<p class="import-muted">此行原文和原始字段已限制查看。</p>' :
+      `<details><summary>查看本机原始字段</summary><p class="import-quote">${esc(r.raw_text) || "原话为空"}</p>
       <dl class="import-composition">${r.originals.map((value, index) =>
         `<div><dt>${esc(b.headers[index] || "第 " + (index + 1) + " 列")}</dt><dd>${esc(value) || "空"}</dd></div>`
-      ).join("")}</dl></details></div></li>`).join("") + '</ul>' : '<p class="state-box">没有符合所选状态的记录。</p>';
+      ).join("")}</dl></details>`}</div></li>`).join("") + '</ul>' : '<p class="state-box">没有符合所选状态的记录。</p>';
     root.innerHTML = header("导入结果", "核对本机暂存和拒收记录。", 3, pageLink() + studyLink())
       + bodyPanel("批次详情 " + badge(b.status), details + summaryCards(b.summary) + composition(b.summary)
         + '<div class="actions import-row-actions">' + link(entry + "/errors.csv", "下载错误报告")

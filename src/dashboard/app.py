@@ -13,9 +13,11 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from src.config import CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, MODEL, PROVIDERS, ROOT, Settings
 from src.dashboard.api_setup import register_setup, setup_view
+from src.dashboard.corpus_api import register_corpus
 from src.dashboard.study_api import register_studies
 from src.dashboard.import_api import register_imports
 from src.execution.checks import run_checks
+from src.raw_store.corpus import CorpusStore
 from src.raw_store.credentials import CredentialVault, VaultError
 from src.raw_store.store import Busy, Conflict, Store
 from src.raw_store.studies import StudyStore
@@ -211,6 +213,7 @@ def create_app(settings=None):
         app.state.store = Store(app.state.settings.directory)
         app.state.studies = StudyStore(app.state.store)
         app.state.imports = ImportStore(app.state.store)
+        app.state.corpus = CorpusStore(app.state.store)
         app.state.diagnostics = Store(app.state.settings.directory, diagnostic=True)
         app.state.vault = CredentialVault(app.state.settings.directory)
         yield
@@ -223,7 +226,7 @@ def create_app(settings=None):
     @app.middleware("http")
     async def local_controls(request: Request, call_next):
         path = request.url.path
-        private_api = path.startswith(("/api/setup/", "/api/studies/", "/api/imports/")) or path == "/api/studies"
+        private_api = path.startswith(("/api/setup/", "/api/studies/", "/api/imports/", "/api/corpus/")) or path == "/api/studies"
         if private_api:
             try:
                 loopback = request.client is not None and ip_address(request.client.host).is_loopback
@@ -321,6 +324,7 @@ def create_app(settings=None):
     register_setup(app)
     register_studies(app)
     register_imports(app)
+    register_corpus(app)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
 

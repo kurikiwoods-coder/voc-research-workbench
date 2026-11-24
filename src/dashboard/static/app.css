@@ -1520,3 +1520,43 @@ dialog::backdrop {
   .import-counts > div:first-child dd { margin: 0; }
   .import-steps li { padding: 7px 3px; text-align: center; font-size: 12px; }
 }
+
+.corpus-root { --corpus-space: clamp(14px, 2.5vw, 24px); }
+.corpus-head h1, .corpus-head p, .corpus-panel { overflow-wrap: anywhere; }
+.corpus-panel { padding: var(--corpus-space); margin-bottom: 14px; }
+.corpus-panel h2 { margin-bottom: 14px; }
+.corpus-project { display: grid; gap: 6px; max-width: 420px; margin-bottom: 14px; font-weight: 650; }
+.corpus-root .field { width: 100%; min-width: 0; min-height: 40px; color: var(--ink); }
+.corpus-list { list-style: none; margin: 0; padding: 0; }
+.corpus-list > li {
+  display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap;
+  gap: 8px 16px; padding: 12px 0; border-top: 1px solid var(--line);
+}
+.corpus-list a { font-weight: 700; }
+.corpus-list p, .corpus-panel .state-box { margin: 4px 0 0; }
+.corpus-list p, .corpus-form p, .corpus-history time { color: var(--sub); font-size: 12px; }
+.corpus-row-state, .corpus-record-state { display: flex; align-items: center; gap: 6px 12px; flex-wrap: wrap; }
+.corpus-row-state { font-size: 13px; }
+.corpus-paging { margin-top: 14px; }
+.corpus-primary { border-top: 3px solid var(--teal); }
+.corpus-record-state { color: var(--sub); font-size: 13px; }
+.corpus-quote {
+  margin: 12px 0 0; padding: 13px 15px; background: #f6f9f8;
+  border-inline-start: 2px solid var(--teal); white-space: pre-wrap; line-height: 1.7;
+}
+.corpus-details { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.corpus-fields dd { white-space: pre-wrap; }
+.corpus-form { border: 0; margin: 0; padding: 0; min-width: 0; }
+.corpus-form label { display: grid; gap: 6px; min-width: 0; align-content: start; }
+.corpus-form textarea { resize: vertical; }
+.corpus-form p { margin: -7px 0 0; }
+.corpus-review-action { align-self: end; }
+.corpus-history > li { display: block; }
+.corpus-history .corpus-fields { margin-top: 8px; }
+
+@media (max-width: 680px) {
+  .corpus-details { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .corpus-head { display: block; }
+  .corpus-head .actions { margin-top: 10px; }
+  .corpus-fields { grid-template-columns: minmax(0, 1fr); }
+}

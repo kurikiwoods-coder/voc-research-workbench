@@ -159,7 +159,7 @@ def register_imports(app):
     def inspect(study_id: UUID, file_id: UUID, db=Depends(store),
                 sheet_index: Annotated[int, Query(ge=0, lt=40)] = 0):
         with errors(), parse_slot():
-            file, scope = db.get_file(str(study_id), str(file_id))
+            file, scope = db.get_file(str(study_id), str(file_id), sheet_index)
             sheet = read_sheet(file.pop("source_bytes"), file["kind"], sheet_index)
             return {"file": file, "scope_version": scope["scope_version"], **sheet_preview(sheet)}
 
@@ -172,7 +172,7 @@ def register_imports(app):
     @router.post("/{study_id}/uploads/{file_id}/preview")
     def preview(study_id: UUID, file_id: UUID, plan=Depends(form(Preview)), db=Depends(store)):
         with errors(), parse_slot():
-            file, scope = db.get_file(str(study_id), str(file_id))
+            file, scope = db.get_file(str(study_id), str(file_id), plan.sheet_index)
             sheet = read_sheet(file.pop("source_bytes"), file["kind"], plan.sheet_index)
             rows, summary = evaluate(sheet, plan.mapping, scope, plan.privacy)
             flagged = [row for row in rows if row["issues"]]
@@ -188,7 +188,7 @@ def register_imports(app):
     @router.post("/{study_id}/uploads/{file_id}/confirm", status_code=201)
     def confirm(study_id: UUID, file_id: UUID, plan=Depends(form(Confirm)), db=Depends(store)):
         with errors(), parse_slot():
-            file, scope = db.get_file(str(study_id), str(file_id))
+            file, scope = db.get_file(str(study_id), str(file_id), plan.sheet_index)
             signature = preview_signature(file, plan)
             if plan.preview_token != signature:
                 raise Conflict("导入配置已变化，请重新运行质量检查。")

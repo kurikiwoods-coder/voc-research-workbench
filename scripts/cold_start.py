@@ -35,6 +35,7 @@ def main():
                     str(port),
                     "--log-level",
                     "error",
+                    "--no-use-colors",
                 ],
                 cwd=ROOT,
                 env=env,
@@ -51,7 +52,7 @@ def main():
                         time.sleep(0.2)
                 else:
                     raise TimeoutError("Service did not become ready")
-                assert health == {"status": "ok", "schema_version": 3}
+                assert health == {"status": "ok", "schema_version": 4}
                 with http.open(f"http://127.0.0.1:{port}/api/workspace") as reply:
                     assert json.load(reply)["history"] == []
                 print(f"{platform.system()} cold start {cycle}/3: PASS", flush=True)

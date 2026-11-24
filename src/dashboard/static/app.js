@@ -11,16 +11,23 @@ const esc = (value) =>
 const pages = {
   studies: ["研究项目", "folder"],
   imports: ["数据导入中心", "download"],
+  corpus: ["原始语料库", "file"],
   checks: ["连通性检查", "pulse"],
   matrix: ["验收矩阵", "grid"],
   history: ["运行记录", "clock"],
   tokens: ["额度中心", "meter"],
   setup: ["API 接入", "sliders"],
 };
+const researchViews = {
+  studies: () => import("./studies.js").then(module => module.mountStudies),
+  imports: () => import("./imports.js").then(module => module.mountImports),
+  corpus: () => import("./corpus.js").then(module => module.mountCorpus),
+};
 function pageFromLocation() {
   const page = location.hash.slice(1);
   if (/^imports\/[a-f0-9-]{36}(?:\/batches\/[a-f0-9-]{36})?$/.test(page)) return "imports";
   if (/^studies\/(?:new|[a-f0-9-]{36}(?:\/(?:edit|scopes\/[a-f0-9-]{36}))?)$/.test(page)) return "studies";
+  if (/^corpus\/[a-f0-9-]{36}(?:\/batches\/[a-f0-9-]{36}|\/records\/[a-f0-9-]{36}(?:%3A|:)[1-9][0-9]{0,6})?$/i.test(page)) return "corpus";
   return Object.hasOwn(pages, page) ? page : "checks";
 }
 const labels = {
@@ -377,21 +384,20 @@ function render() {
   nav();
   renderQuota();
   const main = el("main");
-  if (!["studies", "imports"].includes(current)) {
+  if (!Object.hasOwn(researchViews, current)) {
     main.innerHTML = { checks, matrix, history, tokens, setup }[current]();
     return;
   }
   const hash = location.hash;
   if (main.firstElementChild?.dataset.workspaceRoute === hash) return;
   const view = document.createElement("div");
-  const research = current === "studies";
   const title = pages[current][0];
-  view.className = research ? "study-root" : "import-root";
+  view.className = { studies: "study-root", imports: "import-root", corpus: "corpus-root" }[current];
   view.dataset.workspaceRoute = hash;
   view.innerHTML = '<p class="panel state-box" role="status">正在读取' + title + '…</p>';
   main.replaceChildren(view);
-  (research ? import("./studies.js") : import("./imports.js")).then(module => {
-    if (view.isConnected) (research ? module.mountStudies : module.mountImports)(
+  researchViews[current]().then(mount => {
+    if (view.isConnected) mount(
       view, hash.slice(1), { api, esc, ic, choices, tell }
     );
   }).catch(() => {
