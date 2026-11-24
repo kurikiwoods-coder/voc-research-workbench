@@ -50,7 +50,16 @@ def browser_checks(base, output):
         assert page.url.endswith("#tokens")
         expect(link("补充额度 ↗").first).to_have_attribute("href", "https://jevmodel.org/zh/pricing/")
         button("连接配置").click()
-        expect(page.get_by_role("dialog").get_by_text("JEVMODEL_API_KEY", exact=True)).to_be_visible()
+        connections = page.get_by_role("dialog")
+        for key in ("JEVMODEL_API_KEY", "TYPESAFE_API_KEY", "TAVILY_API_KEY", "BRAVE_API_KEY"):
+            expect(connections.get_by_text(key, exact=True)).to_be_visible()
+        expect(connections.get_by_text("未配置 · 审核未完成", exact=True)).to_be_visible()
+        expect(connections.get_by_text("未测试", exact=True)).to_have_count(4)
+        expect(connections.get_by_text("正式验收未测试", exact=False)).to_be_visible()
+        expect(connections.get_by_role("link", name="TypeSafe 控制台 ↗")).to_have_attribute(
+            "href", "https://console.typesafe.ai/login"
+        )
+        page.screenshot(path=str(output / "connection-settings.png"))
         button("关闭侧栏").click()
         link("连通性检查").click()
         button("运行检查").click()

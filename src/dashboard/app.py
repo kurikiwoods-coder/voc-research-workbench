@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+import json
 from pathlib import Path
 from uuid import UUID
 
@@ -8,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from src.config import MODEL, PROVIDERS, ROOT, SEARCH_KEYS, Settings
+from src.config import CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, MODEL, PROVIDERS, ROOT, Settings
 from src.execution.checks import run_checks
 from src.raw_store.store import Busy, Conflict, Store
 
@@ -135,6 +136,65 @@ def balance(db, settings):
     }
 
 
+def connection_diagnostics(db, settings, selected, requirements):
+    checks = {r["requirement_id"]: r for r in requirements}
+    refs = sorted({i for rid in ("C0-1", "C0-2", "C0-3") for i in checks[rid]["evidence"]})
+    observed = db.rows(
+        f"""SELECT name, status_code, checked_at, response_json FROM evidence
+            WHERE mode='live_http' AND id IN ({','.join('?' for _ in refs)}) ORDER BY id""",
+        refs,
+    ) if refs else []
+    verified_sources = set()
+    for row in observed:
+        if row["name"] == "forum_post" and row["status_code"] == 200:
+            proof = json.loads(row["response_json"])
+            if proof.get("verified"):
+                verified_sources.add(proof.get("search"))
+    schema_gap = checks["C0-2"].get("blocker") or ""
+    approved = settings.review_status()["approved"]
+    connections = []
+    for name, env_var in CONNECTOR_KEYS.items():
+        label, signup = CONNECTOR_ACCOUNTS[name]
+        is_jev = name in PROVIDERS
+        active = is_jev and name == settings.provider
+        if is_jev:
+            evidence_name = "jev_shard" if selected and name == selected["provider"] else None
+        else:
+            evidence_name = name
+        latest = next((r for r in reversed(observed) if r["name"] == evidence_name), None)
+        code = latest["status_code"] if latest else None
+        connection = "NOT_TESTED" if latest is None else "CONNECTED" if code == 200 else "ERROR"
+        capability = "NOT_TESTED"
+        if code == 200 and is_jev:
+            reply = json.loads(latest["response_json"]).get("body")
+            if not isinstance(reply, dict) or reply.get("model") != MODEL or schema_gap.startswith("schema_gap"):
+                capability = "MISMATCH"
+            elif all(checks[rid]["status"] == "PASS" for rid in ("C0-1", "C0-2")):
+                capability = "VERIFIED"
+        if code == 200 and name in verified_sources and checks["C0-3"]["status"] == "PASS":
+            capability = "VERIFIED"
+        connections.append({
+            "id": name,
+            "label": label,
+            "signup": signup,
+            "env_var": env_var,
+            "configured": bool(settings.keys.get(name)),
+            "selected_for_jev": active,
+            "review": ("APPROVED" if approved else "PENDING") if active else None,
+            "connection": connection,
+            "capability": capability,
+            "http_status": code,
+            "checked_at": latest["checked_at"] if latest else None,
+        })
+    return {
+        "provider": settings.provider,
+        "review": approved,
+        "key_names": {r["env_var"]: r["configured"] for r in connections},
+        "connections": connections,
+        "acceptance": checks["G-1"]["status"],
+    }
+
+
 class Batch(BaseModel):
     model_config = ConfigDict(extra="forbid")
     request_key: UUID
@@ -191,20 +251,14 @@ def create_app(settings=None):
         )
         if run_id and selected is None:
             raise HTTPException(404, "批次不存在")
+        matrix = requirements(db, selected["id"] if selected else None)
         return {
             "stage": "P0-0",
             "selected": selected,
             "history": history,
-            "requirements": requirements(db, selected["id"] if selected else None),
+            "requirements": matrix,
             "token": balance(db, cfg),
-            "config": {
-                "provider": cfg.provider,
-                "review": cfg.review_status()["approved"],
-                "key_names": {
-                    name: bool(cfg.keys.get(k))
-                    for k, name in {cfg.provider: PROVIDERS[cfg.provider][1], **SEARCH_KEYS}.items()
-                },
-            },
+            "config": connection_diagnostics(db, cfg, selected, matrix),
         }
 
     @app.get("/api/runs/{run_id}/evidence")

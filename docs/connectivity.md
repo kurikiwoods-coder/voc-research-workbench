@@ -27,6 +27,21 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
 
 ## 后端配置
 
+### 注册与创建密钥
+
+在项目根目录把 `.env.example` 复制为 `.env`，用本机编辑器填写后端变量，再重启服务。密钥和审查附件留在本机。Windows 启动器会在缺少 `.env` 时创建模板。
+
+| 供应商 | 注册与取钥 | P0-0 所需能力 |
+|---|---|---|
+| TypeSafe · `TYPESAFE_API_KEY` | 在官方控制台注册或登录，选择实际使用的组织并创建 API key。通过支持页选择 **Privacy & data → Enable zero data retention**。收到确认后在 **Settings → Organization** 核对启用，并留存审查附件。设置 `JEV_PROVIDER=typesafe`。[官方控制台](https://console.typesafe.ai/login) · [ZDR 官方说明](https://help.typesafe.ai/articles/9520184411) | 账户可调用 `jev-1.14.0`。真实的 8 + 3 分片须返回固定模型、Choice、Score 的逐档完整概率及 Noul。[账户模型接口](https://docs.typesafe.ai/api/list-models) · [Score](https://docs.typesafe.ai/primitives/score) |
+| JevModel · `JEVMODEL_API_KEY` | 在 JevModel 控制台登录或新建账户，从 **API keys** 创建密钥并记录该供应商的留存及分处理商审查。设置 `JEV_PROVIDER=jevmodel`。[控制台](https://jevmodel.org/zh/dashboard/) · [接口文档](https://jevmodel.org/zh/docs/) | 实测固定 `jev-1.14.0` 和完整 Score 分布。若出现别名、缺字段或模型不可用，按真实响应记录阻塞并人工决定是否切换供应商。 |
+| Tavily · `TAVILY_API_KEY` | 从官方文档的 **Get API key** 进入平台，注册或登录并创建 API key。[控制台](https://app.tavily.com/home) · [Search 文档](https://docs.tavily.com/documentation/api-reference/endpoint/search) | 账户允许 Search 请求。需通过 Tavily 实际发现允许回源的 URL 并核对原文许可。 |
+| Brave · `BRAVE_API_KEY` | 在 Brave Search API 注册，按控制台的套餐和 API Keys 指引创建密钥。[注册链接](https://api-dashboard.search.brave.com/register) · [API 快速入门](https://api-dashboard.search.brave.com/documentation/quickstart) | 账户启用 Web Search API，支持 `X-Subscription-Token`，实际发现的 URL 可用于许可回源。 |
+
+TypeSafe 与 JevModel 二选一调用。P0-0 先配置 Tavily 或 Brave 之一即可核查指定搜索源。打开「连接配置」检查 **未配置** 和 **已配置**。**未测试**、**已连接**、**能力不满足** 与 **能力已核验**描述所选批次的实际记录。**审核未完成**描述当前 Jev 供应商的留存审核。G-1 单独显示**正式验收通过**、**阻塞**、**失败**或**未测试**。密钥更换后按新账户复跑。
+
+### 变量与审核凭证
+
 | 变量 | 用途 |
 |---|---|
 | JEV_PROVIDER | jevmodel 为默认第三方通道，typesafe 为官方通道。选择哪个就只调用哪个。固定模型写入程序。 |
@@ -65,6 +80,17 @@ SQLite 迁移位于 `src/raw_store/migrations/`。服务从空库启动时自动
 
 写接口要求同源，使用请求头 `X-VOC-Action: connectivity`。本机信任 localhost 和 127.0.0.1。Jev 每片响应独立保留，输出概率须有合法范围与完整分布。不能确认是否已扣费的传输中断会暂停该分片并要求核对。401、402、422 会记录具体原因；429 和有幂等保证的 502 使用同键限次退避。长 Retry-After 留待后续恢复。Token Center 跳转供应商购买页，用量和余额的留存来源分别是 usage.input_tokens 与真实余额头。
 
+### 失败时核对
+
+| 页面状态或响应 | 检查位置 |
+|---|---|
+| 未配置 / 未测试 | 检查本机 `.env` 的变量名和所选供应商。重启服务后新建批次取证。 |
+| 审核未完成 | 核对 `JEV_REVIEW_FILE`、审批类型、附件和 SHA-256。 |
+| HTTP 401 / 403 | 核对密钥所属账户、模型或搜索权限，以及账户状态。 |
+| HTTP 402 / 429 | 在供应商控制台核对余额或限流。有 Retry-After 时按响应等待。 |
+| HTTP 422 / 能力不满足 | 查看当前批次的模型、请求字段和 `schema_gap`。文档中的示例响应可用于对照。 |
+| 传输中断、计费待核对 | 一旦结果可能已经被供应商接收，用原分片键核对供应商账单或请求记录。本地只自动重放已落盘成功片，未落盘时把批次保留在待核对状态。 |
+
 ## 来源边界
 
 公开检索限定在预先登记的站点。搜索摘要只作候选线索。后端仅向固定 HTTPS API 发请求，核对原帖 ID、原网址、公开许可、署名和发表日期，摘录原话并登记采样时间。可在本机抽屉回看来源、引用和许可。仓库留存端点、字段、状态、摘要与合成演练，正文及署名保留在本机。Stack Exchange 许可来自各帖子返回的 content_license。源站维护、额度或权限异常时保留相应状态。[Stack Exchange API](https://api.stackexchange.com/docs) · [API 条款](https://stackoverflow.com/legal/api-terms-of-use)
@@ -78,11 +104,13 @@ SQLite 迁移位于 `src/raw_store/migrations/`。服务从空库启动时自动
 ```sh
 python -m pip install -r requirements-dev.txt
 python -m unittest discover -s tests -p "test_*.py" -v
+node --test tests/client_state.test.cjs
 python scripts/cold_start.py
 python -m playwright install chromium
 python tests/browser_e2e.py
-python tests/live_gate.py
 ```
+
+有真实密钥、供应商留存审查和指定搜索源权限后，使用已配置的后端环境执行 `python tests/live_gate.py`。CI 只运行工程检查及无需密钥的匿名公开来源浏览器测试。Node 24 用于前端状态回归。
 
 已发布批次可离线交叉核对 SQLite 与 JSON，也可向原帖接口重新取证。后者返回 0 表示原句及许可一致，1 表示观察到差异，2 表示无可用响应或原帖不可读取。独立复核不会修改已发布的批次。
 

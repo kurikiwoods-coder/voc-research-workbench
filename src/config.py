@@ -21,6 +21,13 @@ PROVIDERS = {
     ),
 }
 SEARCH_KEYS = {"tavily": "TAVILY_API_KEY", "brave": "BRAVE_API_KEY"}
+CONNECTOR_ACCOUNTS = {
+    "typesafe": ("TypeSafe", "https://console.typesafe.ai/login"),
+    "jevmodel": ("JevModel", "https://jevmodel.org/zh/dashboard/"),
+    "tavily": ("Tavily", "https://app.tavily.com/home"),
+    "brave": ("Brave", "https://api-dashboard.search.brave.com/register"),
+}
+CONNECTOR_KEYS = {**{name: provider[1] for name, provider in PROVIDERS.items()}, **SEARCH_KEYS}
 
 
 @dataclass(frozen=True)
@@ -40,8 +47,7 @@ class Settings:
         capacity = os.getenv("JEV_TOKEN_CAPACITY", "").strip()
         if capacity and (not capacity.isdecimal() or int(capacity) <= 0):
             raise ValueError("JEV_TOKEN_CAPACITY 应填写账户已知的正整数额度")
-        variables = {provider: PROVIDERS[provider][1], **SEARCH_KEYS}
-        keys = {name: os.getenv(var, "").strip() for name, var in variables.items()}
+        keys = {name: os.getenv(var, "").strip() for name, var in CONNECTOR_KEYS.items()}
         directory = Path(os.getenv("VOC_DATA_DIR") or ROOT / "runtime")
         return cls(
             directory.resolve(),

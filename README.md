@@ -19,6 +19,12 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
 
 选择「运行检查」后逐项查看结果；在「运行记录」可恢复批次或导出脱敏证据。后端凭证与审查凭据留在本机。当前实测、配置与差异分别见 [阶段验收记录](docs/evidence/p0-0/README.md)、[运行与配置](docs/connectivity.md)、[需求与冲突矩阵](docs/requirements-matrix.md)。
 
+「连接配置」提供 TypeSafe、JevModel、Tavily 和 Brave 的注册入口，分别展示本机配置、所选批次的接口记录及 G-1。注册后在项目根目录的 `.env` 配置后端变量。[注册、取钥与排错](docs/connectivity.md#注册与创建密钥)
+
+## 工程回归
+
+安装 Python 3.12、Node 24 和 `requirements-dev.txt`，执行 `bash scripts/smoke-test.sh`。本地 Chromium 回归执行 `python -m playwright install chromium` 和 `python tests/browser_e2e.py`。GitHub Actions 在 PR 上运行 Linux、Windows Server 和 Chromium 工程测试，保存日志和截图。Windows 10/11 真机验收单独登记。[CI 工作流](.github/workflows/p0-0-ci.yml) · [Actions 运行记录](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/workflows/p0-0-ci.yml)
+
 ## 研究闭环的目标产出
 
 1. **意图注册表** — 发现了什么意图、定义、包含/排除标准、代表原话、版本号。

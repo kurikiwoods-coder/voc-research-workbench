@@ -187,7 +187,10 @@ class LocalTests(unittest.TestCase):
                 BEGIN SELECT RAISE(ABORT, 'synthetic storage failure'); END;
             """)
 
+        sent = []
+
         def successful_fixture(method, url, body, headers):
+            sent.append(headers["Idempotency-Key"])
             return Response(200, response_for(body), 80)
 
         args = (self.cfg, self.db, self.batch_id, self.attempt, self.quote, successful_fixture)
@@ -195,6 +198,18 @@ class LocalTests(unittest.TestCase):
             call_shards(*args)
         self.assertEqual(self.db.rows("SELECT id FROM evidence WHERE name='jev_shard'"), [])
         self.assertEqual(self.db.ledger(self.batch_id)[0]["state"], "sending")
+
+        # The provider fixture returned success, and the response transaction then failed.
+        # Reopening and recovering the same batch must leave that request uncertain.
+        reopened = Store(self.root, fixture=True)
+        _, attempt = reopened.begin(None, self.cfg, self.batch_id)
+        _, versions, _, reason = call_shards(
+            self.cfg, reopened, self.batch_id, attempt, self.quote, successful_fixture
+        )
+        self.assertEqual(versions, [])
+        self.assertIn("待核对", reason)
+        self.assertEqual(len(sent), 1)
+        self.assertIsNone(reopened.ledger(self.batch_id)[0]["tokens"])
 
     def test_latest_success_without_balance_header_is_unsynced(self):
         calls = []
@@ -464,6 +479,32 @@ class LocalTests(unittest.TestCase):
             self.assertEqual(client.get("/api/workspace").json()["history"], [])
             self.assertEqual(client.get("/static/app.js").status_code, 200)
             self.assertEqual(client.get("/").status_code, 200)
+
+    def test_connection_diagnostics_keep_credentials_and_fixture_results_out_of_status(self):
+        local_value = "local-fixture-credential"
+        settings = Settings(self.root, provider="typesafe", keys={"typesafe": local_value})
+        store = Store(self.root)
+        run, attempt = store.begin("connection-test", settings)
+        ref = store.record(
+            attempt, "jev_shard", "synthetic_contract", {}, {"body": {"model": MODEL}}, 200
+        )
+        store.result(attempt, "C0-1", "BLOCKED", "offline fixture", [ref], "no real provider")
+        store.finish(run, attempt, False)
+        with patch(
+            "urllib.request.OpenerDirector.open", side_effect=AssertionError("Read must be offline")
+        ), TestClient(create_app(settings), base_url="http://localhost") as client:
+            reply = client.get("/api/workspace")
+        self.assertEqual(reply.status_code, 200)
+        self.assertNotIn(local_value, reply.text)
+        config = reply.json()["config"]
+        providers = {entry["id"]: entry for entry in config["connections"]}
+        self.assertEqual(set(providers), {"typesafe", "jevmodel", "tavily", "brave"})
+        self.assertTrue(providers["typesafe"]["configured"])
+        self.assertEqual(providers["typesafe"]["review"], "PENDING")
+        self.assertEqual(providers["typesafe"]["connection"], "NOT_TESTED")
+        self.assertIsNone(providers["typesafe"]["http_status"])
+        self.assertFalse(providers["jevmodel"]["configured"])
+        self.assertEqual(config["acceptance"], "NOT_TESTED")
 
     def test_offline_history_survives_restart(self):
         actual = Store(self.root)

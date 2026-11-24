@@ -393,16 +393,43 @@ function detail(id) {
   openDrawer(r.title, id + " / 验收详情", content);
 }
 function config() {
-  const keys = Object.entries(state.config.key_names)
-    .map(
-      ([k, v]) =>
-        `<dt class="mono">${esc(k)}</dt><dd>${v ? "已配置" : "未配置"}</dd>`,
-    )
-    .join("");
+  const { connections, acceptance, provider } = state.config;
+  const statusText = {
+    NOT_TESTED: "未测试",
+    CONNECTED: "已连接",
+    MISMATCH: "能力不满足",
+    VERIFIED: "能力已核验",
+  };
+  const httpHints = {
+    400: "请求被拒绝，请核对供应商错误详情",
+    401: "请核对密钥",
+    402: "请核对额度",
+    403: "请核对权限",
+    422: "请核对请求字段和模型权限",
+    429: "供应商限流",
+  };
+  const providers = connections.map((entry) => {
+    let result = statusText[entry.connection];
+    if (entry.connection === "ERROR") {
+      const code = entry.http_status;
+      result = code ? `HTTP ${code} · ${httpHints[code] || "接口异常"}` : "未收到 HTTP 响应";
+    }
+    if (entry.capability !== "NOT_TESTED") result += " · " + statusText[entry.capability];
+    const review = entry.review === "PENDING" ? " · 审核未完成"
+      : entry.review === "APPROVED" ? " · 审核已完成" : "";
+    const active = entry.selected_for_jev ? " · 当前使用" : "";
+    return `<div class="connector-row"><div class="connector-heading"><strong>${esc(entry.label + active)}</strong>${link(entry.signup, entry.label + " 控制台")}</div><small class="mono">${esc(entry.env_var)}</small><div class="connector-status"><span>${entry.configured ? "已配置" : "未配置"}${review}</span><span>${esc(result)}${entry.checked_at ? " · " + esc(ts(entry.checked_at)) : ""}</span></div></div>`;
+  }).join("");
+  const gateLabel = {
+    PASS: "正式验收通过",
+    FAIL: "正式验收失败",
+    BLOCKED: "正式验收阻塞",
+    NOT_TESTED: "正式验收未测试",
+  }[acceptance];
   openDrawer(
     "连接配置",
     "本机服务",
-    `<section class="drawer-section"><h3>后端环境变量</h3><p>在项目根目录复制 .env.example 为 .env，填写所选供应商的密钥，保存并重启本机服务。</p><dl style="grid-template-columns:minmax(145px,1fr) 1fr">${keys}</dl></section><section class="drawer-section"><h3>公开语料的留存审查</h3><p>当前供应商 ${esc(state.config.provider)} · ${state.config.review ? "已核验" : "待核验"}。将审核凭证保留在本机，并在 JEV_REVIEW_FILE 中填写本机路径。配置格式见仓库 docs/connectivity.md。</p><p>内部 CX 与非公开材料仅在本机处理。</p></section>`,
+    `<section class="drawer-section"><h3>后端环境变量</h3><p>在项目根目录复制 .env.example 为 .env，填好后重启服务。连通和能力状态来自所选批次，更换密钥后请复跑。</p><div class="connector-list">${providers}</div></section><section class="drawer-section"><h3>公开语料的留存审查</h3><p>当前 Jev 供应商 ${esc(provider)} · G-1 ${esc(gateLabel)}。在本机设置 JEV_REVIEW_FILE，格式见仓库 docs/connectivity.md。内部 CX 与非公开材料仅在本机处理。</p></section>`,
   );
 }
 function save(name, content) {
