@@ -19,7 +19,8 @@ from fastapi.testclient import TestClient
 
 from src.config import Settings
 from src.dashboard.app import create_app
-from src.execution.transport import network
+from src.execution.checks import run_checks
+from src.execution.transport import Response, network
 from src.raw_store.store import Store
 from test_api_setup import review_pair
 from test_imports import BASE, HEADERS, MIGRATIONS, ORIGIN, make_csv, make_xlsx
@@ -325,6 +326,17 @@ class CrossModuleAudit(unittest.TestCase):
         self.assertEqual(migrated.audit(run)["attempts"][0]["evidence"][0]["id"], 1)
         self.assertEqual(migrated.rows("PRAGMA foreign_key_check"), [])
         self.assertEqual(Store(directory).audit(run), migrated.audit(run))
+
+
+class FixtureStorageAudit(unittest.TestCase):
+    def test_connection_fixture_reopens_only_the_synthetic_ledger(self):
+        root = Path(self.enterContext(TemporaryDirectory(prefix="voc-audit fixture storage ")))
+        cfg = Settings(root)
+        fixture = Store(root, fixture=True)
+        run = run_checks(cfg, fixture, "fixture-readback", transport=lambda *args: Response(None, {}))
+        self.assertTrue(fixture.audit(run)["attempts"])
+        self.assertFalse((root / "connectivity.sqlite3").exists())
+        self.assertEqual(fixture.rows("PRAGMA foreign_key_check"), [])
 
 
 class TransportAudit(unittest.TestCase):
