@@ -9,6 +9,7 @@ const esc = (value) =>
       ],
   );
 const pages = {
+  studies: ["研究项目", "folder"],
   checks: ["连通性检查", "pulse"],
   matrix: ["验收矩阵", "grid"],
   history: ["运行记录", "clock"],
@@ -17,6 +18,7 @@ const pages = {
 };
 function pageFromLocation() {
   const page = location.hash.slice(1);
+  if (/^studies\/(?:new|[a-f0-9-]{36}(?:\/(?:edit|scopes\/[a-f0-9-]{36}))?)$/.test(page)) return "studies";
   return Object.hasOwn(pages, page) ? page : "checks";
 }
 const labels = {
@@ -69,6 +71,7 @@ const detailLabels = [
   "全局 Top-K · 跨品类检索",
 ];
 const paths = {
+  folder: "M3 6h7l2 3h9v10H3z M7 13h10 M7 16h7",
   pulse: "M3 13h4l3-8 5 15 3-9h3",
   grid: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
   clock: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3 2",
@@ -371,7 +374,23 @@ function tokens() {
 function render() {
   nav();
   renderQuota();
-  el("main").innerHTML = { checks, matrix, history, tokens, setup }[current]();
+  const main = el("main");
+  if (current !== "studies") {
+    main.innerHTML = { checks, matrix, history, tokens, setup }[current]();
+    return;
+  }
+  const hash = location.hash;
+  if (main.firstElementChild?.dataset.studyRoute === hash) return;
+  const view = document.createElement("div");
+  view.className = "study-root";
+  view.dataset.studyRoute = hash;
+  view.innerHTML = '<p class="panel state-box" role="status">正在读取研究项目…</p>';
+  main.replaceChildren(view);
+  import("./studies.js").then(({ mountStudies }) => {
+    if (view.isConnected) mountStudies(view, hash.slice(1), { api, esc, ic, choices, tell });
+  }).catch(() => {
+    if (view.isConnected) view.textContent = "无法加载研究项目页面。请刷新工作台。";
+  });
 }
 function openDrawer(title, kicker, html) {
   el("drawer-title").textContent = title;

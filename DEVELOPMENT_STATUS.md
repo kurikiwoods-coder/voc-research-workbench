@@ -1,8 +1,14 @@
 # VOC Research Workbench 开发状态
 
-核查日期 2026-11-24。核查基线 `a650478dc6cc4a0a0baf66debddf141ed4763b0f`，目标分支 `codex/p0-0-connectivity`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [15 个模块](MODULE_ROADMAP.md)
+核查日期 2026-11-24。本轮开发基线 `7a4393f8c43a09bce8decd8d43d102293910c99f`，目标分支 `codex/p0-0-connectivity`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [15 个模块](MODULE_ROADMAP.md)
 
-## 本轮 M01 基础工程与连通性
+## 本轮 M03 研究项目与范围管理
+
+交付本机项目列表、新建和编辑、搜索排序、当前项目切换、归档恢复、五种研究模式及范围快照冻结。SQLite v2 增量迁移保留 M01 和 M02 存储边界。[本机操作与接口](docs/studies.md) · [工程测试记录](docs/evidence/m03/README.md)
+
+本机实际运行 69 项 Python（含 16 项 M03）、2 项 Node、3 次 Linux 空库冷启动，均通过。已提交的四份历史收据一致性校验通过。Windows Server 和 Chromium 的运行记录见 PR 检查。Windows 10/11 真机 NOT_TESTED。本轮 Tavily、Brave、Jev 调用量均为 0。
+
+## 上轮 M01 基础工程与连通性
 
 已交付同批来源恢复。在本机运行 `python -m src.outputs.recover_source_batch` 可从锁定的 Tavily 归档恢复原批次，原帖许可、时间和原句指纹重新核对后才写入。恢复保留原批次 ID 和搜索证据。继续验收从「运行记录 → 恢复此批次」执行。原帖发生变化、归档损坏或中途写库失败时停止恢复，重复执行无额外搜索请求。[操作说明](docs/connectivity.md#原运行库缺失时继续原批次)
 
@@ -32,4 +38,4 @@
 
 ## 下一轮候选
 
-当前仍处于 P0-0。M01 正式部分继续等待经核验的 Jev 留存政策、处理链和真实响应。M03 研究项目与范围管理是下一独立模块候选。正式交付受 G-1 约束，单独的本地预开发须有明示的范围与授权。每轮只实施一个获准模块。
+当前仍处于 P0-0。M04 的批次入口应绑定明确的项目 ID 与已冻结范围版本，接入 M05 原话存储和去重接口。表格导入的独立预开发需新的模块授权，正式流程仍须 G-1 放行。

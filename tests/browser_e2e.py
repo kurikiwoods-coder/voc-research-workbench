@@ -2,6 +2,7 @@
 
 from pathlib import Path
 import argparse
+from contextlib import contextmanager
 import json
 import os
 import socket
@@ -14,6 +15,7 @@ from urllib.error import URLError
 from urllib.parse import urljoin
 
 from playwright.sync_api import expect, sync_playwright
+from studies_browser import study_browser_checks, study_restart_checks
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -82,11 +84,18 @@ def api_setup_checks(page, output):
     print("API setup E2E passed: wizard, local key save/rotation/delete, preflight evidence, and 320/390 layouts.")
 
 
-def browser_checks(base, output):
+def browser_checks(base, output, studies_only=False):
     output.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as pw:
         browser = pw.chromium.launch(executable_path=os.getenv("VOC_CHROMIUM") or None)
         page = browser.new_page(viewport={"width": 1440, "height": 960}, locale="zh-CN")
+        if studies_only:
+            page.goto(base)
+            wizard = page.get_by_role("dialog")
+            wizard.get_by_role("button", name="稍后配置").click()
+            expect(wizard).to_be_hidden()
+            page.close()
+            return study_browser_checks(browser, base, output)
         errors = []
         page.on("pageerror", lambda e: errors.append(str(e)))
         page.goto(base)
@@ -186,12 +195,36 @@ def browser_checks(base, output):
         failing.get_by_role("button", name="重新读取", exact=True).click()
         expect(failing.get_by_role("heading", name="P0 准入暂缓")).to_be_visible()
         assert not errors, errors
-        browser.close()
+        print("M01 connectivity E2E passed: navigation, batch evidence and recovery, Token Center, and 320/390 layouts.")
+        return study_browser_checks(browser, base, output)
+
+
+@contextmanager
+def server(directory, port):
+    process = subprocess.Popen([sys.executable, __file__, "--serve", directory, str(port)], cwd=ROOT)
+    base = f"http://127.0.0.1:{port}/"
+    try:
+        opener = build_opener(ProxyHandler({}))
+        for _ in range(120):
+            if process.poll() is not None:
+                raise RuntimeError("Local E2E server stopped")
+            try:
+                with opener.open(base + "api/health", timeout=1):
+                    break
+            except (URLError, OSError):
+                time.sleep(0.2)
+        else:
+            raise TimeoutError("No local E2E server")
+        yield base
+    finally:
+        process.terminate()
+        process.wait(timeout=15)
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--serve", nargs=2, metavar=("DIR", "PORT"))
+    parser.add_argument("--studies-only", action="store_true")
     parser.add_argument("--output", type=Path, default=ROOT / "test-results/browser")
     args = parser.parse_args()
     if args.serve:
@@ -200,25 +233,13 @@ def main():
         with socket.socket() as port_probe:
             port_probe.bind(("127.0.0.1", 0))
             port = port_probe.getsockname()[1]
-        process = subprocess.Popen([sys.executable, __file__, "--serve", directory, str(port)], cwd=ROOT)
-        base = f"http://127.0.0.1:{port}/"
-        try:
-            opener = build_opener(ProxyHandler({}))
-            for _ in range(120):
-                if process.poll() is not None:
-                    raise RuntimeError("Local E2E server stopped")
-                try:
-                    with opener.open(base + "api/health", timeout=1):
-                        break
-                except (URLError, OSError):
-                    time.sleep(0.2)
-            else:
-                raise TimeoutError("No local E2E server")
-            browser_checks(base, args.output)
-            print("Chromium E2E passed. Screenshots:", args.output)
-        finally:
-            process.terminate()
-            process.wait(timeout=15)
+        with server(directory, port) as base:
+            ids = browser_checks(base, args.output, args.studies_only)
+        with server(directory, port) as base, sync_playwright() as pw:
+            browser = pw.chromium.launch(executable_path=os.getenv("VOC_CHROMIUM") or None)
+            study_restart_checks(browser, base, ids)
+            browser.close()
+    print("Chromium E2E passed. Screenshots:", args.output)
 
 
 if __name__ == "__main__":

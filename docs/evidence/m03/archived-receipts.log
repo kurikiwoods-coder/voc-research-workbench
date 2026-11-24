@@ -1,0 +1,64 @@
+{
+  "run": "84605f95-7aa1-4f30-93ad-08547334a78c",
+  "checks": {
+    "C0-1": "BLOCKED",
+    "C0-2": "BLOCKED",
+    "C0-3": "BLOCKED",
+    "C0-4": "BLOCKED",
+    "C0-5": "PASS",
+    "C0-6": "PASS",
+    "G-1": "BLOCKED"
+  },
+  "evidence_records": 20,
+  "shards": 0,
+  "sqlite_integrity": "ok",
+  "receipt_sha256": "1e061b5ff6c065ddfd47efd9046dec0865d684021a83dd2cb29df4cba3681c80"
+}
+{
+  "run": "ffc9fea1-cbd6-40ac-a96b-a848783a561b",
+  "checks": {
+    "C0-1": "BLOCKED",
+    "C0-2": "BLOCKED",
+    "C0-3": "BLOCKED",
+    "C0-4": "BLOCKED",
+    "C0-5": "PASS",
+    "C0-6": "PASS",
+    "G-1": "BLOCKED"
+  },
+  "evidence_records": 10,
+  "shards": 0,
+  "sqlite_integrity": "ok",
+  "receipt_sha256": "3965bc0723858eb789ea5cd80f62595d215e0cd6979e340d957bf9befc394f4e"
+}
+{
+  "run": "7fbcdf4d-3e8b-4f02-9974-ce52fe1a520e",
+  "checks": {
+    "C0-1": "BLOCKED",
+    "C0-2": "BLOCKED",
+    "C0-3": "BLOCKED",
+    "C0-4": "BLOCKED",
+    "C0-5": "PASS",
+    "C0-6": "PASS",
+    "G-1": "BLOCKED"
+  },
+  "evidence_records": 10,
+  "shards": 0,
+  "sqlite_integrity": "ok",
+  "receipt_sha256": "6ec6945665c6bb8a549deb5137a683f0d19df4970e8f07a06ed6ffbbf8fb442c"
+}
+{
+  "run": "89b0c2d1-576d-420f-9046-9e55878159be",
+  "checks": {
+    "C0-1": "BLOCKED",
+    "C0-2": "BLOCKED",
+    "C0-3": "PASS",
+    "C0-4": "BLOCKED",
+    "C0-5": "PASS",
+    "C0-6": "PASS",
+    "G-1": "BLOCKED"
+  },
+  "evidence_records": 10,
+  "shards": 0,
+  "sqlite_integrity": "ok",
+  "receipt_sha256": "c9381f28e8b494993327b30b6dd0df5aa29241aba87ee78d47409296142ecec8"
+}

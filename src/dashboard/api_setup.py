@@ -79,19 +79,20 @@ class DiagnosticInput(LocalBody):
     request_key: UUID
 
 
-def body(model, limit):
+def body(model, limit, *, label="配置内容或附件", explain=None):
     async def parse(request: Request):
         if request.headers.get("content-type", "").split(";")[0] != "application/json":
             raise HTTPException(415, "请从工作台提交 JSON。")
         buffer = bytearray()
         async for chunk in request.stream():
             if len(buffer) + len(chunk) > limit:
-                raise HTTPException(413, "配置内容或附件过大。")
+                raise HTTPException(413, f"{label}过大。")
             buffer.extend(chunk)
         try:
             return model.model_validate_json(buffer)
-        except (ValidationError, ValueError):
-            raise HTTPException(422, "配置格式无效，请检查输入。") from None
+        except (ValidationError, ValueError) as exc:
+            message = explain(exc) if explain else "配置格式无效，请检查输入。"
+            raise HTTPException(422, message) from None
 
     return parse
 

@@ -13,9 +13,11 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from src.config import CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, MODEL, PROVIDERS, ROOT, Settings
 from src.dashboard.api_setup import register_setup, setup_view
+from src.dashboard.study_api import register_studies
 from src.execution.checks import run_checks
 from src.raw_store.credentials import CredentialVault, VaultError
 from src.raw_store.store import Busy, Conflict, Store
+from src.raw_store.studies import StudyStore
 
 STATIC = Path(__file__).parent / "static"
 NAMES = [
@@ -205,6 +207,7 @@ def create_app(settings=None):
     async def lifespan(app):
         app.state.settings = settings or Settings.load_base()
         app.state.store = Store(app.state.settings.directory)
+        app.state.studies = StudyStore(app.state.store)
         app.state.diagnostics = Store(app.state.settings.directory, diagnostic=True)
         app.state.vault = CredentialVault(app.state.settings.directory)
         yield
@@ -216,8 +219,9 @@ def create_app(settings=None):
 
     @app.middleware("http")
     async def local_controls(request: Request, call_next):
-        setup = request.url.path.startswith("/api/setup/")
-        if setup:
+        path = request.url.path
+        private_api = path.startswith(("/api/setup/", "/api/studies/")) or path == "/api/studies"
+        if private_api:
             try:
                 loopback = request.client is not None and ip_address(request.client.host).is_loopback
             except ValueError:
@@ -227,7 +231,7 @@ def create_app(settings=None):
         if request.method not in ("GET", "HEAD", "OPTIONS"):
             origin = request.headers.get("origin")
             expected = f"{request.url.scheme}://{request.headers.get('host')}"
-            if request.headers.get("X-VOC-Action") != "connectivity" or ((origin or setup) and origin != expected):
+            if request.headers.get("X-VOC-Action") != "connectivity" or ((origin or private_api) and origin != expected):
                 return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403)
         reply = await call_next(request)
         reply.headers["Referrer-Policy"] = "no-referrer"
@@ -312,6 +316,7 @@ def create_app(settings=None):
         return execute(None, str(run_id))
 
     register_setup(app)
+    register_studies(app)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
 
