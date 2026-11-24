@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from copy import deepcopy
 import json
 from pathlib import Path
@@ -284,7 +285,7 @@ class StudyMigrationTest(unittest.TestCase):
     def setUp(self):
         self.folder = Path(self.enterContext(TemporaryDirectory(prefix="voc-v1-研究 ")))
         self.path = self.folder / "connectivity.sqlite3"
-        with sqlite3.connect(self.path) as old:
+        with closing(sqlite3.connect(self.path)) as old, old:
             old.executescript((MIGRATIONS / "001_connectivity.sql").read_text("utf-8"))
             old.execute("INSERT INTO runs VALUES ('old-run','existing','jevmodel','public-fixture','2026-11-23',NULL,'paused')")
             old.execute("INSERT INTO attempts VALUES (1,'old-run','2026-11-23',NULL)")
@@ -313,7 +314,7 @@ class StudyMigrationTest(unittest.TestCase):
 
         with patch.object(Path, "read_text", broken), self.assertRaises(sqlite3.OperationalError):
             Store(self.folder)
-        with sqlite3.connect(self.path) as old:
+        with closing(sqlite3.connect(self.path)) as old:
             self.assertEqual(old.execute("PRAGMA user_version").fetchone()[0], 1)
             self.assertIsNone(old.execute("SELECT name FROM sqlite_master WHERE name='study_projects'").fetchone())
             self.assertEqual(old.execute("SELECT status FROM results").fetchone()[0], "BLOCKED")
