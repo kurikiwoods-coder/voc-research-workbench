@@ -2,7 +2,7 @@
 
 ## M06-C1 数据库实施交接
 
-正式开发分支为 `codex/p0-0-connectivity`。本轮使用已冻结设计实施 SQLite v7，生产工作台类数据库运行 001–007，M01 合成契约库和诊断库继续使用 v1。先使用隔离的 v6 一致性备份复验升级与恢复，运行环境和验收命令见[迁移证据](docs/evidence/m06-c1/README.md)。[负责人门禁调整](docs/decisions/pre-m06-development-gate.md)记载开发与部署条件。Windows 11 实机 NOT_TESTED，部署门禁和 G-1 均 BLOCKED。
+正式开发分支为 `codex/p0-0-connectivity`。本轮使用已冻结设计实施 SQLite v7，生产工作台类数据库运行 001–007，M01 合成契约库和诊断库继续使用 v1。先使用隔离的 v6 一致性备份复验升级与恢复，运行环境和验收命令见[迁移证据](docs/evidence/m06-c1/README.md)。[负责人门禁调整](docs/decisions/pre-m06-development-gate.md)记载开发与部署条件。M06-C1 为 ENGINEERING_PASS，代码基线为 f54b5734a632503b35066b9ab4fb197b8597d967。[实施 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45435846994)的 Ubuntu、Windows Server 2022 和 Chromium 均通过。Windows 11 实机 NOT_TESTED，部署门禁和 G-1 均 BLOCKED。
 
 M06-C2 开始前，核对开发分支、草稿 PR #1、C1 实现提交及对应的 Ubuntu、Windows Server 2022 与 Chromium 三项结果，并等负责人单独授权。C2 在现有 M05 逻辑上实现同连接资格复核，保留现有 Python 与 GET 入口及 404/409 契约，实测撤销先后、同源副本、独立证据、单条重新授权和 UTC 日界。运行命令、授权重放、统计及发布分别依冻结的后续阶段安排。[M05 → M06 数据契约](#m05--m06-数据契约) · [分阶段计划](docs/architecture/m06-implementation-plan.md)
 

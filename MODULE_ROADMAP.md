@@ -105,7 +105,7 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | PDT 与矩阵编号 | §6、§6.6、§6.9、§9.3；C0-6、CAT-1～CAT-10（CAT-4 协作）、J-14 接口 |
 | 模块职责 | 维护 Product Category、Task Category、Intent 以及证据驱动的双向关系。 |
 | 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。M06-B-F 架构已冻结。负责人已授权 C1。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
-| 工程开发 | M06-B-F 审核 PASS，审批 APPROVED，架构 FROZEN。C1 已实现数据库迁移、关系约束和测试。[六份设计文档](docs/architecture/m06-design.md) |
+| 工程开发 | M06-B-F 审核 PASS，审批 APPROVED，架构 FROZEN。C1 为 ENGINEERING_PASS，涵盖数据库迁移、关系约束及本机与实施提交的远端回归。[六份设计文档](docs/architecture/m06-design.md) |
 | 工程测试 | C0-6 冒烟和 C1 数据库断言分别取证。正式关系 API 待 C4。 |
 | 正式业务验收 | CAT 系列待验。 |
 | 数据库及 API | 已有产品品类、任务大类、意图、证据-品类和统计桶 Schema。SQLite 007 新增 20 张关系与审计表。双向查找和发布事务接口归后续阶段。 |

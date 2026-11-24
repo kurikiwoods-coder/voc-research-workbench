@@ -2,6 +2,10 @@
 
 2026-11-24 至 2026-11-25，在正式开发分支 codex/p0-0-connectivity 上实施。架构冻结基线为 02dfcebff52687d93578011977d5dada3bf70d27。以下本机证据使用实现工作区的代码。工程放行须同时核对实现提交的 GitHub Actions 作业。[负责人门禁调整](../../decisions/pre-m06-development-gate.md) · [草稿 PR #1 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)
 
+## 同提交的 GitHub CI
+
+实施提交 f54b5734a632503b35066b9ab4fb197b8597d967 为草稿 PR #1 的实际头提交。GitHub Actions 45435846994 的 head_sha 与其一致。Ubuntu、Windows Server 2022 和 Chromium 均以 success 完成，分别生成 smoke-ubuntu-latest、smoke-windows-2022 及 chromium-evidence 归档。结合本机回归，M06-C1 判定为 ENGINEERING_PASS。Windows Server 2022 为独立 CI 平台，Windows 11 实机及部署门禁维持已登记的状态。[实施提交](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/f54b5734a632503b35066b9ab4fb197b8597d967) · [实际 CI 与产物](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45435846994)
+
 ## 迁移及对账
 
 | 验证 | 实测结果 |
