@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M05-R2 两项许可缺陷和旧库副本复核问题已在本机复测，等待最终实现 CI。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。[开发状态](DEVELOPMENT_STATUS.md)
+M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06 等待授权。[开发状态](DEVELOPMENT_STATUS.md)
 
 ## M01 基础工程与连通性
 
@@ -93,7 +93,7 @@ M05-R2 两项许可缺陷和旧库副本复核问题已在本机复测，等待�
 | 最近相关提交 | [M05 原始实现 `b02a2b6`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/b02a2b647bff67f7e091b51fcdfc46cc719077e8) · [M05-R 最终实现 `d0414f5`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/d0414f5e7b978460d7dec3784c0862d7f1f0bdd0)，均已推送到 `codex/p0-0-connectivity`。 |
 | 测试结果与证据 | [本机验收记录](docs/evidence/m05/README.md) · [M05 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45352022477) · [历史正式连通性归档](docs/evidence/p0-0/tavily-live/README.md) |
 | M05-R 独立复审 | **ENGINEERING_PASS**。新增 10 项 Python 回归，Windows 11 全量 114/114。Ubuntu、Windows Server 2022 和 Chromium 作业全部通过。[复审证据](docs/evidence/m05/review.md) · [M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019) |
-| M05-R2 专项复修 | 本机 Python 124/124、Node 2/2、冷启动 3/3、历史归档 4/4。最终实现 CI 待复核。[复测证据](docs/evidence/m05/permissions-review.md) |
+| M05-R2 专项复修 | **ENGINEERING_PASS**。Linux 本机、Ubuntu 及 Windows Server 2022 各通过 Python 124/124、Node 2/2、冷启动 3/3、历史归档 4/4，Chromium 8/8。[最终实现 `62a7c1c`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/62a7c1c132b72a8e07679f1713e6834aa7893c91) · [实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45367761470) · [复测证据](docs/evidence/m05/permissions-review.md) |
 | 剩余问题 | 逐源许可与实际清理审计，SQLite 和备份的受控清理，接入线上批次与正式证据关系。 |
 
 ## M06 三层用户需求数据关系

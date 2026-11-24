@@ -12,7 +12,7 @@ M05-R 的历史工程验收为 **ENGINEERING_PASS**。当轮最终实现 `d0414f
 
 仓库保留 PDT v1.3.1 Word 正文和专案 v2.2 的 Markdown 摘要。27 页专案 PDF 的 SHA-256 登记在需求矩阵，复核原件时从其授权来源取得。[PDT 正文](docs/pdt/PDT-v1.3.1.docx) · [专案摘要](docs/proposal/voc-workbench-proposal-2026-11-23.md) · [原件指纹](docs/requirements-matrix.md)
 
-M05-R2 已复修许可与数据资格。SQLite v5 保留原审核历史，缺少明确授权依据且原基础规则有效的旧记录停在待审核。同一文件行的此类副本各自复核。远端最终实现 CI 待复核。[复测证据](docs/evidence/m05/permissions-review.md)
+M05-R2 许可与数据资格复修为 **ENGINEERING_PASS**。两项缺陷和旧库副本复核问题均关闭。SQLite v5 保留历史。缺少明确授权依据且原基础规则有效的旧记录待人工复核，同一文件行的此类副本可单独复核。[最终实现 `62a7c1c`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/62a7c1c132b72a8e07679f1713e6834aa7893c91) · [实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45367761470) · [复测证据](docs/evidence/m05/permissions-review.md)
 
 ## M05 → M06 数据契约
 

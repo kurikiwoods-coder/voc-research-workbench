@@ -158,4 +158,4 @@ CSV / XLSX 暂存绑定冻结项目范围，记录原文、文件行、工作表
 | RAW-ROLES、G1、G2 | 区分用户原话、背景证据、内部材料与合成夹具。正式研究资格与外发资格关闭。 | 三个真实来源批次、至少 100 条合格真实语义片段、30/30 含原话及采集规则的溯源抽查。 |
 | CAT-6、CAT-7、§6.6、§9.3 | 已记录原始行、冻结范围、来源证据和后续稳定标识的交接约束。下游读取经过统一的当前资格服务，导入暂存仅供状态和定位。 | 按后续模块验收证据支持的三层关系、统计与正式发布。 |
 
-M05-R2 许可、撤销和旧库副本复核已完成本机工程复测。最终实现 CI 待复核。正式验收依上表证据核定，G-1 保持 **BLOCKED**。[复测证据](evidence/m05/permissions-review.md) · [M05 → M06 数据契约](../HANDOVER.md#m05--m06-数据契约)
+M05-R2 工程状态为 **ENGINEERING_PASS**。许可、撤销及旧库副本复核通过最终实现的 Ubuntu、Windows Server 2022 与 Chromium 检查。正式验收依上表证据核定，G-1 保持 **BLOCKED**，C0-1、C0-2、C0-4 和供应商审查沿用原标准。[最终实现 `62a7c1c`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/62a7c1c132b72a8e07679f1713e6834aa7893c91) · [实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45367761470) · [修复前后证据](evidence/m05/permissions-review.md) · [M05 → M06 数据契约](../HANDOVER.md#m05--m06-数据契约)

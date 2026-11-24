@@ -4,9 +4,9 @@
 
 ## 本轮 M05-R2 许可与数据资格复修
 
-M05-R2 已修复并本机复测 BUG-01、BUG-02 及旧库同文件行副本互相锁住复核的问题。SQLite v5 保留历史并追加不可变许可事件。缺少结构化授权的旧核验记录可逐条复核，原文要经当前资格校验才显示。
+M05-R2 为 **ENGINEERING_PASS**。BUG-01、BUG-02 及旧库同文件行副本互相锁住复核的问题均已关闭。SQLite v5 保留历史并追加不可变许可事件。缺少结构化授权的旧核验记录可逐条复核，原文经当前资格校验后显示。
 
-最新本机 Linux 通过 Python 124/124、Node 2/2、冷启动 3/3、历史归档 4/4。最终实现的 CI 待复核。正式阶段为 P0-0，G-1 **BLOCKED**。本轮真实研究 API 调用 0 次。[复测证据](docs/evidence/m05/permissions-review.md) · [下游数据契约](HANDOVER.md#m05--m06-数据契约)
+本机 Linux、Ubuntu CI、Windows Server 2022 CI 各通过 Python 124/124、Node 2/2、冷启动 3/3、历史归档 4/4。Chromium 8/8。Windows Server 的中文及空格路径启动通过，本轮 Windows 10/11 实机为 NOT_TESTED。正式阶段为 P0-0，G-1 **BLOCKED**，本轮真实研究 API 调用 0 次。[最终实现 `62a7c1c`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/62a7c1c132b72a8e07679f1713e6834aa7893c91) · [实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45367761470) · [复测证据](docs/evidence/m05/permissions-review.md) · [下游数据契约](HANDOVER.md#m05--m06-数据契约)
 
 ## 上轮 M05-R 独立工程复审
 
