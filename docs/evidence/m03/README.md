@@ -13,3 +13,5 @@
 [当前 PR 的工程检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks) · [M03 浏览器用例](../../../tests/studies_browser.py)
 
 Tavily、Brave、Jev 真实请求均为 0。历史认证搜索的用量保留在原始归档。
+
+首轮 CI 的 Chromium 在窄屏路径遇到同名链接定位冲突，当前项目和项目列表均提供同一入口。回归用例将列表操作限定到项目列表区域，业务断言保留。[首轮运行](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45336038813)
