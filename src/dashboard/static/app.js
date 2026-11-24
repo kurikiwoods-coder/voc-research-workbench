@@ -144,17 +144,27 @@ async function api(url, options) {
     throw new Error("本机服务返回的记录格式异常，请重新读取。");
   }
 }
+let refreshSequence = 0;
 async function refresh(id = selected) {
-  const data = await api(
-    "/api/workspace" + (id ? "?run_id=" + encodeURIComponent(id) : ""),
-  );
-  const evidence = data.selected
-    ? await api("/api/runs/" + data.selected.id + "/evidence")
-    : null;
-  state = data;
-  selected = data.selected?.id || null;
-  audit = evidence;
-  render();
+  const seq = ++refreshSequence;
+  try {
+    const data = await api(
+      "/api/workspace" + (id ? "?run_id=" + encodeURIComponent(id) : ""),
+    );
+    if (seq !== refreshSequence) return false;
+    const evidence = data.selected
+      ? await api("/api/runs/" + data.selected.id + "/evidence")
+      : null;
+    if (seq !== refreshSequence) return false;
+    state = data;
+    selected = data.selected?.id || null;
+    audit = evidence;
+    render();
+    return true;
+  } catch (error) {
+    if (seq !== refreshSequence) return false;
+    throw error;
+  }
 }
 function nav() {
   el("nav").innerHTML = Object.entries(pages)
@@ -439,10 +449,13 @@ async function execute(resume) {
   render();
   const storeKey = "voc-pending-request";
   try {
-    let key = sessionStorage.getItem(storeKey);
-    if (!key) {
-      key = crypto.randomUUID();
-      sessionStorage.setItem(storeKey, key);
+    let key;
+    if (!resume) {
+      key = sessionStorage.getItem(storeKey);
+      if (!key) {
+        key = crypto.randomUUID();
+        sessionStorage.setItem(storeKey, key);
+      }
     }
     const out = await api(
       resume ? "/api/runs/" + selected + "/resume" : "/api/runs",
@@ -455,7 +468,7 @@ async function execute(resume) {
         ...(!resume ? { body: JSON.stringify({ request_key: key }) } : {}),
       },
     );
-    sessionStorage.removeItem(storeKey);
+    if (!resume) sessionStorage.removeItem(storeKey);
     checkFilter = "ALL";
     await refresh(out.run_id);
     tell("检查执行记录已保存");
@@ -507,7 +520,7 @@ document.addEventListener("click", async (event) => {
       return;
     }
     if (a === "refresh" || a === "retry-load") {
-      await refresh();
+      if (!(await refresh())) return;
       if (el("drawer").open) el("drawer").close();
       tell("已刷新本地记录");
       return;
@@ -533,8 +546,7 @@ document.addEventListener("click", async (event) => {
         );
     }
     if (a === "open-run") {
-      await refresh(id);
-      batchInfo();
+      if (await refresh(id)) batchInfo();
     }
     if (a === "export-audit" && audit)
       save("voc-evidence-" + selected + ".json", audit);

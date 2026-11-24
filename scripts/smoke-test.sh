@@ -3,5 +3,6 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 python -m unittest discover -s tests -p 'test_*.py' -v
+node --test tests/client_state.test.cjs
 python scripts/cold_start.py
 bash scripts/check-no-secrets.sh
