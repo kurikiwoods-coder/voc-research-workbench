@@ -8,7 +8,7 @@ import re
 import subprocess
 import sys
 paths = subprocess.check_output(["git","ls-files","-z"]).decode().split("\0")
-rules = [r"sk-[A-Za-z0-9]{16,}",r"AKIA[0-9A-Z]{16}",r"xox[baprs]-[A-Za-z0-9-]{10,}",r"ghp_[A-Za-z0-9]{20,}",r"github_pat_[A-Za-z0-9_]{20,}",r"[\w.%+-]+@[\w.-]+\.[A-Za-z]{2,}",r"(?m)^[ \t]*(?:TYPESAFE|JEVMODEL|TAVILY|BRAVE|YOUTUBE)_API_KEY[ \t]*=[ \t]*[^\s#]+",r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"]
+rules = [r"sk-[A-Za-z0-9]{16,}",r"\btvly-[A-Za-z0-9_-]{20,}",r"AKIA[0-9A-Z]{16}",r"xox[baprs]-[A-Za-z0-9-]{10,}",r"ghp_[A-Za-z0-9]{20,}",r"github_pat_[A-Za-z0-9_]{20,}",r"[\w.%+-]+@[\w.-]+\.[A-Za-z]{2,}",r"(?m)^[ \t]*(?:TYPESAFE|JEVMODEL|TAVILY|BRAVE|YOUTUBE)_API_KEY[ \t]*=[ \t]*[^\s#]+",r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"]
 bad = set()
 for name in filter(None, paths):
     path = Path(name)

@@ -1,5 +1,12 @@
 # 阶段变更记录
 
+## 2026-11-24 · P0-0 Tavily 认证搜索
+
+- 正式验收显式请求 Tavily 基础搜索的实际积分，用量和结果数写入本机证据及脱敏归档。新增回归覆盖供应商未返回积分时保留空值。
+- 一次真实 Tavily 搜索返回 HTTP 200 和 1 个 credit，回源许可原话通过 C0-3。C0-5 和 C0-6 同批通过。JevModel 等待留存审查，C0-1、C0-2、C0-4 和 G-1 保持阻塞。
+
+[实测日志与审计包](docs/evidence/p0-0/tavily-live/README.md)
+
 ## 2026-11-24 · P0-0 API 接入中心
 
 - 新增 API 接入页和可跳过的首次配置向导。TypeSafe、JevModel、Tavily、Brave 密钥可在本机保存、更换、停用，操作立即生效。YouTube 和 Google Forms 提供后续接入说明。

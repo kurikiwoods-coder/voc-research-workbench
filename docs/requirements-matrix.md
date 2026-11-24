@@ -28,19 +28,19 @@
 
 ## 当前验收快照
 
-2026-11-24 在空凭证工作区执行批次 `7fbcdf4d-3e8b-4f02-9974-ce52fe1a520e`。公开论坛搜索及原帖接口返回 HTTP 200。正式准入为 **BLOCKED**。[本轮证据](evidence/p0-0/api-setup/README.md) · [上轮归档](evidence/p0-0/closeout/README.md)
+2026-11-24 执行批次 `89b0c2d1-576d-420f-9046-9e55878159be`。Tavily 认证搜索和许可原帖回源已通过。正式准入为 **BLOCKED**。[本轮证据](evidence/p0-0/tavily-live/README.md) · [配置中心验证](evidence/p0-0/api-setup/README.md)
 
 | 项目 | 状态 | 可核验结果 |
 |---|---|---|
-| C0-1 | BLOCKED | 缺后端 Jev 密钥及供应商留存审查，固定版本和 8+3 分片等待真实响应。 |
-| C0-2 | BLOCKED | Choice、Score、Noul 和完整逐档概率等待真实响应。 |
-| C0-3 | BLOCKED | 论坛发现及原帖回源返回 HTTP 200。Tavily 或 Brave 的实际发现记录待取证。 |
-| C0-4 | BLOCKED | SQLite 与 JSON 归档一致，无真实 Jev 分片用量。已用独立夹具确认，在收到响应但账本未提交时恢复原批次不会自动重发。 |
+| C0-1 | BLOCKED | JevModel 临时凭证已载入。因缺留存审查，固定版本和 8+3 题仅记录请求计划。 |
+| C0-2 | BLOCKED | 尚无真实的 Choice、Score、Noul 响应，完整逐档概率待核验。 |
+| C0-3 | PASS | 一次 Tavily 认证搜索 HTTP 200，返回 5 个合规候选链接和 1 个 credit。原帖 94603 回源 HTTP 200，许可、署名和原话通过核验。 |
+| C0-4 | BLOCKED | 实际 SQLite 与 JSON 归档一致。没有模型请求，Jev 用量和余额回填待验证。 |
 | C0-5 | PASS | 36 次外发拦截，0 次内部传输，六种合成故障演练在工程回归中复测通过。 |
 | C0-6 | PASS | 2 个产品品类、3 个任务大类、30 个合成意图，两次跨品类 Top-12 命中。 |
-| G-1 | BLOCKED | C0-1 至 C0-4 待验收。下一阶段的 CSV、原始证据和采样批次等待准入。 |
+| G-1 | BLOCKED | C0-1、C0-2、C0-4 和供应商留存审查待完成。下一阶段等待准入。 |
 
-Windows Server 2022 工程 CI 完成三次空库冷启动和中文、空格路径下的启动器验证。Windows 10/11 真机记录仍为 NOT_TESTED。正式 API 批次等待前置凭证，工程 CI 的状态不参与 G-1 汇总。[原帖复核](evidence/p0-0/closeout/public-source.json) · [API 配置](connectivity.md#注册与创建密钥)
+Windows Server 2022 工程 CI 完成三次空库冷启动和中文、空格路径下的启动器验证。Windows 10/11 真机记录仍为 NOT_TESTED。G-1 以正式认证批次的状态汇总。[原帖复核](evidence/p0-0/closeout/public-source.json) · [API 配置](connectivity.md#注册与创建密钥)
 
 P0-0 补充的设置向导、本机凭证保存与诊断均有独立工程测试。诊断使用单独的 SQLite，Jev 合成句子、搜索回源和脱敏证据的正式研究分母为零。真实 Jev 账本、指定搜索源和 G-1 继续按下表原有要求验收。[API 接入操作](connectivity.md#从工作台配置-api) · [工程测试用例](../tests/test_api_setup.py)
 

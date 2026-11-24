@@ -382,6 +382,29 @@ class LocalTests(unittest.TestCase):
                 self.assertEqual(hit, with_brave)
                 self.assertLessEqual(len(seen), 4)
 
+    def test_formal_search_receipt_preserves_only_reported_tavily_credits(self):
+        cfg = Settings(self.root, keys={"tavily": "offline-tavily-fixture"})
+        cases = (("metered", {"usage": {"credits": 1}}, 1), ("unknown", {}, None))
+        for request_key, metering, expected in cases:
+            with self.subTest(request_key=request_key):
+                _, attempt = self.db.begin(request_key, cfg)
+
+                def fixture(method, url, payload, headers):
+                    self.assertEqual(method, "POST")
+                    self.assertEqual(payload["search_depth"], "basic")
+                    self.assertTrue(payload["include_usage"])
+                    return Response(200, {"results": [], **metering})
+
+                _, refs, _, _ = discover(cfg, self.db, attempt, fixture, engines=("tavily",))
+                row = self.db.one("SELECT * FROM evidence WHERE id=?", (refs[0],))
+                row["request"] = json.loads(row.pop("request_json"))
+                row["response"] = json.loads(row.pop("response_json"))
+                self.assertEqual(row["response"]["credits"], expected)
+                exported = public_evidence(row)["response"]
+                self.assertEqual(exported["credits"], expected)
+                self.assertTrue(exported["result_list_valid"])
+                self.assertEqual(exported["result_count"], 0)
+
     def test_source_check_skips_invalid_post_metadata(self):
         malformed = [
             self.forum_item(1) | {"owner": "deleted"},

@@ -85,12 +85,12 @@ def discover(settings, store, attempt, transport=network, *, engines=ENGINES):
         if engine == "tavily":
             params = {
                 "query": QUERY,
+                "search_depth": "basic",
                 "include_domains": [DOMAIN],
                 "max_results": 5,
                 "include_answer": False,
+                "include_usage": True,
             }
-            if store.diagnostic:
-                params["include_usage"] = True
             reply = outbound(
                 engine,
                 labels=PUBLIC,
@@ -129,15 +129,20 @@ def discover(settings, store, attempt, transport=network, *, engines=ENGINES):
                     )
                     candidates[engine].append(ident)
         extra = {}
-        if store.diagnostic:
+        if engine == "tavily" or store.diagnostic:
             usage = obj.get("usage")
-            extra = {
+            extra.update({
                 "result_list_valid": isinstance(listings, list),
                 "result_count": len(listings) if isinstance(listings, list) else None,
-                "credits": number(usage.get("credits")) if engine == "tavily" and isinstance(usage, dict) else None,
+                "credits": number(usage.get("credits")) if (
+                    engine == "tavily" and reply.status == 200 and isinstance(usage, dict)
+                ) else None,
+            })
+        if store.diagnostic:
+            extra.update({
                 "monthly_remaining": number(reply.monthly_remaining) if engine == "brave" else None,
                 "monthly_limit": number(reply.monthly_limit) if engine == "brave" else None,
-            }
+            })
         refs.append(
             store.record(
                 attempt,

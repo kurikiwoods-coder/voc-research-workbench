@@ -9,7 +9,7 @@ import sys
 
 from src.config import Settings
 from src.dashboard.app import requirements
-from src.execution.transport import ENDPOINTS, outbound
+from src.execution.transport import ENDPOINTS, number, outbound
 from src.ingestion.public_source import LICENSES, SITE, first_sentence, post_id
 from src.raw_store.store import Store, dump, now
 
@@ -31,8 +31,14 @@ def public_evidence(row):
             response["attributed_locally"] = bool(row["response"].get("author"))
     elif name in {"tavily","brave","forum_search"}:
         if "hits" in response:
+            provider_response = response
             response = {"hits":[{"id":hit["id"],"url":hit["url"].split("?")[0].split("#")[0]} for hit in response["hits"]],
                         "response_sha256":response.get("response_sha256"),"quota_remaining":response.get("quota_remaining")}
+            if name == "tavily":
+                list_valid = provider_response.get("result_list_valid")
+                response["result_list_valid"] = list_valid if isinstance(list_valid, bool) else None
+                response["result_count"] = number(provider_response.get("result_count"))
+                response["credits"] = number(provider_response.get("credits")) if row["status_code"] == 200 else None
     elif name == "jev_shard":
         body = request["body"]
         request["body"] = {"model":body["model"],"questions":body["questions"],

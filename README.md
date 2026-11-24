@@ -1,6 +1,6 @@
 # VOC 研究工作台
 
-> **当前处于 P0-0，G-1 为 BLOCKED。** 本地工作台可运行，正式验收等待供应商密钥和留存审查。[API 接入实测](docs/evidence/p0-0/api-setup/README.md) · [历史验收记录](docs/evidence/p0-0/README.md)
+> **当前处于 P0-0，G-1 为 BLOCKED。** Tavily 认证搜索及原帖回源已通过 C0-3。Jev 固定模型、返回契约和真实用量等待供应商留存审查。[Tavily 实测](docs/evidence/p0-0/tavily-live/README.md) · [API 接入实测](docs/evidence/p0-0/api-setup/README.md)
 
 ## 目的
 
