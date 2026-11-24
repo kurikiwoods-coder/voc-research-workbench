@@ -14,7 +14,7 @@ from fastapi.testclient import TestClient
 
 from src.config import Settings
 from src.dashboard.app import create_app
-from test_imports import BASE, HEADERS, ORIGIN, make_csv
+from test_imports import BASE, HEADERS, ORIGIN, discard_empty_m06_fixture_schema, make_csv
 
 
 QUOTE = "  我希望公共图书馆预约座位时能提前看到靠窗的位置还有没有空位。\n第二天也可以查。  "
@@ -461,6 +461,7 @@ class CorpusTests(unittest.TestCase):
         batch, [record] = self.import_rows([ROW])
         # Reset only the temporary test database to the M04 layout.
         with closing(sqlite3.connect(self.directory / "connectivity.sqlite3")) as db, db:
+            discard_empty_m06_fixture_schema(db)
             db.executescript("""
                 DROP VIEW corpus_withdrawals;
                 DROP TABLE corpus_licenses;
@@ -480,7 +481,7 @@ class CorpusTests(unittest.TestCase):
         with closing(sqlite3.connect(self.directory / "connectivity.sqlite3")) as db:
             self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0], 3)
         with TestClient(create_app(self.settings), base_url=ORIGIN, client=("127.0.0.1", 29205)) as fresh:
-            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 6)
+            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 7)
             rows = fresh.get(f"{self.root}/batches/{batch}").json()["records"]
             self.assertEqual([(row["record_id"], row["status"]) for row in rows], [(record, "pending_review")])
 

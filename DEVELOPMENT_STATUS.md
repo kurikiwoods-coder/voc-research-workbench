@@ -2,7 +2,13 @@
 
 核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，历史接管基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## M06-B-F 架构冻结
+## M06-C1 数据库迁移与结构约束
+
+2026-11-24，负责人批准以当前 Windows 10 实机证据核定开发门禁，Windows 11 验收移至该平台部署前。以冻结提交 `02dfcebff52687d93578011977d5dada3bf70d27` 核对原工程条件后，`PRE_M06_DEVELOPMENT_GATE = PASS`。M06 架构为 FROZEN，Windows 11 实机为 NOT_TESTED，部署门禁和 G-1 均为 BLOCKED。[负责人门禁调整](docs/decisions/pre-m06-development-gate.md)
+
+本轮实施 SQLite v7 新表与约束、写锁内版本复核、历史库升级及一致性备份恢复验证。Windows 10 实机通过 Python 173/173（新增 33 项）、Node 2/2、Chromium 8/8、空库冷启动 3/3、历史归档 4/4 及隔离启动器复测。M06-C1 的本机证据和同提交远端验收见[迁移证据](docs/evidence/m06-c1/README.md)和[草稿 PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)。真实研究 API 调用 0。M06-C2 等待负责人另行授权。
+
+## 历史记录 · M06-B-F 架构冻结
 
 2026-11-24，以 M06-B 审核提交 `2651d66c6f14f93b05e8123f4ca8009eaede37a4` 为输入，负责人批准表达身份、产品归属、统计口径、跨项目授权及旧范围映射五项政策。架构审核 PASS、设计批准 APPROVED、架构 FROZEN。12 项问题均有设计处置及实施回归，未解决 P0/P1 设计阻塞为 0。M06_IMPLEMENTATION=NOT_STARTED，Windows 11 实机 NOT_TESTED，Pre-M06 Gate 和 G-1 均 BLOCKED，真实研究 API 调用 0。 [负责人批准记录](docs/architecture/m06-owner-approval.md) · [问题台账](docs/audits/m06-architecture-findings.md) · [实施计划](docs/architecture/m06-implementation-plan.md)
 

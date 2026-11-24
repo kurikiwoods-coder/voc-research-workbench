@@ -1,6 +1,10 @@
 # Pre-M06 工程审计
 
-## 放行状态
+## 当前开发与部署门禁
+
+2026-11-24，项目负责人批准采用已通过验收的 Windows 10 实机作为当前开发环境的实机工程依据，并将 Windows 11 实机验收移至 Windows 11 部署之前。入场基线的全量工程回归、数据安全、数据库完整性和对应 GitHub CI 均有证据，`PRE_M06_DEVELOPMENT_GATE=PASS`。Windows 11 实机维持 `NOT_TESTED`，`WINDOWS_11_DEPLOYMENT_GATE=BLOCKED`，`G-1=BLOCKED`。[新旧规则及放行核对](../decisions/pre-m06-development-gate.md)
+
+## 历史放行状态
 
 **PRE_M06_GATE_BLOCKED**。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 完成 Windows 10 实机工程验收，结果为 **PASS**。当前基线的 Windows 11 实机仍为 **NOT_TESTED**，Windows Server 2022 结果单独登记。G-1 保持 **BLOCKED**，M06-A 架构设计具备工程基础，等待项目负责人另行授权。M06 实现和正式接入继续按原条件放行。[Windows 10 实机证据](../evidence/pre-m06/windows10-closeout.md) · [前期审计证据](../evidence/pre-m06/README.md)
 

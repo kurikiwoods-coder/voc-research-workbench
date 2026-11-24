@@ -162,4 +162,4 @@ M05-R2 工程状态为 **ENGINEERING_PASS**。许可、撤销及旧库副本复�
 
 ## Pre-M06 独立工程审计
 
-M01–M05 的接口隔离、生命周期回滚、CSV/XLSX、许可与撤销迁移、冻结范围及当前资格契约均有合成回归。**PRE_M06_GATE_BLOCKED**，Windows 11 真机为 NOT_TESTED。工程 CI 与 G-1 的正式连通性、G0 和 G1/G2 的业务验收分别记录。G-1 保持 BLOCKED，正式条款照原标准执行。 [审计范围](audits/pre-m06-audit.md) · [Bug 台账](audits/bug-register.md) · [试验记录](evidence/pre-m06/README.md)
+M01–M05 的接口隔离、生命周期回滚、CSV/XLSX、许可与撤销迁移、冻结范围及当前资格契约均有合成回归。原审计结论为 **PRE_M06_GATE_BLOCKED**，当时 Windows 11 实机为 NOT_TESTED。现行开发与部署放行见负责人门禁调整记录。工程 CI 与 G-1 的正式连通性、G0 和 G1/G2 的业务验收分别记录。G-1 保持 BLOCKED，正式条款照原标准执行。[审计范围](audits/pre-m06-audit.md) · [Bug 台账](audits/bug-register.md) · [试验记录](evidence/pre-m06/README.md) · [门禁调整](decisions/pre-m06-development-gate.md)

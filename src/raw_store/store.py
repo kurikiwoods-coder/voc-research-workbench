@@ -5,9 +5,23 @@ import json
 import os
 from pathlib import Path
 import sqlite3
+import time
 import uuid
 
 from src.raw_store.corpus_policy import snapshot_requires_restriction, source_identity, source_permission_revoked
+
+
+MIGRATIONS = (
+    "001_connectivity.sql",
+    "002_research_studies.sql",
+    "003_research_imports.sql",
+    "004_corpus.sql",
+    "005_corpus_licenses.sql",
+    "006_corpus_withdrawal_compat.sql",
+    "007_m06_core.sql",
+)
+MIGRATION_DIRECTORY = Path(__file__).parent / "migrations"
+SQLITE_TIMEOUT = 12
 
 
 def now():
@@ -36,27 +50,50 @@ class Store:
             "synthetic_contract.sqlite3" if fixture else "connectivity.sqlite3"
         )
         with closing(self.connect()) as db:
-            db.execute("PRAGMA journal_mode=WAL")
+            self._migrate(db, 1 if fixture or diagnostic else len(MIGRATIONS))
+
+    @staticmethod
+    def _migrate(db, target):
+        # Journal mode changes happen outside transactions and can return busy
+        # immediately when two processes open a brand-new file.
+        deadline = time.monotonic() + SQLITE_TIMEOUT
+        while True:
+            try:
+                mode = db.execute("PRAGMA journal_mode=WAL").fetchone()[0]
+                break
+            except sqlite3.OperationalError as exc:
+                if exc.sqlite_errorcode & 0xff != sqlite3.SQLITE_BUSY or time.monotonic() >= deadline:
+                    raise
+                time.sleep(0.05)
+        if mode != "wal":
+            raise sqlite3.OperationalError("Could not enable SQLite WAL")
+
+        # In legacy transaction mode executescript would commit our lock
+        # before the first statement. Use SQL transaction control here.
+        db.autocommit = True
+        db.execute("BEGIN IMMEDIATE")
+        try:
             version = db.execute("PRAGMA user_version").fetchone()[0]
-            migrations = (
-                "001_connectivity.sql",
-                "002_research_studies.sql",
-                "003_research_imports.sql",
-                "004_corpus.sql",
-                "005_corpus_licenses.sql",
-                "006_corpus_withdrawal_compat.sql",
-            )
-            if version > len(migrations):
-                raise ValueError("数据库版本高于当前程序")
-            target = 1 if fixture or diagnostic else len(migrations)
+            if not 0 <= version <= target:
+                raise ValueError("不支持的数据库版本")
             if version < target:
-                directory = Path(__file__).parent / "migrations"
-                # Migrations are idempotent. All pending changes commit together.
-                sql = "\n".join((directory / name).read_text("utf-8") for name in migrations[version:target])
-                db.executescript("BEGIN IMMEDIATE;\n" + sql + "\nCOMMIT;")
+                for number in range(version + 1, target + 1):
+                    script = (MIGRATION_DIRECTORY / MIGRATIONS[number - 1]).read_text("utf-8")
+                    db.executescript(script)
+                    if db.execute("PRAGMA user_version").fetchone()[0] != number:
+                        raise sqlite3.DatabaseError("数据库迁移版本与预期不一致")
+                if db.execute("PRAGMA foreign_key_check").fetchone() is not None:
+                    raise sqlite3.IntegrityError("数据库迁移外键检查失败")
+                if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
+                    raise sqlite3.DatabaseError("数据库迁移完整性检查失败")
+            db.execute("COMMIT")
+        except BaseException:
+            if db.in_transaction:
+                db.execute("ROLLBACK")
+            raise
 
     def connect(self):
-        db = sqlite3.connect(self.path, timeout=12)
+        db = sqlite3.connect(self.path, timeout=SQLITE_TIMEOUT)
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
         if not (self.fixture or self.diagnostic):

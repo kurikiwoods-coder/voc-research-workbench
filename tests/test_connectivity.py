@@ -479,7 +479,7 @@ class LocalTests(unittest.TestCase):
             self.assertIsNone(first["token"]["remaining"])
             self.assertGreaterEqual(len(first["requirements"]), 64)
             self.assertEqual(len(catalogue()), len({r["requirement_id"] for r in catalogue()}))
-            self.assertEqual(client.get("/api/health").json()["schema_version"], 6)
+            self.assertEqual(client.get("/api/health").json()["schema_version"], 7)
             self.assertEqual(client.get("/api/runs/" + str(uuid.uuid4()) + "/evidence").status_code, 404)
             self.assertEqual(client.post("/api/runs", json={}).status_code, 403)
             self.assertEqual(

@@ -23,7 +23,9 @@ from src.execution.checks import run_checks
 from src.execution.transport import Response, network
 from src.raw_store.store import Store
 from test_api_setup import review_pair
-from test_imports import BASE, HEADERS, MIGRATIONS, ORIGIN, make_csv, make_xlsx
+from test_imports import (
+    BASE, HEADERS, MIGRATIONS, ORIGIN, discard_empty_m06_fixture_schema, make_csv, make_xlsx,
+)
 
 
 TEXT = "合成访谈：预约社区阅览室时，我希望在提交前确认无障碍入口。"
@@ -248,12 +250,13 @@ class CrossModuleAudit(unittest.TestCase):
             self.withdraw(original, "The reuse licence was subsequently cancelled.")
         old_view = (MIGRATIONS / "005_corpus_licenses.sql").read_text(encoding="utf-8")
         old_view = old_view[old_view.index("CREATE VIEW IF NOT EXISTS corpus_withdrawals"):].split(";", 1)[0]
-        with self.app.state.store.db() as db:
+        with closing(sqlite3.connect(self.app.state.store.path)) as db, db:
+            discard_empty_m06_fixture_schema(db)
             db.execute("DROP VIEW corpus_withdrawals")
             db.execute(old_view)
             db.execute("PRAGMA user_version=5")
         with self.open() as (app, restarted):
-            self.assertEqual(app.state.store.one("PRAGMA user_version"), {"user_version": 6})
+            self.assertEqual(app.state.store.one("PRAGMA user_version"), {"user_version": 7})
             self.assertEqual(app.state.store.rows("PRAGMA foreign_key_check"), [])
             self.assertEqual(restarted.get(alias + "/eligible").status_code, 409)
             self.assertTrue(restarted.get(alias).raise_for_status().json()["source_permission_revoked"])
@@ -369,7 +372,7 @@ class CrossModuleAudit(unittest.TestCase):
             db.execute("INSERT INTO attempts VALUES (1,?,?,?)", (run, ts, ts))
             db.execute("INSERT INTO evidence VALUES (1,1,'audit','local_sqlite',?,NULL,'{}','{}')", (ts,))
         migrated = Store(directory)
-        self.assertEqual(migrated.one("PRAGMA user_version"), {"user_version": 6})
+        self.assertEqual(migrated.one("PRAGMA user_version"), {"user_version": 7})
         self.assertEqual(migrated.audit(run)["attempts"][0]["evidence"][0]["id"], 1)
         self.assertEqual(migrated.rows("PRAGMA foreign_key_check"), [])
         self.assertEqual(Store(directory).audit(run), migrated.audit(run))
