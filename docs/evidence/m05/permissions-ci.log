@@ -1,0 +1,44 @@
+GitHub Actions job output excerpts
+Commit 6f3b345640456182851830d67f3569c1e37b4501
+Run https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45366372653
+
+Ubuntu (job 138349032993)
+Ran 123 tests in 11.723s
+OK
+ℹ pass 2
+ℹ fail 0
+ℹ skipped 0
+Linux cold start 1/3: PASS
+Linux cold start 2/3: PASS
+Linux cold start 3/3: PASS
+OK: Git-bound content and staged files checked
+"sqlite_integrity": "ok",
+"sqlite_integrity": "ok",
+"sqlite_integrity": "ok",
+"sqlite_integrity": "ok",
+
+Windows Server 2022 (job 138349033103)
+Ran 123 tests in 56.431s
+OK
+ℹ pass 2
+ℹ fail 0
+ℹ skipped 0
+Windows cold start 1/3: PASS
+Windows cold start 2/3: PASS
+Windows cold start 3/3: PASS
+OK: Git-bound content and staged files checked
+"sqlite_integrity": "ok",
+"sqlite_integrity": "ok",
+"sqlite_integrity": "ok",
+"sqlite_integrity": "ok",
+Windows .cmd startup: PASS on Windows
+
+Chromium (job 138349032759)
+API setup E2E passed: wizard, local key save/rotation/delete, preflight evidence, and 320/390 layouts.
+M01 connectivity E2E passed: navigation, batch evidence and recovery, Token Center, and 320/390 layouts.
+M03 project E2E passed: create, validation, duplicate submission, history, archive/restore, search, active project, and 320/390 layouts.
+M04 import E2E passed: drag/drop CSV, XLSX sheet selection, mapping, quality, project isolation, report and 320/390px layouts.
+M05 corpus E2E passed: review, trace, duplicates, withdrawal, fresh authorization, and 320/390px layouts.
+M03 restart E2E passed: same SQLite database, current project, and scope versions reopened in a new process.
+M04 restart E2E passed: original batch state and XLSX staged rows survived a fresh service process.
+M05 corpus restart E2E passed: original text and local review persisted.

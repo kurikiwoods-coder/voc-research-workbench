@@ -1,6 +1,6 @@
 # M05-R2 许可与数据资格复测
 
-2026-11-24，在 `958ebcb948fa9677a7254dde4516c4a49761b798` 和修复版本上分别用隔离 SQLite、同源 FastAPI TestClient 与合成 CSV 实测。每次先建研究项目并冻结范围，再写入初始批次。真实研究 API 调用 0 次。前后日志只保留测试结论字段。
+2026-11-24，在 `958ebcb948fa9677a7254dde4516c4a49761b798` 和修复提交 `6f3b345640456182851830d67f3569c1e37b4501` 上分别用隔离 SQLite、同源 FastAPI TestClient 与合成 CSV 实测。每次先建研究项目并冻结范围，再写入初始批次。真实研究 API 调用 0 次。前后日志只保留测试结论字段。
 
 | 缺陷 | 复现条件 | 基线实测 | 修复实测 |
 |---|---|---|---|
@@ -16,6 +16,11 @@ SQLite v5 追加六种结构化许可状态和不可变撤销历史。模糊或�
 | `bash scripts/smoke-test.sh` | Linux Python 123/123、Node 2/2、三次空库冷启动 3/3，秘密扫描通过。 |
 | `python -m src.outputs.audit_receipt --verify <归档目录>` | 四份历史 SQLite 与 JSON 归档完整性通过。 |
 | 本机 Chromium | 可用的系统 Chromium 在创建 socket 时被执行环境拒绝，浏览器用例未启动。 |
-| 远端 CI | 该修复提交的 Ubuntu、Windows Server 2022 和 Chromium 待复测。 |
+| Ubuntu CI | Python 123/123、Node 2/2、空库冷启动 3/3、历史归档 4/4，秘密扫描通过。 |
+| Windows Server 2022 CI | Python 123/123、Node 2/2、空库冷启动 3/3、历史归档 4/4，秘密扫描及中文和空格路径的启动器通过。 |
+| Chromium CI | 8/8，含撤销后旧证据拒绝、有效新许可恢复、重启和 320 / 390 像素布局。 |
+| Windows 10/11 实机 | 本轮 NOT_TESTED。 |
+
+BUG-01 与 BUG-02 已关闭，M05-R2 为 **ENGINEERING_PASS**。[实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45366372653) · [实际 CI 日志摘录](permissions-ci.log)
 
 正式业务验收仍要求逐源许可、三个真实来源批次、至少 100 条合格真实语义片段、30/30 回源和实际物理清理及删除审计。C0-1、C0-2、C0-4 和 Jev 供应商留存与分处理商审查待验。G-1 为 BLOCKED。[验收矩阵](../../requirements-matrix.md) · [M06 数据契约](../../../HANDOVER.md#m05--m06-数据契约)

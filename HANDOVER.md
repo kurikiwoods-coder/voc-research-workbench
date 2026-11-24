@@ -6,11 +6,13 @@
 
 M03 和 M04 已完成独立工程验收。M04 代码复测为 `336e68c`，本机 Linux、Ubuntu 和 Windows Server 均通过 95 项 Python、2 项 Node 和 3 次冷启动。Chromium 通过 6 组，4 份历史归档核对通过。M05 已接入本机原话审核、去重与溯源，沿用 M04 的冻结范围及原文件引用。最新本机测试和发布状态见 [开发状态](DEVELOPMENT_STATUS.md)。[M04 证据](docs/evidence/m04/README.md) · [M05 工程记录](docs/evidence/m05/README.md)
 
-M05-R 的历史工程验收为 **ENGINEERING_PASS**。当轮最终实现 `d0414f5e7b978460d7dec3784c0862d7f1f0bdd0` 已同步到草稿 PR #1 的开发分支，Windows 11 实机回归和远端三项作业均通过。M05-R2 重新打开许可与数据资格的工程验收。收到 M06 授权后使用隔离合成夹具启动独立预开发。[复审证据](docs/evidence/m05/review.md) · [M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019)
+M05-R 的历史工程验收为 **ENGINEERING_PASS**。当轮最终实现 `d0414f5e7b978460d7dec3784c0862d7f1f0bdd0` 已同步到草稿 PR #1 的开发分支，Windows 11 实机回归和远端三项作业均通过。收到 M06 授权后使用隔离合成夹具启动独立预开发。[复审证据](docs/evidence/m05/review.md) · [M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019)
 
 当前正式阶段为 P0-0，G-1 为 **BLOCKED**。C0-3、C0-5、C0-6 已通过，C0-1、C0-2、C0-4 及 Jev 所选通道的留存与分处理商审查待验。继续保留固定 `jev-1.14.0`、8+3 分片、Choice / Score / Noul 完整返回及实际用量和余额要求。后续正式验收由有权限的人员在授权设备上按同批六项规则执行。G1/G2 的正式语料验收仍要求三个真实来源批次、至少 100 条合格语义片段及抽查 30/30 可回源。[正式历史批次](docs/evidence/p0-0/tavily-live/README.md) · [需求验收矩阵](docs/requirements-matrix.md)
 
 仓库保留 PDT v1.3.1 Word 正文和专案 v2.2 的 Markdown 摘要。27 页专案 PDF 的 SHA-256 登记在需求矩阵，复核原件时从其授权来源取得。[PDT 正文](docs/pdt/PDT-v1.3.1.docx) · [专案摘要](docs/proposal/voc-workbench-proposal-2026-11-23.md) · [原件指纹](docs/requirements-matrix.md)
+
+M05-R2 已复修许可与数据资格，工程状态为 **ENGINEERING_PASS**。两项缺陷复测关闭，Ubuntu、Windows Server 2022 与 Chromium 作业通过。SQLite v5 保留原审核历史。旧记录缺少可证明的明确授权时进入待审核。[实现提交 `6f3b345`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/6f3b345640456182851830d67f3569c1e37b4501) · [实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45366372653) · [复测证据](docs/evidence/m05/permissions-review.md)
 
 ## M05 → M06 数据契约
 
