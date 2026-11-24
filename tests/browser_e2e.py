@@ -11,6 +11,7 @@ import tempfile
 import time
 from urllib.request import build_opener, ProxyHandler
 from urllib.error import URLError
+from urllib.parse import urljoin
 
 from playwright.sync_api import expect, sync_playwright
 
@@ -61,7 +62,9 @@ def api_setup_checks(page, output):
     expect(wizard).to_be_hidden()
     expect(jev.get_by_text("凭证 已配置", exact=False)).to_be_visible()
     expect(jev.get_by_role("status").get_by_text("尚无当前凭证", exact=False)).to_be_visible()
-    workspace = page.request.get("/api/workspace").text()
+    response = page.request.get(urljoin(page.url, "/api/workspace"))
+    assert response.ok
+    workspace = response.text()
     assert initial_key not in workspace and rotated_key not in workspace
     assert initial_key not in page.content() and rotated_key not in page.content()
     stored = page.evaluate("JSON.stringify([localStorage, sessionStorage])")
