@@ -41,19 +41,23 @@ def open_record(page, filename):
     page.get_by_role("link", name=filename, exact=True).click()
     page.get_by_role("link", name="第 2 行", exact=True).click()
     expect(page.get_by_role("heading", name="原文溯源", exact=True)).to_be_visible()
-    expect(page.locator("blockquote.corpus-quote")).to_have_text(FIXTURE_TEXT)
+    expect(page.locator("blockquote.corpus-quote")).to_have_count(0)
     expect(page.locator("blockquote.corpus-quote b")).to_have_count(0)
 
 
 def verify_quote(page):
     page.get_by_label("审核结论").select_option("verified")
     page.get_by_label("语料角色").select_option("user_quote")
+    page.get_by_label("许可状态").select_option("authorized")
+    page.get_by_label("授权证据引用").fill("local:browser-fixture-license")
     page.get_by_label("审核原因").fill("隔离环境中的合成审核")
     page.get_by_label("核验依据").fill("已对照合成原文、来源许可、隐私等级和冻结范围。")
     date = datetime.now(timezone.utc).date() + timedelta(days=30)
     page.get_by_label("保留至（UTC）").fill(date.isoformat())
     page.get_by_role("button", name="保存审核", exact=True).click()
     expect(page.locator(".corpus-record-state")).to_contain_text("已核验")
+    expect(page.locator("blockquote.corpus-quote")).to_have_text(FIXTURE_TEXT)
+    expect(page.locator("blockquote.corpus-quote b")).to_have_count(0)
 
 
 def corpus_browser_checks(browser, base, output):
@@ -92,9 +96,10 @@ def corpus_browser_checks(browser, base, output):
         wizard.get_by_role("button", name="稍后配置").click()
     open_record(page, FILENAME)
     original = page.url
+    expect(page.get_by_text(first_url, exact=True)).to_have_count(0)
+    verify_quote(page)
     expect(page.get_by_text(first_url, exact=True)).to_be_visible()
     expect(page.get_by_role("link", name=first_url, exact=True)).to_have_count(0)
-    verify_quote(page)
     page.evaluate("window.scrollTo(0, 0)")
     page.screenshot(path=str(output / "m05-record.png"))
 
@@ -116,6 +121,26 @@ def corpus_browser_checks(browser, base, output):
     page.goto(second)
     expect(page.get_by_text("主记录", exact=True)).to_be_visible()
     expect(page.get_by_role("link", name="查看主记录", exact=True)).to_have_count(0)
+
+    page.get_by_label("审核结论").select_option("excluded")
+    page.get_by_label("许可状态").select_option("revoked")
+    page.get_by_label("审核原因").fill("测试记录来源状态改变")
+    page.get_by_role("button", name="保存审核", exact=True).click()
+    expect(page.locator(".corpus-record-state")).to_contain_text("许可 已撤销")
+    expect(page.locator("blockquote.corpus-quote")).to_have_count(0)
+    page.get_by_label("许可状态").select_option("authorized")
+    page.get_by_label("授权证据引用").fill("local:browser-fixture-license")
+    page.get_by_label("审核原因").fill("合成新许可复核")
+    page.get_by_label("核验依据").fill("查看隔离夹具中的新材料并核对研究范围。")
+    today = datetime.now(timezone.utc).date()
+    page.get_by_label("新授权签发日期（UTC）").fill(today.isoformat())
+    page.get_by_label("保留至（UTC）").fill((today + timedelta(days=30)).isoformat())
+    page.get_by_role("button", name="保存审核", exact=True).click()
+    expect(page.get_by_role("alert")).to_contain_text("撤销前的授权证据不可复用")
+    page.get_by_label("授权证据引用").fill("local:browser-fixture-new-license")
+    page.get_by_role("button", name="保存审核", exact=True).click()
+    expect(page.locator(".corpus-record-state")).to_contain_text("已明确授权")
+    expect(page.locator("blockquote.corpus-quote")).to_have_text(FIXTURE_TEXT)
     for width in (390, 320):
         page.set_viewport_size({"width": width, "height": 844})
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
@@ -123,7 +148,7 @@ def corpus_browser_checks(browser, base, output):
     assert not errors, errors
     assert not external, external
     page.close()
-    print("M05 corpus E2E passed: review, trace, duplicates, withdrawal, and 320/390px layouts.")
+    print("M05 corpus E2E passed: review, trace, duplicates, withdrawal, fresh authorization, and 320/390px layouts.")
     return urlsplit(second).fragment
 
 

@@ -1,0 +1,2 @@
+BUG-01 expected HTTP 422, actual HTTP 422 status policy_restricted license denied raw visible False
+BUG-02 labeled withdrawn True expected HTTP 409, actual HTTP 409 raw visible False

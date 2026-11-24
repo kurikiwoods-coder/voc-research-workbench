@@ -77,8 +77,8 @@ def sheet_preview(sheet):
         "sheet_name": sheet.name, "header_line": sheet.header_line,
         "columns": sheet.columns, "total": len(sheet.rows),
         "encoding": sheet.encoding, "delimiter": sheet.delimiter,
-        "samples": [{"line_number": row.line, "values": [cell[:240] for cell in row.values]}
-                    for row in sheet.rows[:5]],
+        "samples": [{"line_number": row.line, "populated": [bool(cell.strip()) for cell in row.values],
+                     "content_restricted": True} for row in sheet.rows[:5]],
         "standard_fields": field_catalog(), "suggested_mapping": suggestions(sheet.columns),
         "blank_headers": [index for index, name in enumerate(sheet.columns) if not name.strip()],
     }
@@ -179,9 +179,9 @@ def register_imports(app):
             rows, summary = evaluate(sheet, plan.mapping, scope, plan.privacy)
             flagged = [row for row in rows if row["issues"]]
             return {
-                "preview_token": preview_signature(file, plan), "summary": summary,
+                "preview_token": preview_signature(file, plan), "summary": {**summary, "source_types": {}},
                 "sample_rows": [{"line_number": row["line_number"], "status": row["status"],
-                                 "raw_text": row["raw_text"][:240], "privacy": row["privacy"]} for row in rows[:5]],
+                                 "content_restricted": True, "privacy": row["privacy"]} for row in rows[:5]],
                 "issue_rows": [{key: row[key] for key in ("line_number", "status", "issues", "duplicate_of_line")}
                                for row in flagged[plan.offset:plan.offset + 20]],
                 "more_issues": len(flagged) > plan.offset + 20,

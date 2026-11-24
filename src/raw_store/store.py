@@ -43,6 +43,7 @@ class Store:
                 "002_research_studies.sql",
                 "003_research_imports.sql",
                 "004_corpus.sql",
+                "005_corpus_licenses.sql",
             )
             if version > len(migrations):
                 raise ValueError("数据库版本高于当前程序")
@@ -58,7 +59,7 @@ class Store:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
         if not (self.fixture or self.diagnostic):
-            db.create_function("valid_snapshot_source", 5, valid_snapshot_source, deterministic=True)
+            db.create_function("valid_snapshot_source", 7, valid_snapshot_source, deterministic=True)
             db.create_function("source_permission_revoked", 1, source_permission_revoked, deterministic=True)
             db.create_function("source_identity", 1, source_identity, deterministic=True)
         return db

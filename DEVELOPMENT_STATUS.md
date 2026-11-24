@@ -2,9 +2,15 @@
 
 核查日期 2026-11-24。接管分支 `codex/p0-0-connectivity`，远端基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## 本轮 M05-R 独立工程复审
+## 本轮 M05-R2 许可与数据资格复修
 
-M05 为 **ENGINEERING_PASS**。复审基线为 `f279c7e0075b07e581d528709ffd5c9824e1a811`，最终实现为 `d0414f5e7b978460d7dec3784c0862d7f1f0bdd0`。原留存期限、许可撤销、跨文件来源限制、批次重试和遮蔽均有回归。Windows 11 实机通过 Python 114/114（基线 104，新增 10）、Node 2/2、冷启动 3/3、Chromium 8/8 和归档 4/4。对应 Ubuntu、Windows Server 2022、Chromium 作业全部通过。真实研究 API 调用 0 次。正式阶段仍为 P0-0，G-1 **BLOCKED**。[M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019) · [合成回归证据](docs/evidence/m05/review.md) · [M06 数据契约](HANDOVER.md#m05--m06-数据契约)
+基于远端 `958ebcb948fa9677a7254dde4516c4a49761b798` 重开 M05 工程验收。BUG-01 与 BUG-02 均已完成基线复现及修复后本机实测。SQLite v5 保留现有历史、增加不可变许可事件，撤销后须由人工核对独立的新授权材料。当前资格服务统一控制原话、重复组与后续读取。
+
+Linux 本机通过 123 项 Python、2 项 Node、3 次空库冷启动及 4 份历史归档核验。远端 Ubuntu、Windows Server 2022 和 Chromium 工程验收待在本轮提交上确认。正式阶段为 P0-0，G-1 **BLOCKED**。本轮真实研究 API 调用 0 次。[M05-R2 复测证据](docs/evidence/m05/permissions-review.md) · [下游数据契约](HANDOVER.md#m05--m06-数据契约)
+
+## 上轮 M05-R 独立工程复审
+
+M05-R 当轮记录为 **ENGINEERING_PASS**。复审基线为 `f279c7e0075b07e581d528709ffd5c9824e1a811`，最终实现为 `d0414f5e7b978460d7dec3784c0862d7f1f0bdd0`。原留存期限、许可撤销、跨文件来源限制、批次重试和遮蔽均有回归。Windows 11 实机通过 Python 114/114（基线 104，新增 10）、Node 2/2、冷启动 3/3、Chromium 8/8 和归档 4/4。对应 Ubuntu、Windows Server 2022、Chromium 作业全部通过。真实研究 API 调用 0 次。正式阶段仍为 P0-0，G-1 **BLOCKED**。[M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019) · [合成回归证据](docs/evidence/m05/review.md) · [M06 数据契约](HANDOVER.md#m05--m06-数据契约)
 
 ## 上轮 M05 原始语料库、去重及溯源
 

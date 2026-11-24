@@ -16,18 +16,26 @@ QUOTE_LABELS = {"userquote", "用户原话", "原话"}
 REVIEW_SOURCES = {"amazon", "review", "productreview", "商品评论", "产品评论", "评价"}
 AMAZON_HOST = re.compile(r"(?:^|\.)amazon\.[a-z]{2,3}(?:\.[a-z]{2})?$|^amzn\.to$")
 US_MARKETS = {"us", "usa", "unitedstates", "unitedstatesofamerica", "美国", "美國"}
-UNCONFIRMED_PERMISSIONS = {"unknown", "pending", "denied", "unlicensed", "不明", "未知", "待核", "待审", "待确认",
-                           "无许可", "无授权", "禁止", "未授权"}
-NEGATIVE_PERMISSION = re.compile(
-    r"^(?:no\s+(?:permission|licen[cs]e|authori[sz]ation)\b|"
-    r"(?:permission|licen[cs]e|authori[sz]ation)[:\s]+(?:denied|pending|unknown|not\s+granted)\b|"
-    r"未获(?:许可|授权)|未经授权|无许可|无授权|禁止(?:收录|保存|留存))"
+LICENSE_STATES = {"authorized", "pending", "denied", "revoked", "expired", "unknown"}
+_ZH_VARIANTS = str.maketrans("許權銷審獲經確認無過屆後隨態", "许权销审获经确认无过届后随态")
+_WITHDRAWAL = re.compile(
+    r"撤销|撤回|\b(?:revok(?:ed|e)|withdraw(?:n|al)|rescinded)\b"
 )
-WITHDRAWN_PERMISSION = re.compile(
-    r"^(?:(?:source\s+)?(?:permission|licen[cs]e|authori[sz]ation)[:\s]+"
-    r"(?:(?:has\s+been|was)\s+)?(?:revoked|withdrawn)\b|"
-    r"(?:来源|來源)?(?:许可|許可|授权|授權)(?:已被|已|被)?(?:撤[销銷]|撤回))"
+_DENIAL = re.compile(
+    r"未(?:曾|获|经|取得|得到)?(?:许可|授权)|(?:许可|授权)(?:尚|还)?未(?:取得|获取|获得|批准)|"
+    r"无(?:许可|授权)|拒绝(?:许可|授权)|禁止(?:收录|保存|留存)|"
+    r"\b(?:unlicensed|unauthori[sz]ed|no permission|no licen[cs]e|without permission|not authori[sz]ed|"
+    r"not granted|not approved|permission denied|licen[cs]e denied)\b"
 )
+_EXPIRY = re.compile(
+    r"已(?:到期|过期|届满)|(?:许可|授权|期限)[：:\s]*(?:到期|过期|届满)|\b(?:expired|lapsed)\b"
+)
+_PENDING = re.compile(
+    r"待(?:核|审|确认|审批)|审批中|等待.{0,8}(?:审批|确认|授权)|未知|不明|无法判断|"
+    r"\b(?:pending|unknown|unconfirmed|unclear|awaiting approval)\b"
+)
+_LOCAL_EVIDENCE = re.compile(r"local:[\w][\w.-]{2,126}")
+_OLD_EVIDENCE = re.compile(r"""local:[\w.-]+|https?://[^\s<>"'，。；）】]+""", re.IGNORECASE)
 SENSITIVE = re.compile(
     r"[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}|"
     r"(?:\b(?:order(?:\s+(?:id|number|no\.?))?|(?:shipping\s+|mailing\s+)?address|"
@@ -75,16 +83,37 @@ def safe_metadata(raw_fields):
     return result
 
 
-def permission_recorded(metadata):
-    permission = normalize("NFKC", metadata.get("access_policy", "")).casefold().strip()
-    normalized = key(permission)
-    return (normalized not in {"", "no", "none", "na"} and not NEGATIVE_PERMISSION.search(permission)
-            and not source_permission_revoked(permission)
-            and not any(normalized.endswith(value) for value in UNCONFIRMED_PERMISSIONS))
+def license_note_state(value):
+    """Historical text can signal a restriction. Authorization requires a review event."""
+    note = normalize("NFKC", value).casefold().translate(_ZH_VARIANTS).strip()
+    still_valid = re.sub(
+        r"(?:尚未|从未|未曾|没有|未)(?:被)?(?:撤销|撤回)|"
+        r"\b(?:not|never)\s+(?:been\s+)?(?:revoked|withdrawn|expired|lapsed)\b", "", note,
+    )
+    for state, pattern, text in (
+        ("revoked", _WITHDRAWAL, still_valid), ("denied", _DENIAL, note),
+        ("expired", _EXPIRY, still_valid), ("pending", _PENDING, note),
+    ):
+        if pattern.search(text):
+            return state
+    return "unknown"
 
 
 def source_permission_revoked(reason):
-    return bool(WITHDRAWN_PERMISSION.search(normalize("NFKC", reason).casefold().strip()))
+    return license_note_state(reason) == "revoked"
+
+
+def evidence_identity(value):
+    if not isinstance(value, str):
+        return None
+    value = normalize("NFKC", value).strip()
+    if _LOCAL_EVIDENCE.fullmatch(value) and not SENSITIVE.search(value):
+        return value.casefold()
+    return source_identity(value) if safe_source_url(value) else None
+
+
+def legacy_evidence_identities(text):
+    return {evidence_identity(ref.rstrip(").;,]")) for ref in _OLD_EVIDENCE.findall(text)}
 
 
 def validate_snapshot(row, role, metadata, scope):
@@ -99,8 +128,6 @@ def validate_snapshot(row, role, metadata, scope):
         raise ValueError("请先确认隐私等级，再核验原文。")
     if role == "synthetic":
         return
-    if not permission_recorded(metadata):
-        raise ValueError("请在导入来源记录填写来源许可或授权依据。")
     if role != "user_quote":
         return
 
@@ -121,11 +148,15 @@ def validate_snapshot(row, role, metadata, scope):
             raise ValueError("Amazon 产品体验原话只收录已验证购买的美国市场评价。")
 
 
-def valid_snapshot_source(privacy, raw_text, role, fields_json, scope_json):
-    # Older reviews remain immutable. Current policy controls visibility.
+def snapshot_content_valid(privacy, raw_text, role, fields_json, scope_json):
     row = {"privacy": privacy, "raw_text": raw_text, "fields_json": fields_json}
     try:
         validate_snapshot(row, role, safe_metadata(fields_json), json.loads(scope_json))
     except ValueError:
         return False
     return True
+
+
+def valid_snapshot_source(privacy, raw_text, role, fields_json, scope_json, license_state, evidence_ref):
+    return (license_state == "authorized" and evidence_identity(evidence_ref) is not None
+            and snapshot_content_valid(privacy, raw_text, role, fields_json, scope_json))

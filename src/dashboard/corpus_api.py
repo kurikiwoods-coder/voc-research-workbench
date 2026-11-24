@@ -21,6 +21,10 @@ class Review(BaseModel):
     reason: Annotated[str, Field(min_length=1, max_length=500)]
     basis: Annotated[str, Field(max_length=1000)] = ""
     retention_until: date | None = None
+    license_status: Literal["authorized", "pending", "denied", "revoked", "expired", "unknown"] | None = None
+    license_evidence_ref: Annotated[str, Field(min_length=1, max_length=500)] | None = None
+    license_issued_on: date | None = None
+    reauthorize: bool = False
 
 
 Offset = Annotated[int, Query(ge=0, le=100_000)]
@@ -62,6 +66,11 @@ def register_corpus(app):
     def detail(study_id: UUID, record_id: RecordId, db=Depends(store)):
         with corpus_errors():
             return db.detail(str(study_id), str(record_id))
+
+    @router.get("/{study_id}/records/{record_id}/eligible")
+    def eligible(study_id: UUID, record_id: RecordId, db=Depends(store)):
+        with corpus_errors():
+            return db.qualified_record(str(study_id), str(record_id))
 
     @router.post("/{study_id}/records/{record_id}/review")
     def review(study_id: UUID, record_id: RecordId, form=Depends(review_form), db=Depends(store)):

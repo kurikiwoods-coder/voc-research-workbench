@@ -9,6 +9,10 @@ const statuses = {
   policy_restricted: ["来源资格受限", "BLOCKED"],
 };
 const privacyLabels = { public: "公开", private: "非公开", internal: "内部 / CX", unknown: "未确认" };
+const licenses = {
+  authorized: "已明确授权", pending: "待确认", denied: "未授权", revoked: "已撤销",
+  expired: "已到期", unknown: "无法判断",
+};
 const roles = {
   user_quote: "用户原话",
   background: "背景证据",
@@ -136,23 +140,33 @@ export function mountCorpus(root, route, { api, esc, choices, tell }) {
     return `<ol class="corpus-list corpus-history">${record.history.map(entry => `<li>
       <div class="corpus-row-state">${badge(entry.decision)}<span>${esc(roles[entry.role])}</span>
       <time datetime="${esc(entry.reviewed_at)}">${esc(time(entry.reviewed_at))}</time></div>
-      ${fields([["原因", entry.reason], ["核验依据", entry.basis], ["保留至", entry.retention_until]])}
+      ${fields([["许可状态", licenses[entry.license_status]], ["原因", entry.reason], ["核验依据", entry.basis],
+        ["证据引用", entry.evidence_ref], ["保留至", entry.retention_until]])}
       </li>`).join("")}</ol>`;
   }
   function reviewForm(record) {
-    if (!record.can_review) return empty("该记录目前只供回查。");
+    if (!record.can_review && !record.can_reauthorize) return empty("该记录目前只供回查。");
+    const restoring = record.can_reauthorize;
     const roleOptions = [["", "请选择角色"], ...Object.entries(roles)];
-    const decisions = [["", "请选择结论"], ["verified", "核验通过"], ["excluded", "排除"]];
-    return `<form id="corpus-review">
+    const decisions = restoring ? [["verified", "凭新授权重新核验"]]
+      : [["", "请选择结论"], ["verified", "核验通过"], ["excluded", "排除"]];
+    const licenseOptions = [["", "请选择许可状态"], ...Object.entries(licenses)];
+    return `<form id="corpus-review" data-reauthorize="${restoring}">
       <fieldset class="study-form-grid corpus-form">
-        <label>审核结论<select class="field" name="decision" required>${choices(decisions, "")}</select></label>
+        <label>审核结论<select class="field" name="decision" required>${choices(decisions, restoring ? "verified" : "")}</select></label>
         <label>语料角色<select class="field" name="role" required>${choices(roleOptions, record.role || "")}</select></label>
+        <label>许可状态<select class="field" name="license_status" required>${choices(licenseOptions, "")}</select></label>
+        <label>授权证据引用<input class="field" name="license_evidence_ref" maxlength="500"
+          placeholder="许可材料 URL 或 local:材料编号" ${restoring ? "required" : "disabled"}></label>
         <label class="study-full">审核原因<textarea class="field" name="reason" required maxlength="500" rows="2"></textarea></label>
         <label class="study-full">核验依据<textarea class="field" name="basis" maxlength="1000" rows="3"
-          aria-describedby="corpus-basis-hint"></textarea></label>
-        <p id="corpus-basis-hint" class="study-full">核验通过时，记录原文比对、来源许可、项目范围与隐私检查的依据。请避免在审核说明中复述个人资料。</p>
+          ${restoring ? "required" : ""} aria-describedby="corpus-basis-hint"></textarea></label>
+        <p id="corpus-basis-hint" class="study-full">${restoring
+          ? "登记新签发的授权材料及适用范围。既有撤销和审核记录继续保留。"
+          : "对照本机原始文件核验记录，填写许可的依据和适用范围。撤销授权时选择「排除」及「已撤销」。"}</p>
+        ${restoring ? '<label>新授权签发日期（UTC）<input class="field" type="date" name="license_issued_on" required></label>' : ""}
         <label>保留至（UTC）<input class="field" type="date" name="retention_until"
-          min="${new Date().toISOString().slice(0, 10)}"></label>
+          ${restoring ? "required" : ""} min="${new Date().toISOString().slice(0, 10)}"></label>
         <div class="actions corpus-review-action"><button class="primary" type="submit">保存审核</button></div>
       </fieldset></form>`;
   }
@@ -164,6 +178,7 @@ export function mountCorpus(root, route, { api, esc, choices, tell }) {
     const notice = record.revoked_at ? "导入批次撤销于 " + time(record.revoked_at) + "。" : "";
     const state = `<div class="corpus-record-state">${badge(record.status)}
       <span>${esc(roles[record.role] || "角色待定")}</span>
+      <span>许可 ${esc(licenses[record.license_status] || "无法判断")}</span>
       ${record.retention_until ? `<span>保留至 ${esc(record.retention_until)}（UTC）</span>` : ""}</div>`;
     const fileTrace = fields([
       ["原始文件", trace.filename], ["工作表", trace.sheet_name],
@@ -206,8 +221,11 @@ export function mountCorpus(root, route, { api, esc, choices, tell }) {
     if (event.target.id === "corpus-project") location.hash = homeFor(event.target.value);
     if (event.target.name === "decision" && event.target.form?.id === "corpus-review") {
       const verified = event.target.value === "verified";
-      event.target.form.elements.basis.required = verified;
-      event.target.form.elements.retention_until.required = verified;
+      const fields = event.target.form.elements;
+      fields.basis.required = verified;
+      fields.retention_until.required = verified;
+      fields.license_evidence_ref.required = verified;
+      fields.license_evidence_ref.disabled = !verified;
     }
   });
   root.addEventListener("submit", async event => {
@@ -218,6 +236,9 @@ export function mountCorpus(root, route, { api, esc, choices, tell }) {
     if (controls.disabled) return;
     const data = Object.fromEntries(new FormData(form));
     data.retention_until ||= null;
+    data.license_evidence_ref ||= null;
+    data.license_issued_on ||= null;
+    data.reauthorize = form.dataset.reauthorize === "true";
     const path = endpoint() + "/records/" + itemId;
     controls.disabled = true;
     root.querySelector("[role=alert]").hidden = true;

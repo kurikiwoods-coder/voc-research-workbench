@@ -67,6 +67,9 @@ class CorpusTests(unittest.TestCase):
     def review(self, record, **changes):
         data = {"decision": "verified", "role": "user_quote", "basis": "已核对合成来源、许可、范围和原文",
                 "reason": "测试本机审核", "retention_until": self.retain} | changes
+        if data["decision"] == "verified":
+            data.setdefault("license_status", "authorized")
+            data.setdefault("license_evidence_ref", "local:fixture-license")
         return self.client.post(f"{self.root}/records/{record}/review", json=data)
 
     def get(self, record):
@@ -230,9 +233,10 @@ class CorpusTests(unittest.TestCase):
         ]
         _, records = self.import_rows(rows)
         self.assertEqual(len(records), len(rows))
-        for record in records:
+        for index, record in enumerate(records):
             with self.subTest(record=record):
-                self.assertEqual(self.review(record).status_code, 422)
+                fields = {"license_evidence_ref": None} if index == 4 else {}
+                self.assertEqual(self.review(record, **fields).status_code, 422)
         self.assertIsNone(self.get(records[0])["raw_text"])
         self.assertIsNone(self.get(records[-1])["metadata"].get("source_url"))
         for record, role in zip(records, ("internal", "background", "synthetic")):
@@ -280,6 +284,15 @@ class CorpusTests(unittest.TestCase):
                 self.assertNotIn("external_id", metadata)
                 self.assertEqual(self.review(record).status_code, 422)
 
+    def insert_legacy_approval(self, record, donor):
+        with self.app.state.store.db() as db:
+            db.execute("INSERT INTO corpus_snapshots SELECT ?, study_id, scope_id, raw_sha256, created_at "
+                       "FROM corpus_snapshots WHERE record_id=?", (record, donor))
+            db.execute("""INSERT INTO corpus_reviews
+                          (record_id, decision, role, reason, basis, retention_until, dedupe_group, reviewed_at)
+                          SELECT ?, decision, role, reason, basis, retention_until, dedupe_group, reviewed_at
+                          FROM corpus_reviews WHERE record_id=? AND decision='verified'""", (record, donor))
+
     def test_legacy_approvals_are_rechecked_before_display_and_deduplication(self):
         _, [valid] = self.import_rows([ROW])
         self.verify(valid)
@@ -298,10 +311,8 @@ class CorpusTests(unittest.TestCase):
             preview.raise_for_status()
             confirm = {**plan, "preview_token": preview.json()["preview_token"]}
             legacy.append((batch, record, alias_batch, alias, file_url, alias_url, confirm))
-        with patch("src.raw_store.corpus_policy.permission_recorded", return_value=True), \
-                patch("src.raw_store.corpus_policy.safe_source_url", return_value=True):
-            for _, record, *_ in legacy:
-                self.verify(record)
+        for _, record, *_ in legacy:
+            self.insert_legacy_approval(record, valid)
         for batch, record, alias_batch, alias, file_url, alias_url, confirm in legacy:
             with self.subTest(record=record):
                 detail = self.get(record)
@@ -415,7 +426,8 @@ class CorpusTests(unittest.TestCase):
             reply = self.client.get(f"{root}/batches/{alias_batch}")
             reply.raise_for_status()
             records = reply.json()["rows"]
-            self.assertEqual(records[0]["raw_text"], filler[0])
+            self.assertIsNone(records[0]["raw_text"])
+            self.assertFalse(records[0]["license_status"] == "authorized")
             self.assertIsNone(records[1]["raw_text"])
             self.assertEqual(records[1]["originals"], [])
             self.assertEqual(records[1]["fields"], {})
@@ -424,7 +436,15 @@ class CorpusTests(unittest.TestCase):
         _, [other] = self.import_rows([ROW], study=other_study, scope=other_scope)
         response = self.client.get(f"/api/corpus/{other_study}/records/{other}")
         response.raise_for_status()
-        self.assertEqual(response.json()["raw_text"], QUOTE)
+        self.assertIsNone(response.json()["raw_text"])
+        self.assertEqual(response.json()["status"], "pending_review")
+        approved = self.client.post(f"/api/corpus/{other_study}/records/{other}/review", json={
+            "decision": "verified", "role": "user_quote", "reason": "独立项目核验",
+            "basis": "核对这个项目的许可与研究范围", "retention_until": self.retain,
+            "license_status": "authorized", "license_evidence_ref": "local:independent-scope-permit",
+        })
+        self.assertEqual(approved.status_code, 200, approved.text)
+        self.assertEqual(approved.json()["raw_text"], QUOTE)
 
     def test_review_requires_same_origin_and_does_not_echo_invalid_body(self):
         _, [record] = self.import_rows([ROW])
@@ -439,9 +459,11 @@ class CorpusTests(unittest.TestCase):
 
     def test_v3_upgrade_keeps_unreviewed_candidates_available(self):
         batch, [record] = self.import_rows([ROW])
-        # Reset only the empty M05 tables to get the same layout as the M04 database.
+        # Reset only the temporary test database to the M04 layout.
         with closing(sqlite3.connect(self.directory / "connectivity.sqlite3")) as db, db:
             db.executescript("""
+                DROP VIEW corpus_withdrawals;
+                DROP TABLE corpus_licenses;
                 DROP TABLE corpus_reviews;
                 DROP TABLE corpus_snapshots;
                 PRAGMA user_version=3;
@@ -458,7 +480,7 @@ class CorpusTests(unittest.TestCase):
         with closing(sqlite3.connect(self.directory / "connectivity.sqlite3")) as db:
             self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0], 3)
         with TestClient(create_app(self.settings), base_url=ORIGIN, client=("127.0.0.1", 29205)) as fresh:
-            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 4)
+            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 5)
             rows = fresh.get(f"{self.root}/batches/{batch}").json()["records"]
             self.assertEqual([(row["record_id"], row["status"]) for row in rows], [(record, "pending_review")])
 

@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M05 已通过独立工程复审，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。后续模块等待开发指令。[开发状态](DEVELOPMENT_STATUS.md)
+M05-R2 已复现并修复许可与撤销缺陷，工程验收重开，等待本轮远端 CI 复测。M04 已通过独立工程验收。[M05-R2 复测证据](docs/evidence/m05/permissions-review.md)当前正式阶段为 P0-0，G-1 为 **BLOCKED**。后续模块等待开发指令。[开发状态](DEVELOPMENT_STATUS.md)
 
 ## M01 基础工程与连通性
 
@@ -87,12 +87,13 @@ M05 已通过独立工程复审，状态为 **ENGINEERING_PASS**。M04 已通过
 | 工程开发 | 已实现本机核验、快照摘要、角色隔离、按项目去重、溯源、保留期限和可追查的审核历史。 |
 | 工程测试 | Windows 11 本机通过 Python 104 项、Node 2 项、三次空库冷启动、Chromium 8 组及四份历史归档核验。实现提交的 Ubuntu、Windows Server 2022 和 Chromium 作业全部通过。 |
 | 正式业务验收 | G1、G2、RAW、SOURCE-POLICY 待正式核验。当前语料的正式统计及外发资格均关闭。 |
-| 数据库及 API | SQLite v4 增量迁移，新增 corpus_snapshots、corpus_reviews 和 /api/corpus。原文通过 M04 的稳定行号引用回放。 |
+| 数据库及 API | SQLite v5 在既有快照与审核表基础上追加不可变的 `corpus_licenses`，保留历史。统一资格端点 `GET /api/corpus/{study_id}/records/{record_id}/eligible`。暂存视图只提供标识与状态。 |
 | 前端页面 | 原始语料、批次候选、原文溯源与审核详情。 |
 | 验收标准 | 3 批来源、≥100 条真实片段，30/30 可回源。许可、采样窗口、角色、重复与剔除原因可查。 |
 | 最近相关提交 | [M05 原始实现 `b02a2b6`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/b02a2b647bff67f7e091b51fcdfc46cc719077e8) · [M05-R 最终实现 `d0414f5`](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/d0414f5e7b978460d7dec3784c0862d7f1f0bdd0)，均已推送到 `codex/p0-0-connectivity`。 |
 | 测试结果与证据 | [本机验收记录](docs/evidence/m05/README.md) · [M05 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45352022477) · [历史正式连通性归档](docs/evidence/p0-0/tavily-live/README.md) |
 | M05-R 独立复审 | **ENGINEERING_PASS**。新增 10 项 Python 回归，Windows 11 全量 114/114。Ubuntu、Windows Server 2022 和 Chromium 作业全部通过。[复审证据](docs/evidence/m05/review.md) · [M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019) |
+| M05-R2 专项复修 | 本机通过 Python 123/123、Node 2/2、空库冷启动 3/3、历史归档 4/4。远端工程复测待确认。[M05-R2 复测证据](docs/evidence/m05/permissions-review.md) |
 | 剩余问题 | 逐源许可与实际清理审计，SQLite 和备份的受控清理，接入线上批次与正式证据关系。 |
 
 ## M06 三层用户需求数据关系
@@ -101,7 +102,7 @@ M05 已通过独立工程复审，状态为 **ENGINEERING_PASS**。M04 已通过
 |---|---|
 | PDT 与矩阵编号 | §6、§6.6、§6.9、§9.3；C0-6、CAT-1～CAT-3、CAT-5～CAT-10 |
 | 模块职责 | 维护 Product Category、Task Category、Intent 以及证据驱动的双向关系。 |
-| 前置依赖 | M03 冻结范围、M05 工程冻结和数据契约均已具备。使用独立合成夹具预开发时等待下一轮开发指令。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
+| 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。使用独立合成夹具预开发时等待下一轮开发指令。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
 | 工程开发 | 已有 JSON Schema、内存 SQLite 三层召回演练。正式关系服务未实现。 |
 | 工程测试 | C0-6 冒烟通过，正式关系 API 未测试。 |
 | 正式业务验收 | CAT 系列待验。 |

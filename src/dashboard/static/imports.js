@@ -172,11 +172,11 @@ export function mountImports(root, route, { api, esc, ic, choices, tell }) {
     const sample = `<div class="import-scroll" tabindex="0" role="region" aria-label="原始文件预览">
       <table class="table"><thead><tr><th>文件行号</th>${inspected.columns.map(name => "<th>" + esc(name || "空表头") + "</th>").join("")}</tr></thead>
       <tbody>${inspected.samples.map(row => "<tr><td>" + row.line_number + "</td>" +
-        inspected.columns.map((_, i) => "<td>" + (esc(row.values[i]) || '<span class="import-muted">空</span>') + "</td>").join("") + "</tr>").join("")}</tbody></table></div>`;
+        inspected.columns.map((_, i) => "<td>" + ('<span class="import-muted">' + (row.populated[i] ? "有内容" : "空") + '</span>') + "</td>").join("") + "</tr>").join("")}</tbody></table></div>`;
     root.innerHTML = header("字段映射", "核对自动建议。未对应到标准字段的列会作为扩展字段保留。", 1, pageLink())
       + targetLine() + bodyPanel("工作表与隐私", controls)
       + bodyPanel("对应文件字段", pairs, "请映射一个用户原话字段。来源、时间、许可和隐私信息缺失时会提示审核。")
-      + bodyPanel("原始数据预览", sample,
+      + bodyPanel("原始数据结构", sample,
         "共 " + valueLabel(inspected.total) + " 条记录，表头在第 " + inspected.header_line + " 行"
         + (inspected.encoding ? "，编码 " + esc(inspected.encoding) : ""))
       + '<div class="actions import-row-actions">' + button("quality", "检查数据质量", "primary") + '</div>';
@@ -218,12 +218,12 @@ export function mountImports(root, route, { api, esc, ic, choices, tell }) {
         ${pages(issueOffset, quality.more_issues, "issue-page")}` : "";
     const sample = `<ul class="import-history">${samples.map(row => `<li>
       <div><b>第 ${row.line_number} 行</b> ${badge(row.status)}
-      <p class="import-quote">${esc(row.raw_text) || "原话为空"}</p></div></li>`).join("")}</ul>`;
+      <p class="import-quote">${row.status === "rejected" ? "请查看本行质量检查结果。" : "原话待许可及人工核验后查看。"}</p></div></li>`).join("")}</ul>`;
     const canSave = summary.staged + summary.pending_review > 0;
     root.innerHTML = header("数据质量检查", "核对目标与行级结果。暂存数据需经过后续审核才能成为正式研究证据。", 2, pageLink())
       + targetLine() + bodyPanel("确认与统计", summaryCards(summary) + composition(summary))
       + bodyPanel("问题分类", issues + lines)
-      + bodyPanel("已映射的原话样本", sample)
+      + bodyPanel("已映射的行样本", sample)
       + '<div class="actions import-row-actions">' + button("map", "返回修改映射")
       + button("confirm", "确认导入", "primary", canSave ? "" : "disabled") + '</div>'
       + (canSave ? "" : '<p class="import-hint">全部记录均无法暂存。请修正源文件并重新上传。</p>');

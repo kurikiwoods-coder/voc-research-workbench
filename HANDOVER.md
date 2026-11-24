@@ -6,7 +6,7 @@
 
 M03 和 M04 已完成独立工程验收。M04 代码复测为 `336e68c`，本机 Linux、Ubuntu 和 Windows Server 均通过 95 项 Python、2 项 Node 和 3 次冷启动。Chromium 通过 6 组，4 份历史归档核对通过。M05 已接入本机原话审核、去重与溯源，沿用 M04 的冻结范围及原文件引用。最新本机测试和发布状态见 [开发状态](DEVELOPMENT_STATUS.md)。[M04 证据](docs/evidence/m04/README.md) · [M05 工程记录](docs/evidence/m05/README.md)
 
-M05-R 为 **ENGINEERING_PASS**。最终实现 `d0414f5e7b978460d7dec3784c0862d7f1f0bdd0` 已同步到草稿 PR #1 的开发分支，Windows 11 实机回归和远端三项作业均通过。M06 工程前置已具备，可在下一轮获指令时使用隔离合成夹具启动独立预开发。[复审证据](docs/evidence/m05/review.md) · [M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019)
+M05-R 的历史工程验收为 **ENGINEERING_PASS**。当轮最终实现 `d0414f5e7b978460d7dec3784c0862d7f1f0bdd0` 已同步到草稿 PR #1 的开发分支，Windows 11 实机回归和远端三项作业均通过。M05-R2 重新打开许可与数据资格的工程验收。收到 M06 授权后使用隔离合成夹具启动独立预开发。[复审证据](docs/evidence/m05/review.md) · [M05-R CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45359711019)
 
 当前正式阶段为 P0-0，G-1 为 **BLOCKED**。C0-3、C0-5、C0-6 已通过，C0-1、C0-2、C0-4 及 Jev 所选通道的留存与分处理商审查待验。继续保留固定 `jev-1.14.0`、8+3 分片、Choice / Score / Noul 完整返回及实际用量和余额要求。后续正式验收由有权限的人员在授权设备上按同批六项规则执行。G1/G2 的正式语料验收仍要求三个真实来源批次、至少 100 条合格语义片段及抽查 30/30 可回源。[正式历史批次](docs/evidence/p0-0/tavily-live/README.md) · [需求验收矩阵](docs/requirements-matrix.md)
 
@@ -18,12 +18,12 @@ M05-R 为 **ENGINEERING_PASS**。最终实现 `d0414f5e7b978460d7dec3784c0862d7f
 |---|---|
 | 原始语料 | `record_id` 稳定标识 M05 原始导入行。通过 `batch_id`、`file_id`、文件 SHA-256、工作表和物理行号回查。使用 `raw_sha256` 核对核验快照，派生文本与分类结果另存。 |
 | 研究范围 | 以 `study_id` 和冻结的 `scope_id` 校验归属，记录 `scope_version` 和冻结时间窗。范围中的品类仅供抽样和范围检查。 |
-| 来源与许可 | 使用采集时间和方法、提取规则、可核对 URL、发布时间及本机审核依据。读取当前审核、隐私、许可、有效期限及批次撤销状态。许可到期、撤销或证据不足时暂停后续使用。已撤销来源的原记录和同项目来源 URL 副本均受限。正式许可须有逐源审批记录。 |
-| 重复组 | `duplicate.group_id` 为研究项目内的有效原话分组。当前主记录和成员数随排除、到期及批次撤销重算。历史引用继续指向原始 `record_id`。 |
-| 后续处理 | 检查 M05 当前生效的 `status`，并同时校验来源、角色、隐私和冻结范围。`verified` 记录通过本机审核，其正式研究和外发字段仍为 `false`。待审、排除、撤销、到期、缺证据及许可未确认的记录留在审核或审计流程。背景证据按角色独立使用。内部 CX 仅限授权本机的处理或人工编码。合成数据进入独立工程夹具。 |
+| 来源与许可 | 使用采集时间和方法、提取规则、可核对 URL、发布时间及本机审核依据。统一资格服务在每次读取时核对当前结构化许可、最近审核、隐私、有效期限、范围及撤销。许可到期、撤销或证据不足时暂停使用。同项目同来源的副本遵守当前限制，历史撤销保留。正式许可须有逐源审批记录。 |
+| 重复组 | `duplicate.group_id` 为研究项目内的有效原话分组。当前主记录和成员数随排除、到期、来源或批次撤销及重新核验而重算。历史引用继续指向原始 `record_id`。 |
+| 后续处理 | 通过 `CorpusStore.qualified_record(study_id, record_id)` 或 `GET /api/corpus/{study_id}/records/{record_id}/eligible` 读取本机工程合格公开原话，校验返回的冻结范围和 `engineering_eligible`。禁止直接用历史 `verified` 放行，禁止通过 `import_rows`、暂存、历史或附件绕过资格。待审、受限与不合格原话只进入授权审计或清理流程。内部 CX 限授权本机，背景证据按角色使用，合成测试使用独立夹具。 |
 | 语义片段与证据 | PDT §6.6、§6.9、§9.3 的 `mention_id` 标识去重后的语义片段。后续证据记录用独立 `evidence_id` 引用 M05 原话及来源，供片段与品类关系使用。分段规则、片段标识生成、证据持久化和版本设计留待 M06 的授权工作。 |
 
-M06 复用原话与来源记录，使用证据确定产品品类关系。意图保有一个已确认的有效主任务大类。正式分母只纳入 `published_classified` 的 distinct `mention_id`，按使用的研究范围及注册表版本复算。读取历史片段或证据时重新核对当前上游资格，审计状态和引用可继续追溯。处理路径与正式门槛详见需求矩阵。[PDT 正文](docs/pdt/PDT-v1.3.1.docx) · [原始语料接口](docs/imports.md#m05-原始语料审核) · [需求验收矩阵](docs/requirements-matrix.md)
+M06 复用原话与来源记录，使用证据确定产品品类关系。意图保有一个已确认的有效主任务大类。正式分母只纳入 `published_classified` 的 distinct `mention_id`，按使用的研究范围及注册表版本复算。读取历史片段或证据时重新核对当前上游资格，审计状态和引用可继续追溯。本机工程资格、正式统计资格和外发资格分别判定。当前服务始终返回 `research_eligible=false`、`outbound_allowed=false`。处理路径与正式门槛详见需求矩阵。[PDT 正文](docs/pdt/PDT-v1.3.1.docx) · [原始语料接口](docs/imports.md#m05-原始语料审核) · [需求验收矩阵](docs/requirements-matrix.md)
 
 ## 复建开发环境
 

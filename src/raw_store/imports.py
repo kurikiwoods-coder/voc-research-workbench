@@ -6,7 +6,10 @@ import hashlib
 import json
 from uuid import uuid4
 
-from src.raw_store.corpus_policy import source_identity
+from src.raw_store.corpus_access import (
+    RESTRICTED_FILE_ROWS, ROW_COLUMNS, ROW_SOURCE, qualification, unresolved_sources, withdrawal_id,
+)
+from src.raw_store.corpus_policy import safe_metadata, source_identity
 from src.raw_store.store import Conflict, dump, now
 from src.raw_store.studies import StudyStore, scope_record, SCOPE_SELECT
 
@@ -20,71 +23,34 @@ BATCH_SELECT = """SELECT b.*, f.filename, f.kind, f.sha256, length(f.source_byte
 MAX_DRAFTS = 8
 
 
-def source_withdrawal(record_id):
-    return f"""EXISTS (
-        SELECT 1 FROM corpus_reviews withdrawal WHERE withdrawal.record_id={record_id}
-        AND withdrawal.decision='excluded' AND source_permission_revoked(withdrawal.reason)
-    )"""
-
-
-def withdrawn_sources(study_id):
-    return f"""SELECT DISTINCT source_identity(json_extract(origin.fields_json, '$.source_url')) AS source
-        FROM import_batches origin_batch JOIN import_rows origin USING(batch_id)
-        WHERE origin_batch.study_id={study_id}
-        AND json_extract(origin.fields_json, '$.source_url') IS NOT NULL
-        AND {source_withdrawal("origin.record_id")}"""
-
-
-def withdrawn_source_alias(study_id, originals):
-    return f"""EXISTS (
-        SELECT 1 FROM ({withdrawn_sources(study_id)}) withdrawn
-        JOIN json_each({originals}) AS cell ON source_identity(cell.value)=withdrawn.source
-    )"""
-
-
-RESTRICTED_SOURCE_ROWS = f"""
-    FROM import_files restricted_file
-    JOIN import_batches restricted_batch ON restricted_batch.file_id=restricted_file.file_id
-    JOIN import_rows restricted_row ON restricted_row.batch_id=restricted_batch.batch_id
-    JOIN study_scopes restricted_scope ON restricted_scope.study_id=restricted_batch.study_id
-        AND restricted_scope.scope_id=restricted_batch.scope_id
-    JOIN corpus_reviews restricted_review ON restricted_review.review_id=(
-        SELECT MAX(h.review_id) FROM corpus_reviews h WHERE h.record_id=restricted_row.record_id
-    )
-    WHERE (restricted_review.decision='excluded' OR restricted_review.retention_until<:today
-           OR restricted_batch.revoked_at IS NOT NULL
-           OR {source_withdrawal("restricted_row.record_id")}
-           OR CASE WHEN restricted_review.decision='verified' THEN NOT valid_snapshot_source(
-               restricted_row.privacy, restricted_row.raw_text, restricted_review.role,
-               restricted_row.fields_json, restricted_scope.content_json
-           ) ELSE 0 END)
-"""
-
-
 def decoded(row):
     return {key.removesuffix("_json"): json.loads(value) if key.endswith("_json") else value
             for key, value in dict(row).items()}
 
 
-def batch_record(db, row):
+def batch_record(row):
     batch = decoded(row)
     batch.pop("signature")
-    if restricted_source_lines(db, batch, batch["sheet_index"]):
-        # Source type labels come from user-mapped cells and may contain original text.
-        batch["summary"]["source_types"] = {}
+    # The stored composition was supplied by mapped cells before any source review.
+    batch["summary"]["source_types"] = {}
     return {**batch, "status": "revoked" if batch["revoked_at"] else "imported", "research_eligible": False}
 
 
 def restricted_source_lines(db, file, sheet_index):
     # A second import of the same bytes can have a different file ID or field mapping.
-    rows = db.execute(f"""SELECT DISTINCT restricted_row.line_number {RESTRICTED_SOURCE_ROWS}
+    rows = db.execute(f"""SELECT DISTINCT restricted_row.line_number {RESTRICTED_FILE_ROWS}
                           AND restricted_file.study_id=:study_id AND restricted_file.sha256=:sha256
                           AND restricted_batch.sheet_index=:sheet_index
                           UNION
                           SELECT r.line_number FROM import_rows r
                           JOIN import_batches b USING(batch_id) JOIN import_files f USING(file_id)
                           WHERE b.study_id=:study_id AND f.sha256=:sha256 AND b.sheet_index=:sheet_index
-                          AND {withdrawn_source_alias(":study_id", "r.originals_json")}""",
+                          AND COALESCE({withdrawal_id(":study_id", "r.record_id", "r.originals_json")}, 0)
+                            > COALESCE((
+                                SELECT l.restored_withdrawal_id FROM corpus_licenses l
+                                WHERE l.review_id=(SELECT MAX(v.review_id) FROM corpus_reviews v
+                                                   WHERE v.record_id=r.record_id)
+                            ), 0)""",
                       {"study_id": file["study_id"], "sha256": file["sha256"],
                        "sheet_index": sheet_index, "today": now()[:10]})
     return {row["line_number"] for row in rows}
@@ -96,7 +62,9 @@ def check_sheet_access(db, file, sheet_index):
 
 
 def check_sheet_sources(db, study_id, sheet):
-    withdrawn = {row["source"] for row in db.execute(withdrawn_sources("?"), (study_id,)) if row["source"]}
+    withdrawn = {row["source"] for row in db.execute(
+        unresolved_sources(":study_id"), {"study_id": study_id, "today": now()[:10]},
+    )}
     if withdrawn and any(
         source_identity(value) in withdrawn for cells in [sheet.columns, *(row.values for row in sheet.rows)]
         for value in cells
@@ -104,11 +72,16 @@ def check_sheet_sources(db, study_id, sheet):
         raise Conflict("该工作表含本项目已撤销许可的来源，请先移除该来源的内容。")
 
 
-def visible_import_row(row, restricted_lines):
-    record = decoded(row)
-    if record["line_number"] in restricted_lines or record["duplicate_of_line"] in restricted_lines:
-        record.update(raw_text=None, originals=[], fields={}, content_restricted=True)
-    return record
+def visible_import_row(row, access):
+    visible = access["status"] == "verified"
+    return {
+        "record_id": row["record_id"], "line_number": row["line_number"], "privacy": row["privacy"],
+        "duplicate_of_line": row["duplicate_of_line"], "status": row["import_status"],
+        "issues": json.loads(row["issues_json"]), "content_restricted": not visible,
+        "raw_text": row["raw_text"] if visible else None,
+        "originals": [], "fields": safe_metadata(row["fields_json"]) if visible else {},
+        "license_status": access["license_status"],
+    }
 
 
 class ImportStore:
@@ -192,7 +165,7 @@ class ImportStore:
             if row is None:
                 return None
             self.target(db, study_id, row["scope_id"])
-            return batch_record(db, row)
+            return batch_record(row)
 
     def discard(self, study_id, file_id):
         with self.write() as db:
@@ -207,7 +180,7 @@ class ImportStore:
         row = db.execute(BATCH_SELECT + " WHERE b.study_id=? AND b.batch_id=?", (study_id, batch_id)).fetchone()
         if row is None:
             raise KeyError(batch_id)
-        return batch_record(db, row)
+        return batch_record(row)
 
     def commit(self, file, sheet, index, mapping, privacy, signature, rows, summary):
         study_id, scope_id, file_id = (file[field] for field in ("study_id", "scope_id", "file_id"))
@@ -251,19 +224,22 @@ class ImportStore:
                                    WHERE f.study_id=? AND NOT EXISTS
                                       (SELECT 1 FROM import_batches b WHERE b.file_id=f.file_id)
                                    ORDER BY f.uploaded_at DESC""", (study_id,))
-            return {"batches": [batch_record(db, row) for row in rows[:20]],
+            return {"batches": [batch_record(row) for row in rows[:20]],
                     "more": len(rows) > 20, "drafts": [decoded(row) for row in drafts]}
 
     def get_batch(self, study_id, batch_id, status, offset):
         with self.store.db() as db:
             db.execute("BEGIN")
             batch = self.saved_batch(db, study_id, batch_id)
-            rows = db.execute("""SELECT record_id, line_number, raw_text, originals_json, fields_json, status,
-                                        privacy, duplicate_of_line, issues_json FROM import_rows
-                                 WHERE batch_id=? AND (?='all' OR status=?)
-                                 ORDER BY line_number LIMIT 21 OFFSET ?""", (batch_id, status, status, offset)).fetchall()
-            restricted = restricted_source_lines(db, batch, batch["sheet_index"])
-            return {"batch": batch, "rows": [visible_import_row(row, restricted) for row in rows[:20]],
+            today = now()[:10]
+            rows = db.execute(
+                f"""SELECT {ROW_COLUMNS}, r.status AS import_status, r.duplicate_of_line, r.issues_json
+                    {ROW_SOURCE} WHERE b.study_id=:study_id AND b.batch_id=:batch_id
+                    AND (:status='all' OR r.status=:status)
+                    ORDER BY r.line_number LIMIT 21 OFFSET :offset""",
+                {"study_id": study_id, "batch_id": batch_id, "status": status, "offset": offset, "today": today},
+            ).fetchall()
+            return {"batch": batch, "rows": [visible_import_row(row, qualification(row, today)) for row in rows[:20]],
                     "more": len(rows) > 20}
 
     def report(self, study_id, batch_id):

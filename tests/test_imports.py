@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 import csv
+import json
 from io import BytesIO, StringIO
 from pathlib import Path
 import sqlite3
@@ -139,7 +140,8 @@ class ImportTest(unittest.TestCase):
                 _, table, plan = self.prepare(make_csv(["原话", "来源", "出处", "发布时间", "来源许可", "隐私等级"],
                                                        encoding="gb18030", separator=sep))
                 self.assertEqual((table["encoding"], table["delimiter"]), ("GB18030", sep))
-                self.assertEqual(table["samples"][0]["values"][0], VALID[0])
+                self.assertTrue(table["samples"][0]["populated"][0])
+                self.assertNotIn(VALID[0], str(table["samples"]))
                 self.assertEqual(plan["mapping"]["raw_text"], 0)
 
     def test_utf8_bom_preserves_header(self):
@@ -159,7 +161,9 @@ class ImportTest(unittest.TestCase):
         receipt = self.confirm(url, plan)
         result = self.client.get(self.root + "/batches/" + receipt["batch_id"]).json()
         self.assertEqual(result["batch"]["sheet_name"], "出行体验")
-        self.assertEqual(result["rows"][0]["fields"]["published_at"], "2026-11-11T13:27:00")
+        self.assertEqual(result["rows"][0]["fields"], {})
+        stored = self.db.one("SELECT fields_json FROM import_rows WHERE batch_id=?", (receipt["batch_id"],))
+        self.assertEqual(json.loads(stored["fields_json"])["published_at"], "2026-11-11T13:27:00")
 
     def test_mapping_suggestion_and_manual_revision(self):
         self.assertEqual(suggestions(["反馈内容", "来源链接", "来源许可"]), {"raw_text": 0, "source_url": 1, "access_policy": 2})
@@ -173,8 +177,11 @@ class ImportTest(unittest.TestCase):
         receipt = self.confirm(url, plan)
         self.assertEqual(receipt["headers"], ["答复内容", "附加字段"])
         saved = self.client.get(self.root + "/batches/" + receipt["batch_id"]).json()["rows"][0]
-        self.assertEqual(saved["raw_text"], "文字")
-        self.assertEqual(saved["originals"], ["文字", "扩展"])
+        self.assertIsNone(saved["raw_text"])
+        self.assertEqual(saved["originals"], [])
+        exact = self.db.one("SELECT raw_text, originals_json FROM import_rows WHERE batch_id=?", (receipt["batch_id"],))
+        self.assertEqual(exact["raw_text"], "文字")
+        self.assertEqual(json.loads(exact["originals_json"]), ["文字", "扩展"])
 
     def test_required_and_invalid_mapping(self):
         url, _, plan = self.prepare()
@@ -303,7 +310,8 @@ class ImportTest(unittest.TestCase):
         response = self.client.post(path + "/revoke")
         self.assertEqual(response.json()["status"], "revoked")
         self.assertEqual(self.client.post(path + "/revoke").json(), response.json())
-        self.assertEqual(self.client.get(path).json()["rows"][0]["raw_text"], VALID[0])
+        self.assertIsNone(self.client.get(path).json()["rows"][0]["raw_text"])
+        self.assertEqual(self.db.one("SELECT raw_text FROM import_rows WHERE batch_id=?", (receipt["batch_id"],))["raw_text"], VALID[0])
         self.assertEqual(self.db.rows("SELECT * FROM import_candidates"), [])
         self.assertEqual(self.client.delete(url).status_code, 409)
         self.assertEqual(self.confirm(url, plan)["status"], "revoked")
@@ -313,7 +321,9 @@ class ImportTest(unittest.TestCase):
             with self.subTest(restriction=restriction):
                 restricted = [f"这是一条需要限制浏览的合成评论 {restriction}。", *VALID[1:]]
                 restricted[4] = "CC BY-SA 4.0"
-                data = make_csv(rows=[restricted, VALID])
+                sibling = [*VALID]
+                sibling[4] = "CC BY-SA 4.0"
+                data = make_csv(rows=[restricted, sibling])
                 url, _, plan = self.prepare(data, f"原文件-{restriction}.csv")
                 preview = self.check(url, plan)
                 new_plan = {**plan, "privacy": "private"}
@@ -324,14 +334,25 @@ class ImportTest(unittest.TestCase):
                 alias = self.confirm(alias_url, {**alias_plan, "privacy": "public"})
                 alias_path = self.root + "/batches/" + alias["batch_id"]
                 row = self.client.get(original_path).json()["rows"][0]
-                self.assertEqual(row["raw_text"], restricted[0])
-                self.assertEqual(self.client.get(alias_path).json()["rows"][0]["raw_text"], restricted[0])
+                self.assertIsNone(row["raw_text"])
+                self.assertIsNone(self.client.get(alias_path).json()["rows"][0]["raw_text"])
+                self.assertEqual(self.db.one("SELECT raw_text FROM import_rows WHERE record_id=?",
+                                             (row["record_id"],))["raw_text"], restricted[0])
                 decision = "excluded" if restriction == "excluded" else "verified"
                 review = self.client.post(f"/api/corpus/{self.study}/records/{row['record_id']}/review", json={
                     "decision": decision, "role": "user_quote", "reason": "测试导入遮蔽",
                     "basis": "对照合成原文、公开许可和研究范围", "retention_until": "2090-01-01",
+                    **({"license_status": "authorized", "license_evidence_ref": "local:fixture-license"}
+                       if decision == "verified" else {"license_status": "pending"}),
                 })
                 self.assertEqual(review.status_code, 200, review.text)
+                for sibling_path in (original_path, alias_path):
+                    sibling_id = self.client.get(sibling_path).json()["rows"][1]["record_id"]
+                    self.client.post(f"/api/corpus/{self.study}/records/{sibling_id}/review", json={
+                        "decision": "verified", "role": "user_quote", "reason": "核验同批另一条",
+                        "basis": "核对合成许可与范围", "retention_until": "2091-01-01",
+                        "license_status": "authorized", "license_evidence_ref": "local:sibling-license",
+                    }).raise_for_status()
                 if restriction == "revoked":
                     self.client.post(original_path + "/revoke").raise_for_status()
                 day = "2090-01-02T00:00:00+00:00" if restriction == "expired" else "2090-01-01T00:00:00+00:00"
@@ -345,7 +366,8 @@ class ImportTest(unittest.TestCase):
                         self.assertIsNone(rows[0]["raw_text"])
                         self.assertEqual(rows[0]["originals"], [])
                         self.assertEqual(rows[0]["fields"], {})
-                        self.assertEqual(rows[1]["raw_text"], VALID[0])
+                        expect_sibling = None if restriction == "revoked" else VALID[0]
+                        self.assertEqual(rows[1]["raw_text"], expect_sibling)
                         report = self.client.get(path + "/errors.csv")
                         self.assertEqual(report.status_code, 200)
                         self.assertNotIn(restricted[0], report.content.decode("utf-8-sig"))
@@ -382,7 +404,7 @@ class ImportTest(unittest.TestCase):
         checked = self.check(alias_url, alias_plan)
         alias = self.confirm(alias_url, alias_plan)
         alias_path = self.root + "/batches/" + alias["batch_id"]
-        self.assertIn(protected, alias["summary"]["source_types"])
+        self.assertNotIn(protected, str(alias["summary"]["source_types"]))
         record_id = self.client.get(path).json()["rows"][0]["record_id"]
         self.client.post(f"/api/corpus/{self.study}/records/{record_id}/review", json={
             "decision": "excluded", "role": "user_quote", "reason": "合成语料遮蔽测试",
@@ -436,8 +458,9 @@ class ImportTest(unittest.TestCase):
         path = self.root + "/batches/" + receipt["batch_id"]
         record_id = self.client.get(path).json()["rows"][0]["record_id"]
         self.client.post(f"/api/corpus/{self.study}/records/{record_id}/review", json={
-            "decision": "verified", "role": "user_quote", "reason": "并发撤销测试",
+            "decision": "verified", "role": "user_quote", "reason": "并发确认回归",
             "basis": "核对合成原话、合成许可与范围", "retention_until": "2090-01-01",
+            "license_status": "authorized", "license_evidence_ref": "local:fixture-license",
         }).raise_for_status()
 
         start = Barrier(2, timeout=5)
@@ -485,7 +508,8 @@ class ImportTest(unittest.TestCase):
         receipt = self.confirm(url, plan)
         client, _ = self.open_client()
         data = client.get(self.root + "/batches/" + receipt["batch_id"]).json()
-        self.assertEqual(data["rows"][0]["raw_text"], VALID[0])
+        self.assertIsNone(data["rows"][0]["raw_text"])
+        self.assertEqual(self.db.one("SELECT raw_text FROM import_rows WHERE batch_id=?", (receipt["batch_id"],))["raw_text"], VALID[0])
         self.assertEqual(data["batch"]["scope_id"], self.scope)
         self.assertEqual(self.db.rows("PRAGMA foreign_key_check"), [])
 
@@ -563,7 +587,7 @@ class ImportMigrationTest(unittest.TestCase):
                 self.assertEqual(old.execute("PRAGMA user_version").fetchone()[0], 2)
                 self.assertIsNone(old.execute("SELECT name FROM sqlite_master WHERE name='import_batches'").fetchone())
             store = Store(root)
-            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 4)
+            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 5)
             self.assertEqual(store.one("SELECT study_id, scope_id FROM study_scope_freezes"), {"study_id": "p", "scope_id": "s"})
             self.assertEqual(Store(root).one("PRAGMA integrity_check")["integrity_check"], "ok")
 
