@@ -2,7 +2,9 @@
 
 import json
 
-from src.raw_store.corpus_policy import license_note_state, safe_metadata, snapshot_content_valid, valid_snapshot_source
+from src.raw_store.corpus_policy import (
+    legacy_snapshot_recheckable, license_note_state, safe_metadata, valid_snapshot_source,
+)
 
 
 ROW_SOURCE = """
@@ -73,7 +75,7 @@ RESTRICTED_FILE_ROWS = """
         OR (restricted_review.decision='excluded' AND NOT EXISTS (
             SELECT 1 FROM corpus_withdrawals w WHERE w.review_id=restricted_review.review_id
         ))
-        OR CASE WHEN restricted_review.decision='verified' THEN NOT valid_snapshot_source(
+        OR CASE WHEN restricted_review.decision='verified' THEN snapshot_requires_restriction(
             restricted_row.privacy, restricted_row.raw_text, restricted_review.role,
             restricted_row.fields_json, restricted_scope.content_json,
             restricted_license.state, restricted_license.evidence_ref
@@ -127,14 +129,15 @@ def qualification(row, today):
         status = "policy_restricted" if row["own_withdrawal_id"] else "source_restricted"
     elif row["alias_restricted"] and row["decision"] != "excluded":
         status = "source_restricted"
-    elif row["decision"] == "verified" and snapshot_valid(row):
-        status = "verified"
-    elif row["decision"] == "verified" and (
-        row["license_state"] is not None or declared != "unknown" or not snapshot_content_valid(
+    elif row["decision"] == "verified":
+        if snapshot_valid(row):
+            status = "verified"
+        elif row["license_state"] is None and legacy_snapshot_recheckable(
             row["privacy"], row["raw_text"], row["role"], row["fields_json"], row["content_json"],
-        )
-    ):
-        status = "policy_restricted"
+        ):
+            status = "pending_review"
+        else:
+            status = "policy_restricted"
     elif row["decision"] == "excluded":
         status = "excluded"
     elif state in {"denied", "revoked", "expired"}:

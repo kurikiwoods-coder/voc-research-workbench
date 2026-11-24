@@ -219,6 +219,27 @@ class CorpusLicenseTests(unittest.TestCase):
             db.execute("DROP TRIGGER test_license_failure")
         self.assertEqual(self.case.verify(record)["license_status"], "authorized")
 
+    def test_legacy_copies_awaiting_proof_do_not_prevent_fresh_review(self):
+        source = "https://source.example.test/shared"
+        _, first = self.add("old-a", address=source)
+        _, second = self.add("old-b", address=source, privacy="public")
+        _, donor = self.add("legacy-review-fixture")
+        self.assertNotEqual(first, second)
+        self.case.verify(donor)
+        for record in (first, second):
+            self.case.insert_legacy_approval(record, donor)
+        for record in (first, second):
+            before = self.case.get(record)
+            self.assertEqual((before["status"], before["license_status"]), ("pending_review", "pending"))
+            self.assertTrue(before["can_review"])
+            self.assertIsNone(before["raw_text"])
+            self.assertEqual(self.eligible(record).status_code, 409)
+        self.case.verify(first, license_evidence_ref="local:checked-original-permit")
+        self.assertEqual(self.eligible(first).json()["raw_text"], fixtures.QUOTE)
+        self.assertEqual(self.eligible(second).status_code, 409)
+        verified = self.case.verify(second, license_evidence_ref="local:checked-original-permit")
+        self.assertEqual(verified["duplicate"]["record_count"], 3)
+
     def test_v4_migration_preserves_history_and_leaves_unproven_approvals_pending(self):
         _, old_record = self.add("legacy")
         self.case.verify(old_record)

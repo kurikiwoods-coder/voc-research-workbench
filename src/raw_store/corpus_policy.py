@@ -157,6 +157,20 @@ def snapshot_content_valid(privacy, raw_text, role, fields_json, scope_json):
     return True
 
 
+def legacy_snapshot_recheckable(privacy, raw_text, role, fields_json, scope_json):
+    note = json.loads(fields_json).get("access_policy", "")
+    return license_note_state(note) == "unknown" and snapshot_content_valid(
+        privacy, raw_text, role, fields_json, scope_json,
+    )
+
+
 def valid_snapshot_source(privacy, raw_text, role, fields_json, scope_json, license_state, evidence_ref):
     return (license_state == "authorized" and evidence_identity(evidence_ref) is not None
             and snapshot_content_valid(privacy, raw_text, role, fields_json, scope_json))
+
+
+def snapshot_requires_restriction(privacy, raw_text, role, fields_json, scope_json, license_state, evidence_ref):
+    if license_state is None:
+        # A legacy record awaiting proof should not block its copies from being reviewed.
+        return not legacy_snapshot_recheckable(privacy, raw_text, role, fields_json, scope_json)
+    return not valid_snapshot_source(privacy, raw_text, role, fields_json, scope_json, license_state, evidence_ref)

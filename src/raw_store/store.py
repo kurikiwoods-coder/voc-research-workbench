@@ -7,7 +7,7 @@ from pathlib import Path
 import sqlite3
 import uuid
 
-from src.raw_store.corpus_policy import source_identity, source_permission_revoked, valid_snapshot_source
+from src.raw_store.corpus_policy import snapshot_requires_restriction, source_identity, source_permission_revoked
 
 
 def now():
@@ -59,7 +59,7 @@ class Store:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
         if not (self.fixture or self.diagnostic):
-            db.create_function("valid_snapshot_source", 7, valid_snapshot_source, deterministic=True)
+            db.create_function("snapshot_requires_restriction", 7, snapshot_requires_restriction, deterministic=True)
             db.create_function("source_permission_revoked", 1, source_permission_revoked, deterministic=True)
             db.create_function("source_identity", 1, source_identity, deterministic=True)
         return db
