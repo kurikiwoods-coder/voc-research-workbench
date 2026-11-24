@@ -1,0 +1,3 @@
+PASS: 5000 synthetic CSV rows, 7,623,958 bytes, upload + inspect + preview + confirm.
+Elapsed 1.37 s. Linux process high-water RSS before 164.7 MiB, peak 204.3 MiB.
+SQLite integrity_check: ok. External providers called: 0.

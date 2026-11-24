@@ -27,10 +27,14 @@ export function mountImports(root, route, { api, esc, ic, choices, tell }) {
   const button = (name, label, kind = "secondary", data = "") =>
     '<button class="' + kind + '" type="button" data-import-action="' + name + '" ' + data + '>' + label + '</button>';
   function header(title, help, step, action = "") {
-    return `<header class="page-head import-head"><div><h1>${esc(title)}</h1><p>${help}</p></div>
+    return `<header class="page-head import-head"><div><h1 tabindex="-1">${esc(title)}</h1><p>${help}</p></div>
       <div class="actions">${action}</div></header>
       <ol class="import-steps" aria-label="导入进度">${beforeImport.map((label, index) =>
         `<li ${index === step ? 'aria-current="step"' : ""}>${esc(label)}</li>`).join("")}</ol>${alert}`;
+  }
+  function focusStep() {
+    root.querySelector(".import-head h1")?.focus({ preventScroll: true });
+    window.scrollTo(0, 0);
   }
   function setError(error) {
     const message = root.querySelector("[role=alert]");
@@ -350,7 +354,10 @@ export function mountImports(root, route, { api, esc, ic, choices, tell }) {
         "POST", selectedFile, selectedFile.name);
       sheetIndex = 0;
       privacy = "unknown";
-      if (root.isConnected) await readSheet();
+      if (root.isConnected) {
+        await readSheet();
+        if (root.isConnected) focusStep();
+      }
     }, "正在上传并解析文件…");
     if (action === "resume") perform(async () => {
       const draft = history.drafts.find(item => item.file_id === id);
@@ -358,14 +365,22 @@ export function mountImports(root, route, { api, esc, ic, choices, tell }) {
       sheetIndex = 0;
       privacy = "unknown";
       await readSheet();
+      if (root.isConnected) focusStep();
     }, "正在读取待导入文件…");
     if (action === "discard" && window.confirm("丢弃此待导入文件及本机副本？")) perform(async () => {
       await request(urlFor(project.study_id) + "/uploads/" + id, "DELETE");
       await loadHome();
       if (root.isConnected) tell("已丢弃待导入文件。");
     });
-    if (action === "map") drawMap();
-    if (action === "quality" || action === "issue-page") perform(() => checkQuality(Number(offset || 0)), "正在检查数据质量…");
+    if (action === "map") {
+      drawMap();
+      focusStep();
+    }
+    if (action === "quality") perform(async () => {
+      await checkQuality(0);
+      if (root.isConnected) focusStep();
+    }, "正在检查数据质量…");
+    if (action === "issue-page") perform(() => checkQuality(Number(offset)), "正在检查数据质量…");
     if (action === "confirm") perform(async () => {
       const result = await request(fixed() + "/confirm", "POST", { ...plan(), preview_token: quality.preview_token });
       if (root.isConnected) {

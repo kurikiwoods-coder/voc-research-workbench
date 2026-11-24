@@ -86,6 +86,8 @@ def imports_browser_checks(browser, base, output):
     expect(page.get_by_label("记录内容 第 1 列")).to_have_value("raw_text")
     button("检查数据质量").click()
     expect(heading("数据质量检查")).to_be_visible()
+    expect(heading("数据质量检查")).to_be_focused()
+    assert page.evaluate("window.scrollY === 0")
     page.screenshot(path=str(output / "m04-quality.png"), full_page=True)
 
     # Switch the M03 selection via another client while keeping the upload target pinned.
@@ -116,6 +118,7 @@ def imports_browser_checks(browser, base, output):
         expect(heading("导入结果")).to_be_visible()
         assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
     page.set_viewport_size({"width": 390, "height": 844})
+    expect(page.locator("#toast")).not_to_have_class("active")
     page.screenshot(path=str(output / "m04-mobile-result.png"))
     page.once("dialog", lambda dialog: dialog.accept())
     button("撤销批次").click()
