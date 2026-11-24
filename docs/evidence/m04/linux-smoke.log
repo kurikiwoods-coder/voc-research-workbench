@@ -65,6 +65,7 @@ test_unverified_source_private_data_require_local_review (test_imports.ImportTes
 test_upload_draft_discard_and_wrong_project_boundaries (test_imports.ImportTest.test_upload_draft_discard_and_wrong_project_boundaries) ... ok
 test_utf8_bom_preserves_header (test_imports.ImportTest.test_utf8_bom_preserves_header) ... ok
 test_within_file_duplicates_keep_original_ordinals (test_imports.ImportTest.test_within_file_duplicates_keep_original_ordinals) ... ok
+test_xlsx_diagnostic_warnings_do_not_disclose_workbook_metadata (test_imports.ImportTest.test_xlsx_diagnostic_warnings_do_not_disclose_workbook_metadata) ... ok
 test_xlsx_formula_is_rejected_without_evaluation (test_imports.ImportTest.test_xlsx_formula_is_rejected_without_evaluation) ... ok
 test_xlsx_multi_sheet_and_native_dates (test_imports.ImportTest.test_xlsx_multi_sheet_and_native_dates) ... ok
 test_changed_or_unavailable_source_creates_no_batch (test_recover_source_batch.SourceRecoveryTests.test_changed_or_unavailable_source_creates_no_batch) ... ok
@@ -96,11 +97,11 @@ test_failed_v1_upgrade_rolls_back_and_can_retry (test_studies.StudyMigrationTest
 test_v1_upgrade_retains_ledger_and_reopens (test_studies.StudyMigrationTest.test_v1_upgrade_retains_ledger_and_reopens) ... ok
 
 ----------------------------------------------------------------------
-Ran 94 tests in 2.728s
+Ran 95 tests in 2.745s
 
 OK
-✔ resuming another batch preserves the key of an interrupted new request (4.717744ms)
-✔ a slow earlier evidence read cannot replace the last selected batch (1.225275ms)
+✔ resuming another batch preserves the key of an interrupted new request (5.787468ms)
+✔ a slow earlier evidence read cannot replace the last selected batch (1.530193ms)
 ℹ tests 2
 ℹ suites 0
 ℹ pass 2
@@ -108,7 +109,7 @@ OK
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 81.481291
+ℹ duration_ms 88.185951
 Linux cold start 1/3: PASS
 Linux cold start 2/3: PASS
 Linux cold start 3/3: PASS

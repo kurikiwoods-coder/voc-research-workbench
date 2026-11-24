@@ -6,6 +6,7 @@ from pathlib import Path
 import sqlite3
 from tempfile import TemporaryDirectory
 import unittest
+import warnings
 from unittest.mock import patch
 from urllib.parse import quote
 from uuid import uuid4
@@ -13,6 +14,7 @@ from zipfile import ZipFile
 
 from fastapi.testclient import TestClient
 from openpyxl import Workbook, load_workbook
+from openpyxl.workbook.defined_name import DefinedName
 
 from src.config import Settings
 from src.dashboard.app import create_app
@@ -36,7 +38,7 @@ def make_csv(headers=BASE, rows=None, *, encoding="utf-8", separator=","):
     return data.getvalue().encode(encoding)
 
 
-def make_xlsx(rows=None, *, sheet_name="出行体验"):
+def make_xlsx(rows=None, *, sheet_name="出行体验", private_print_area=None):
     buffer = BytesIO()
     book = Workbook()
     book.active.title = "填写说明"
@@ -45,6 +47,8 @@ def make_xlsx(rows=None, *, sheet_name="出行体验"):
     table.append(BASE)
     for row in rows if rows is not None else [VALID]:
         table.append(row)
+    if private_print_area:
+        book.defined_names.add(DefinedName("_xlnm.Print_Area", localSheetId=1, attr_text=private_print_area))
     book.save(buffer)
     book.close()
     return buffer.getvalue()
@@ -354,6 +358,15 @@ class ImportTest(unittest.TestCase):
         self.assertEqual(data["rows"][0]["raw_text"], VALID[0])
         self.assertEqual(data["batch"]["scope_id"], self.scope)
         self.assertEqual(self.db.rows("PRAGMA foreign_key_check"), [])
+
+    def test_xlsx_diagnostic_warnings_do_not_disclose_workbook_metadata(self):
+        private_marker = "fixture-private-print-area"
+        with warnings.catch_warnings(record=True) as observed:
+            warnings.simplefilter("always")
+            url, _, plan = self.prepare(make_xlsx(private_print_area=private_marker), "warnings.xlsx", 1)
+            receipt = self.confirm(url, plan)
+        self.assertEqual(receipt["summary"]["staged"], 1)
+        self.assertFalse(any(private_marker in str(warning.message) for warning in observed))
 
     def test_xlsx_formula_is_rejected_without_evaluation(self):
         url, _, plan = self.prepare(make_xlsx([VALID, ["=1+1", *VALID[1:]]]), "formula.xlsx", 1)

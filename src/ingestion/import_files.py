@@ -7,6 +7,8 @@ from datetime import date, datetime, time
 from io import BytesIO, StringIO
 from pathlib import PurePosixPath
 import re
+from threading import Lock
+import warnings
 from xml.parsers import expat
 from zipfile import BadZipFile, ZIP_DEFLATED, ZIP_STORED, ZipFile
 from zlib import error as CompressionError
@@ -23,6 +25,7 @@ MAX_CELL = 32767
 MAX_TEXT = 12 * 1024 * 1024
 MAX_XLSX_EXPANDED = 48 * 1024 * 1024
 MAX_SHEETS = 40
+_XLSX_WARNINGS = Lock()
 
 
 class ImportProblem(ValueError):
@@ -210,42 +213,49 @@ def cell_text(value):
 def workbook_data(data, index=None):
     try:
         inspect_xlsx(data)
-        with closing(load_workbook(BytesIO(data), read_only=True, data_only=False, keep_links=False)) as book:
-            sheets = book.worksheets
-            if not 0 < len(sheets) <= MAX_SHEETS:
-                raise ImportProblem(f"工作簿须包含 1 到 {MAX_SHEETS} 张工作表。")
-            if index is None:
-                return [s.title for s in sheets]
-            if not 0 <= index < len(sheets):
-                raise ImportProblem("所选工作表不存在。")
-            sheet = sheets[index]
-            sheet.reset_dimensions()
-
-            def rows():
-                header_width = 0
-                for line, cells in enumerate(sheet.iter_rows(max_col=MAX_COLUMNS + 1), 1):
-                    if line > MAX_ROWS + 1:
-                        raise ImportProblem(f"Excel 行号最多支持 {MAX_ROWS + 1}，包括表头。")
-                    values = [cell_text(c.value) for c in cells]
-                    width = next((i for i in range(len(values), 0, -1) if values[i - 1]), 0)
-                    if not width:
-                        continue
-                    if not header_width:
-                        header_width = width
-                    errors = ()
-                    if any(c.data_type == "f" for c in cells):
-                        errors += ("excel_formula",)
-                    if any(c.data_type == "e" for c in cells):
-                        errors += ("excel_cell_error",)
-                    yield FileRow(line, values[:max(width, header_width)], errors)
-
-            return as_sheet(sheet.title, rows())
+        # openpyxl warnings can interpolate workbook-supplied names or cell values.
+        # Python 3.12 warning filters are process-global, so the XLSX contexts cannot overlap.
+        with _XLSX_WARNINGS, warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=UserWarning, module=r"^openpyxl(?:\.|$)")
+            return read_workbook(data, index)
     except ImportProblem:
         raise
     except (BadZipFile, expat.ExpatError, ValueError, TypeError, KeyError, IndexError, OSError,
             OverflowError, AttributeError, EOFError, SyntaxError, RuntimeError, CompressionError, InvalidFileException):
         raise ImportProblem("无法读取 XLSX。文件可能损坏、加密或格式不受支持。") from None
 
+
+def read_workbook(data, index):
+    with closing(load_workbook(BytesIO(data), read_only=True, data_only=False, keep_links=False)) as book:
+        sheets = book.worksheets
+        if not 0 < len(sheets) <= MAX_SHEETS:
+            raise ImportProblem(f"工作簿须包含 1 到 {MAX_SHEETS} 张工作表。")
+        if index is None:
+            return [s.title for s in sheets]
+        if not 0 <= index < len(sheets):
+            raise ImportProblem("所选工作表不存在。")
+        sheet = sheets[index]
+        sheet.reset_dimensions()
+
+        def rows():
+            header_width = 0
+            for line, cells in enumerate(sheet.iter_rows(max_col=MAX_COLUMNS + 1), 1):
+                if line > MAX_ROWS + 1:
+                    raise ImportProblem(f"Excel 行号最多支持 {MAX_ROWS + 1}，包括表头。")
+                values = [cell_text(c.value) for c in cells]
+                width = next((i for i in range(len(values), 0, -1) if values[i - 1]), 0)
+                if not width:
+                    continue
+                if not header_width:
+                    header_width = width
+                errors = ()
+                if any(c.data_type == "f" for c in cells):
+                    errors += ("excel_formula",)
+                if any(c.data_type == "e" for c in cells):
+                    errors += ("excel_cell_error",)
+                yield FileRow(line, values[:max(width, header_width)], errors)
+
+        return as_sheet(sheet.title, rows())
 
 def list_sheets(data, kind):
     if kind == "csv":
