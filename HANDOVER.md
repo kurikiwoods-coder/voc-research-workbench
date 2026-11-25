@@ -1,6 +1,12 @@
 # 开发交接
 
-## M06-C1 数据库实施交接
+## M06-C2 交接给桌面端及后续 C3
+
+M06-C2 = **ENGINEERING_PASS**。[三项实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45532356340) 均通过。C2 实现为 `965a4b8`。现有 Python/GET 合同及 SQLite v7 保持兼容。C2 在 Linux 已执行 190 项 Python、2 项 Node、8 个 Chromium 场景、三次冷启动及四份归档。桌面端须对 C2 版核对 SHA、普通登录用户启动、同库恢复、全量及 C2 WAL/UTC 专测，记录 Windows 11 实机证据后再判定平台部署门禁。当前 C2 实机 NOT_TESTED、部署门禁 BLOCKED；C1 历史 PASS。[测试命令与证据](docs/evidence/m06-c2/README.md)
+
+C3 NOT_STARTED，待负责人另行授权。实施时由调用方校验操作者与项目、准备全部证据及上下文 ID，在主库同一连接的 BEGIN IMMEDIATE 内使用 `CorpusStore.qualified_write_inputs(db, study_id, record_ids)`。所有依赖写置于该上下文，正常退出后立即提交，任何失败由外层回滚整项操作，跨 UTC 日在新事务重算。GET、旧回执、同文副本或暂存内容均不授予后续处理权。C3 负责声明依赖是否完整以及发生、区间和产品关系。G-1 BLOCKED，正式统计与外发继续关闭。
+
+## 历史记录 · M06-C1 数据库实施交接
 
 正式开发分支为 `codex/p0-0-connectivity`。本轮使用已冻结设计实施 SQLite v7，生产工作台类数据库运行 001–007，M01 合成契约库和诊断库继续使用 v1。先使用隔离的 v6 一致性备份复验升级与恢复，运行环境和验收命令见[迁移证据](docs/evidence/m06-c1/README.md)。[负责人门禁调整](docs/decisions/pre-m06-development-gate.md)记载开发与部署条件。M06-C1 为 ENGINEERING_PASS，代码基线为 f54b5734a632503b35066b9ab4fb197b8597d967。[实施 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45435846994)的 Ubuntu、Windows Server 2022 和 Chromium 均通过。2026-11-25 Windows 11 实机及部署门禁均为 PASS。DPAPI、启动器、全量回归及 SQLite v7 恢复实测通过。G-1 为 BLOCKED，M06-C2 为 NOT_STARTED。[Windows 11 验收记录](docs/evidence/m06-c1/windows11-closeout.md)
 

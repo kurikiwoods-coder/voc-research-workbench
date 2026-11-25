@@ -1,12 +1,16 @@
 # VOC Research Workbench 开发状态
 
+## M06-C2 云端工程验收
+
+2026-11-25，从 C1 基线 `776acfe` 实施 C2。实现提交 `965a4b8b3596c03437f9629f2f203e11af617726`。M06-C2 = **ENGINEERING_PASS**。该实现的[Ubuntu、Windows Server 2022 和 Chromium CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45532356340) 均通过。C2 的 Python/GET 与调用方写事务共用 M05 当前资格，修复同文件行撤销和到期的四项缺陷。Linux 全量 Python 190/190（新增 17）、Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4。当前 C2 实机 Windows 11 NOT_TESTED，部署门禁 BLOCKED；以下 C1 实机记录按原基线保留。Pre-M06 开发门禁 PASS，G-1 BLOCKED，C3 NOT_STARTED，真实研究 API 调用 0。[C2 工程证据](docs/evidence/m06-c2/README.md)
+
 核查日期 2026-11-25。接管分支 `codex/p0-0-connectivity`，历史接管基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 
-## Windows 11 实机验收及部署门禁
+## 历史记录 · C1 Windows 11 实机验收及部署门禁
 
 2026-11-25 在公司电脑 Windows 11 Enterprise 25H2 x64 上验收开发分支 `29dd1ffec595dccb3fad08b1194f5151b12decda`。Python 173/173、Node 2/2、Chromium 8/8、空库冷启动 3/3、脱敏归档 4/4 均通过。普通登录用户 DPAPI、三类路径启动和同库重启、SQLite v7 迁移及恢复通过。Windows 11 实机及其部署门禁均为 **PASS**。M06-C1 为 **ENGINEERING_PASS**，Pre-M06 开发门禁为 **PASS**，G-1 为 **BLOCKED**，M06-C2 为 **NOT_STARTED**，等待单独授权。真实研究 API 调用 0 次。[Windows 11 验收证据](docs/evidence/m06-c1/windows11-closeout.md)
 
-## M06-C1 数据库迁移与结构约束
+## 历史记录 · M06-C1 数据库迁移与结构约束
 
 2026-11-24，负责人批准以当前 Windows 10 实机证据核定开发门禁，Windows 11 验收移至该平台部署前。以冻结提交 `02dfcebff52687d93578011977d5dada3bf70d27` 核对原工程条件后，`PRE_M06_DEVELOPMENT_GATE = PASS`。M06 架构为 FROZEN。当时 Windows 11 实机为 NOT_TESTED，部署门禁和 G-1 均为 BLOCKED。[负责人门禁调整](docs/decisions/pre-m06-development-gate.md)
 

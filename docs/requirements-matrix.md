@@ -46,7 +46,17 @@ P0-0 补充的设置向导、本机凭证保存与诊断均有独立工程测试
 
 每项的时间、证据 ID、请求与响应可由 [JSON 与 SQLite 验收包](evidence/p0-0/README.md) 复核。下方映射表定义验收标准；重新运行页面将读取本机当前批次的结果。
 
-## Windows 11 部署工程验收
+## M06-C2 工程验收
+
+M06-C2 = **ENGINEERING_PASS**。实现提交 `965a4b8` 的[三平台 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45532356340) 已通过。
+
+| 对应条款 | 本轮实测 | 保留条件 |
+|---|---|---|
+| SOURCE-POLICY、PRIVACY；A07–09、A21 | Python、GET 及同连接写入复用实时资格，项目隔离、WAL 锁顺序、UTC 到期、副本、新授权及 M04 撤销回执兼容实测通过 | 仅本机工程资格。正式统计、外发及 G-1 依原矩阵 |
+| CAT-8、CAT-10 的资格前提；B04、B08、B09、B13、B14 | 核对全部传入原话及上下文、拒绝已撤销依赖，读取/错误导出/暂存回查已检查 | M/E、版次发行、编码回执、历史报告及正式分母仍待后续阶段。逐案见[C2 证据](evidence/m06-c2/README.md) |
+| Windows 11 平台 | C1 实机及该版部署门禁历史 PASS | C2 实机 NOT_TESTED，该版部署门禁 BLOCKED。Windows Server 2022 单独记录 |
+
+## C1 历史 Windows 11 部署工程验收
 
 2026-11-25 在公司 Windows 11 Enterprise 25H2 x64 实机验收 C1 代码基线 `29dd1ffec595dccb3fad08b1194f5151b12decda`。实机和 Windows 11 部署门禁均为 **PASS**。证据覆盖原版启动器、三次空库冷启动、DPAPI 凭证生命周期、完整回归及 SQLite v7 迁移恢复。真实研究 API 调用 0 次。G-1 仍为 **BLOCKED**，正式语料、许可、审计及研究验收仍按矩阵既有条款核定。[Windows 11 实机证据](evidence/m06-c1/windows11-closeout.md)
 

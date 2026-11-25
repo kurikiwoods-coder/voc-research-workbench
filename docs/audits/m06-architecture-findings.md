@@ -26,7 +26,7 @@
 | B-F01 P0 跨项目泄露 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C4。六角色逐入口检验定义、搜索、两向关系、历史、摘要、分页、计数、错误、预检/重放、报告及出队。隐藏项目与不存在项目的响应对未授权者不可区分；专项授权撤回后不可重放原文。 |
 | B-F02 P1 有效主类 | DESIGN_RESOLVED | IMPLEMENTATION_TEST_REQUIRED | C1/C4。构造零主、双主、跨版主、已停用主及封版后改写；发行应失败，原 HEAD 及成员不变。 |
 | B-F03 P1 版本与命令 | DESIGN_RESOLVED | IMPLEMENTATION_TEST_REQUIRED | C1/C4。同谱系双根、混合 NULL、错项目/错版键、同键异载荷拒绝；两连接竞争只发一版，同键同载荷断连重放只得原引用。 |
-| B-F04 P1 资格及竞态 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C2/C4。复核同连接 M05、UTC 换日、先撤销/后撤销及副本，旧预检不能完成发布；新授权仅恢复指定来源，原发布须复核。 |
+| B-F04 P1 资格及竞态 | DESIGN_RESOLVED、POLICY_APPROVED | C2 资格层已实测，C4 发行层待验 | C2/C4。复核同连接 M05、UTC 换日、先撤销/后撤销及副本，旧预检不能完成发布；新授权仅恢复指定来源，原发布须复核。 |
 | B-F05 P1 转载身份 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C3/C5。两条独立同文仍计二，带转载线索但缺证的第三条单挂；按来源、品类核待核比率和敏感性上下界。 |
 | B-F06 P1 产品边 | DESIGN_RESOLVED、POLICY_APPROVED | IMPLEMENTATION_TEST_REQUIRED | C3/C4。用错误商品页、否定/比较、混合批次校验。整批失败无写入；成功每边有独立决定，提议对正式反查贡献零，停用规则可查受影响边。 |
 | B-F07 P1 编码依赖 | DESIGN_RESOLVED | IMPLEMENTATION_TEST_REQUIRED | C3/C5。只撤销跨句上下文，另一个 E 可维持 M 但旧回执退出发布；不同版及失败尝试不得补成有效回执。 |
@@ -50,3 +50,8 @@
 B-F01、B-F04、B-F08、B-F12 的业务服务断言仍在原阶段。实际测试及数据库保证边界见[M06-C1 迁移证据](../evidence/m06-c1/README.md)。
 
 [五项签认及冻结结论](../architecture/m06-owner-approval.md) · [具体入口权限](../architecture/m06-api-contract.md) · [实施步骤](../architecture/m06-implementation-plan.md)
+
+
+## M06-C2 实施证据
+
+B-F04 的调用方写锁、UTC、撤销顺序、同行副本、独立来源与单条新授权均在真实 WAL 隔离库测试。B-F01 的记录级项目边界、B-F09 的失格输入仅验证资格前提。B-F03 的命令重放及 B-F09 的代表性判断、后续报告仍由所属阶段验收。本次查出的四项许可/期限缺陷已分别留存修复前后的响应与断言。详见[并发时序及逐例边界](../evidence/m06-c2/README.md)和[实际运行输出](../evidence/m06-c2/linux-results.txt)。

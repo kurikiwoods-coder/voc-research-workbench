@@ -1,0 +1,108 @@
+base
+Ran 173 tests in 26.920s
+OK
+ℹ tests 2
+ℹ pass 2
+ℹ fail 0
+ℹ skipped 0
+Linux cold start 1/3: PASS
+Linux cold start 2/3: PASS
+Linux cold start 3/3: PASS
+OK: Git-bound content and staged files checked
+
+final-smoke
+Ran 190 tests in 19.807s
+OK
+ℹ tests 2
+ℹ pass 2
+ℹ fail 0
+ℹ skipped 0
+Linux cold start 1/3: PASS
+Linux cold start 2/3: PASS
+Linux cold start 3/3: PASS
+OK: Git-bound content and staged files checked
+
+Pre-fix check 1
+FAIL: test_same_file_row_obeys_revoked_batch_even_if_original_never_reviewed (test_m06_eligibility.EligibilityTransactions.test_same_file_row_obeys_revoked_batch_even_if_original_never_reviewed)
+AssertionError: 200 != 409
+FAILED (failures=1)
+
+Pre-fix check 2
+FAIL: test_same_file_row_withdrawal_survives_unmapped_source_and_new_grant (test_m06_eligibility.EligibilityTransactions.test_same_file_row_withdrawal_survives_unmapped_source_and_new_grant)
+AssertionError: 200 != 409
+FAILED (failures=1)
+
+Pre-fix check 3
+FAIL: test_new_grant_cannot_reopen_retained_row_after_its_deadline (test_m06_eligibility.EligibilityTransactions.test_new_grant_cannot_reopen_retained_row_after_its_deadline)
+AssertionError: 200 != 409
+FAILED (failures=1)
+
+Pre-fix check 4
+FAIL: test_file_row_deadline_survives_withdrawal_without_a_new_deadline (test_m06_eligibility.EligibilityTransactions.test_file_row_deadline_survives_withdrawal_without_a_new_deadline)
+AssertionError: 200 != 409
+FAILED (failures=1)
+
+C2 repeat 1
+test_committed_reference_survives_expiry_but_content_does_not (test_m06_eligibility.EligibilityTransactions.test_committed_reference_survives_expiry_but_content_does_not) ... ok
+test_day_change_requires_retry_even_when_grant_remains_valid (test_m06_eligibility.EligibilityTransactions.test_day_change_requires_retry_even_when_grant_remains_valid) ... ok
+test_file_row_deadline_survives_withdrawal_without_a_new_deadline (test_m06_eligibility.EligibilityTransactions.test_file_row_deadline_survives_withdrawal_without_a_new_deadline) ... ok
+test_final_check_sees_changes_made_on_callers_connection (test_m06_eligibility.EligibilityTransactions.test_final_check_sees_changes_made_on_callers_connection) ... ok
+test_foreign_project_and_missing_record_have_same_public_response (test_m06_eligibility.EligibilityTransactions.test_foreign_project_and_missing_record_have_same_public_response) ... ok
+test_independent_source_and_record_scoped_new_grant (test_m06_eligibility.EligibilityTransactions.test_independent_source_and_record_scoped_new_grant) ... ok
+test_new_grant_cannot_reopen_retained_row_after_its_deadline (test_m06_eligibility.EligibilityTransactions.test_new_grant_cannot_reopen_retained_row_after_its_deadline) ... ok
+test_own_connection_required_and_caller_retains_transaction_ownership (test_m06_eligibility.EligibilityTransactions.test_own_connection_required_and_caller_retains_transaction_ownership) ... ok
+test_python_http_and_locked_projection_match_including_frozen_trace (test_m06_eligibility.EligibilityTransactions.test_python_http_and_locked_projection_match_including_frozen_trace) ... ok
+test_revoked_staging_retry_reads_no_file_and_never_grants_eligibility (test_m06_eligibility.EligibilityTransactions.test_revoked_staging_retry_reads_no_file_and_never_grants_eligibility) ... ok
+test_same_file_row_obeys_revoked_batch_even_if_original_never_reviewed (test_m06_eligibility.EligibilityTransactions.test_same_file_row_obeys_revoked_batch_even_if_original_never_reviewed) ... ok
+test_same_file_row_withdrawal_survives_unmapped_source_and_new_grant (test_m06_eligibility.EligibilityTransactions.test_same_file_row_withdrawal_survives_unmapped_source_and_new_grant) ... ok
+test_stale_wal_read_snapshot_cannot_be_used_for_a_write (test_m06_eligibility.EligibilityTransactions.test_stale_wal_read_snapshot_cannot_be_used_for_a_write) ... ok
+test_utc_midnight_discards_whole_write_and_retry_recomputes (test_m06_eligibility.EligibilityTransactions.test_utc_midnight_discards_whole_write_and_retry_recomputes) ... ok
+test_withdrawal_commits_while_prechecked_consumer_waits (test_m06_eligibility.EligibilityTransactions.test_withdrawal_commits_while_prechecked_consumer_waits) ... ok
+test_writer_holds_wal_lock_until_reference_commits_then_withdrawal_masks_reads (test_m06_eligibility.EligibilityTransactions.test_writer_holds_wal_lock_until_reference_commits_then_withdrawal_masks_reads) ... ok
+test_wrong_database_and_empty_dependency_set_do_not_reach_consumer (test_m06_eligibility.EligibilityTransactions.test_wrong_database_and_empty_dependency_set_do_not_reach_consumer) ... ok
+Ran 17 tests in 2.432s
+OK
+
+C2 repeat 2
+Ran 17 tests in 2.538s
+OK
+
+C2 repeat 3
+Ran 17 tests in 2.665s
+OK
+
+base-browser-final
+API setup E2E passed: wizard, local key save/rotation/delete, preflight evidence, and 320/390 layouts.
+M01 connectivity E2E passed: navigation, batch evidence and recovery, Token Center, and 320/390 layouts.
+M03 project E2E passed: create, validation, duplicate submission, history, archive/restore, search, active project, and 320/390 layouts.
+M04 import E2E passed: drag/drop CSV, XLSX sheet selection, mapping, quality, project isolation, report and 320/390px layouts.
+M05 corpus E2E passed: review, trace, duplicates, withdrawal, fresh authorization, and 320/390px layouts.
+M03 restart E2E passed: same SQLite database, current project, and scope versions reopened in a new process.
+M04 restart E2E passed: original batch state and XLSX staged rows survived a fresh service process.
+M05 corpus restart E2E passed: original text and local review persisted.
+Chromium E2E passed. Screenshots: test-results/c1-browser
+
+final-e2e
+API setup E2E passed: wizard, local key save/rotation/delete, preflight evidence, and 320/390 layouts.
+M01 connectivity E2E passed: navigation, batch evidence and recovery, Token Center, and 320/390 layouts.
+M03 project E2E passed: create, validation, duplicate submission, history, archive/restore, search, active project, and 320/390 layouts.
+M04 import E2E passed: drag/drop CSV, XLSX sheet selection, mapping, quality, project isolation, report and 320/390px layouts.
+M05 corpus E2E passed: review, trace, duplicates, withdrawal, fresh authorization, and 320/390px layouts.
+M03 restart E2E passed: same SQLite database, current project, and scope versions reopened in a new process.
+M04 restart E2E passed: original batch state and XLSX staged rows survived a fresh service process.
+M05 corpus restart E2E passed: original text and local review persisted.
+Chromium E2E passed. Screenshots: test-results/m06-c2-browser
+
+Archive verification (records, SQLite, archived receipt digest)
+"evidence_records": 20,
+"sqlite_integrity": "ok",
+"receipt_sha256": "1e061b5ff6c065ddfd47efd9046dec0865d684021a83dd2cb29df4cba3681c80"
+"evidence_records": 10,
+"sqlite_integrity": "ok",
+"receipt_sha256": "3965bc0723858eb789ea5cd80f62595d215e0cd6979e340d957bf9befc394f4e"
+"evidence_records": 10,
+"sqlite_integrity": "ok",
+"receipt_sha256": "6ec6945665c6bb8a549deb5137a683f0d19df4970e8f07a06ed6ffbbf8fb442c"
+"evidence_records": 10,
+"sqlite_integrity": "ok",
+"receipt_sha256": "c9381f28e8b494993327b30b6dd0df5aa29241aba87ee78d47409296142ecec8"
