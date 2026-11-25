@@ -106,12 +106,12 @@ def validate_replacements(
 def require_replacement_lineage(parent_anchors, fresh_anchors, replacements):
     """Require explicit lineage when new intervals replace one or several old intervals."""
     new_by_record = defaultdict(list)
-    for ref, interval in fresh_anchors.items():
+    for ref, interval in fresh_anchors:
         new_by_record[interval.record_id].append((ref, interval))
     linked = {(edge.from_mention_id, edge.to_ref) for edge in replacements}
     successors = defaultdict(set)
     predecessors = defaultdict(set)
-    for old_id, interval in parent_anchors.items():
+    for old_id, interval in parent_anchors:
         for ref, new in new_by_record[interval.record_id]:
             if (interval.raw_sha256 == new.raw_sha256
                     and max(interval.start_cp, new.start_cp) < min(interval.end_cp, new.end_cp)):

@@ -27,28 +27,34 @@ def _source(interval: EvidenceInterval, records: Mapping[str, Mapping]) -> tuple
 
 def validate_identity(
     supports: Sequence[SupportDraft], records: Mapping[str, Mapping],
+    event_anchors: Mapping[EvidenceInterval, str | None],
 ) -> Literal["distinct", "needs_review"]:
     """Keep disputed input separate and require reposts to point directly to the original."""
     if len(supports) == 1 and supports[0].identity == "disputed" and supports[0].original is None:
         return "needs_review"
 
-    originals = [support for support in supports if support.identity == "independent"]
-    if len(originals) != 1 or originals[0].original is not None:
-        raise ValueError("每次独立表达需要恰好一条不含转载引用的原帖证据。")
-    if len(supports) == 1:
-        return "distinct"
+    originals = {support.interval: support for support in supports if support.identity == "independent"}
+    if not originals or any(support.original is not None for support in originals.values()):
+        raise ValueError("每次独立表达需要不含转载引用的原帖证据。")
+    if len(originals) > 1:
+        events = {event_anchors[interval] for interval in originals}
+        contexts = {
+            frozenset(event_anchors[context] or context for context in support.contexts)
+            for support in originals.values()
+        }
+        if None in events or len(events) != 1 or len(contexts) != 1:
+            raise ValueError("同次表达的多个原帖证据须指向同一可核事件、区间和上下文。")
 
-    original = originals[0]
-    origin_source, origin_study = _source(original.interval, records)
     for support in supports:
-        if support is original:
+        if support.identity == "independent":
             continue
         if (
             support.identity != "repost"
-            or support.original != original.interval
-            or support.interval.record_id == original.interval.record_id
+            or support.original not in originals
+            or support.interval.record_id == support.original.record_id
         ):
             raise ValueError("已核转载须指向同次表达中确切的独立原帖区间。")
+        origin_source, origin_study = _source(support.original, records)
         repost_source, repost_study = _source(support.interval, records)
         if origin_source == repost_source or origin_study != repost_study:
             raise ValueError("原帖和转载须来自同项目内分别可核对的来源。")

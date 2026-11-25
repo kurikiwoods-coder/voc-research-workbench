@@ -330,14 +330,17 @@ class MentionStore:
         fresh = set()
         current_events = set()
         for member in members:
-            anchor = next(s.interval for s in member.supports if s.identity != "repost")
-            anchors[member.ref] = anchor
-            event = event_anchors.get(anchor)
-            if event is not None:
-                if event in current_events:
-                    raise Conflict("同一来源事件和原文区间不能登记两次发生。")
-                current_events.add(event)
-            prior = history.get(anchor) or source_events.get(event)
+            intervals = [s.interval for s in member.supports if s.identity != "repost"]
+            anchors[member.ref] = intervals
+            events = {event_anchors[interval] for interval in intervals if event_anchors[interval]}
+            if events & current_events:
+                raise Conflict("同一来源事件和原文区间不能登记两次发生。")
+            current_events.update(events)
+            prior_ids = {history[interval] for interval in intervals if interval in history}
+            prior_ids.update(source_events[event] for event in events if event in source_events)
+            if len(prior_ids) > 1:
+                raise Conflict("多个原帖区间引用不同的既有发生，须先完成带谱系的复核。")
+            prior = next(iter(prior_ids), None)
             if member.ref in targets:
                 if member.mention_id is not None:
                     raise Conflict("拆并后继须新建发生 ID。")
@@ -354,9 +357,10 @@ class MentionStore:
                 if member.mention_id is not None and mention_id != prior:
                     # Corrections keep an overlapping range on the same immutable record.
                     if prior is not None or not any(
-                        s.interval.record_id == anchor.record_id and s.interval.raw_sha256 == anchor.raw_sha256
-                        and max(s.interval.start_cp, anchor.start_cp) < min(s.interval.end_cp, anchor.end_cp)
-                        for s in parent_support.get(mention_id, ())
+                        s.interval.record_id == interval.record_id
+                        and s.interval.raw_sha256 == interval.raw_sha256
+                        and max(s.interval.start_cp, interval.start_cp) < min(s.interval.end_cp, interval.end_cp)
+                        for s in parent_support.get(mention_id, ()) for interval in intervals
                     ):
                         raise Conflict("当前证据无法核对所引用的既有发生。")
             if mention_id is None:
@@ -368,8 +372,9 @@ class MentionStore:
             raise Conflict("同版应仅保留每个稳定发生一次。")
         validate_replacements(replacements, parent_support, result, fresh)
         require_replacement_lineage(
-            {ident: supports[0].interval for ident, supports in parent_support.items() if ident not in retained},
-            {ref: anchors[ref] for ref, ident in result.items() if ident in fresh},
+            ((ident, support.interval) for ident, supports in parent_support.items() if ident not in retained
+             for support in supports),
+            ((ref, interval) for ref, ident in result.items() if ident in fresh for interval in anchors[ref]),
             replacements,
         )
         return result, fresh
@@ -383,16 +388,19 @@ class MentionStore:
             interval: validate_interval(interval, records[interval.record_id], study_id=study_id, scope_id=scopes[interval])
             for interval in intervals
         }
+        identity_anchors = {
+            interval: event_anchor(records[interval.record_id], interval) for interval in intervals
+        }
         states = {}
         for member in members:
             for support in member.supports:
                 if any(scopes[other] != scopes[support.interval] for other in (*support.contexts, support.original)
                        if other is not None):
                     raise Conflict("直接证据及其上下文、原帖须绑定同一冻结范围。")
-            states[member.ref] = validate_identity(member.supports, records)
+            states[member.ref] = validate_identity(member.supports, records, identity_anchors)
         event_anchors = {
-            support.interval: event_anchor(records[support.interval.record_id], support.interval)
-            for member in members for support in member.supports if support.identity == "independent"
+            support.interval: identity_anchors[support.interval] if support.identity == "independent" else None
+            for member in members for support in member.supports
         }
         member_ids, fresh = self._member_ids(db, study_id, parent, members, replacements, event_anchors)
         evidence_ids = {interval: _evidence(db, study_id, interval, scopes[interval]) for interval in intervals}

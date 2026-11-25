@@ -626,12 +626,44 @@ class MentionTests(unittest.TestCase):
         [parent] = self.publish([self.member("original", old)])["members"]
         with self.assertRaises(Conflict):
             self.publish([self.member("duplicate", new), self.member("original", old)], expected=1, key="duplicate")
-        [child] = self.publish([self.member("reimport", new)], expected=1, key="reimport")["members"]
+        unrelated_row = [QUOTE, "forum", row[2], *fixtures.ROW[3:], "synthetic-other-event"]
+        _, [unrelated_id] = self.case.import_rows([unrelated_row], columns=columns)
+        self.case.verify(unrelated_id)
+        unrelated = replace(old, record_id=unrelated_id)
+        invalid = MentionDraft("unverified", (
+            SupportDraft(old, 1, "independent", BASIS),
+            SupportDraft(unrelated, 1, "independent", BASIS),
+        ))
+        start = self.counts()
+        with self.assertRaises(ValueError):
+            self.publish([invalid], expected=1, key="unverified")
+        self.assertEqual(self.counts(), start)
+
+        combined = MentionDraft("copies", (
+            SupportDraft(new, 1, "independent", BASIS),
+            SupportDraft(old, 1, "independent", BASIS),
+        ))
+        [child] = self.publish([combined], expected=1, key="copies")["members"]
         self.assertEqual(child["mention_id"], parent["mention_id"])
-        self.assertNotEqual(child["evidence_ids"], parent["evidence_ids"])
+        new_evidence, old_evidence = child["evidence_ids"]
+        self.assertNotEqual(new_evidence, old_evidence)
+        self.assertEqual([old_evidence], parent["evidence_ids"])
+        self.assertEqual(self.publish([combined], expected=1, key="copies")["members"], [child])
         self.assertEqual(self.read_evidence(child, revision=2)["excerpt"], QUOTE)
+        parts = [
+            self.member("left", replace(old, end_cp=7)),
+            self.member("right", replace(old, start_cp=7), segment_no=2),
+        ]
+        start = self.counts()
+        with self.assertRaises(Conflict):
+            self.publish(parts, expected=2, key="missing-lineage")
+        self.assertEqual(self.counts(), start)
+
         self.revoke_batch(first_batch)
         self.assertEqual(self.read_evidence(child, revision=2)["excerpt"], QUOTE)
+        [current] = self.store.read_revision(self.study)["members"]
+        self.assertEqual(current["mention_id"], child["mention_id"])
+        self.assertEqual(current["evidence_ids"], [new_evidence])
         with self.assertRaises(Conflict):
             self.read_evidence(parent)
 
