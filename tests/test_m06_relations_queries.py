@@ -305,3 +305,29 @@ class RelationQueryTests(unittest.TestCase):
         formal = self.edges(intent=INTENT, filters=self.scope_filters, mode="formal")
         self.assertEqual(formal["items"], [])
         self.assertIsNone(formal["counts"])
+
+    def test_missing_project_versions_are_unavailable(self):
+        result = self.edges(intent=INTENT)
+        self.assertEqual(result["availability"], "unavailable")
+        self.assertEqual(result["items"], [])
+        self.assertIsNone(result["counts"])
+        self.assertEqual(result["reasons"], ["REGISTRY_UNAVAILABLE", "SEGMENT_REVISION_UNAVAILABLE"])
+        mentions = self.relations.project_mentions(self.study)
+        self.assertEqual(mentions["reasons"], ["SEGMENT_REVISION_UNAVAILABLE"])
+        self.assertIsNone(mentions["counts"])
+
+    def test_product_view_reports_unresolved_mapping_without_explicit_scope_filter(self):
+        f = self.fixture
+        _, interval = f.add_quote("unmapped", "Synthetic quote in an unresolved frozen scope")
+        representatives = self.publish([f.member("unmapped", interval)])
+        self.seal_definitions(representatives, parent=None)
+        self.attribute(self.ref(representatives[0]))
+        for filters in (None, self.scope_filters):
+            result = self.edges(intent=INTENT, filters=filters)
+            self.assertEqual(result["availability"], "unavailable")
+            self.assertEqual(result["reasons"], ["SCOPE_MAPPING_UNRESOLVED"])
+            self.assertEqual(result["items"], [])
+            self.assertIsNone(result["counts"])
+        result = self.edges(intent=INTENT, filters={"catalog_version": "99.0.0"})
+        self.assertEqual(result["reasons"], ["CATALOG_VERSION_UNAVAILABLE"])
+        self.assertIsNone(result["counts"])

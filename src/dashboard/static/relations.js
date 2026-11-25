@@ -17,6 +17,7 @@ const reasonLabels = {
   SCOPE_MAPPING_UNRESOLVED: "冻结范围的产品映射未解析",
   REGISTRY_UNAVAILABLE: "暂无已封版的注册表",
   SEGMENT_REVISION_UNAVAILABLE: "暂无可用片段版",
+  CATALOG_VERSION_UNAVAILABLE: "指定的产品目录版本不可用",
 };
 const enc = encodeURIComponent;
 const apiPath = (...parts) => "/api/" + parts.map(enc).join("/");
@@ -138,7 +139,7 @@ export function mountRelations(root, _route, { api, esc }) {
   function mentionRows(items) {
     const groups = new Map();
     for (const mention of items) {
-      for (const edge of mention.product_intent_edges) {
+    for (const edge of mention.product_intent_edges || []) {
         const key = JSON.stringify([edge.product_category_id, edge.catalog_version, edge.intent_id]);
         if (!groups.has(key)) {
           const intent = mention.intents.find(item => item.intent_id === edge.intent_id);

@@ -268,7 +268,8 @@ def _product_edges(reviews, evidence, state, grants, filters):
                             and review["mode"] == "A" and provenance.get("grants") == grants}
 
 
-def _project_snapshot(db, mentions, study_id, *, registry_version, segment_revision, filters, can_read, today):
+def _project_snapshot(db, mentions, study_id, *, registry_version, segment_revision, filters,
+                      can_read, today, require_registry=False):
     version = _registry_version(db, registry_version)
     segment = _segment(db, study_id, segment_revision)
     revision = segment["segment_revision"] if segment is not None else None
@@ -276,6 +277,18 @@ def _project_snapshot(db, mentions, study_id, *, registry_version, segment_revis
                 "catalog_version": filters.get("catalog_version"), "scope_mappings": []}
     if filters.get("mode") == "formal":
         return resolved, {}, [], ("G1_BLOCKED", "RESEARCH_NOT_ADMITTED", "M12_RECEIPTS_MISSING")
+    missing = []
+    if version is None and require_registry:
+        missing.append("REGISTRY_UNAVAILABLE")
+    if revision is None:
+        missing.append("SEGMENT_REVISION_UNAVAILABLE")
+    if resolved["catalog_version"] is not None:
+        try:
+            _registry_version(db, resolved["catalog_version"])
+        except KeyError:
+            missing.append("CATALOG_VERSION_UNAVAILABLE")
+    if missing:
+        return resolved, {}, [], tuple(missing)
 
     time_filter = _time_filter(filters)
     details = _intent_details(db, version)
@@ -308,6 +321,8 @@ def _project_snapshot(db, mentions, study_id, *, registry_version, segment_revis
             continue
         if not _matches(filters.get("scope_version"), evidence["scope_version"]):
             raise KeyError(support.scope_id)
+        if not _evidence_matches(filters, evidence, record, time_filter):
+            continue
         scoped.add(support.scope_id)
         grants = _grants(db, dependencies)
         state = states[mention_id]
@@ -333,8 +348,6 @@ def _project_snapshot(db, mentions, study_id, *, registry_version, segment_revis
             }
             if _matches(filters.get("product_category_id"), product["product_category_id"]):
                 products.append(product)
-        if not _evidence_matches(filters, evidence, record, time_filter):
-            continue
         if (filters.get("intent_id") or filters.get("category_id")) and not intents:
             continue
         if filters.get("product_category_id") and not any(edge["effective"] for edge in products):
@@ -411,8 +424,46 @@ def _replacement_links(db, mentions, study_id, revision, members, can_read, toda
     return links
 
 
+def _tombstones(db, mentions, study_id, revision, mention_id, can_audit, today):
+    """Resolve restricted occurrences in the same snapshot as the live projection."""
+    from src.raw_store.corpus_access import qualification
+    from src.raw_store.mentions import _dependencies
+
+    members = defaultdict(list)
+    for row in _supports(db, study_id, revision):
+        if mention_id is None or row["mention_id"] == mention_id:
+            members[row["mention_id"]].append(_Support.from_row(row))
+
+    records, restricted, tombstones = {}, {}, {}
+    for member, supports in members.items():
+        allowed = [support for support in supports if can_audit(revision, member, support.evidence_id)]
+        if not allowed:
+            continue
+        for support in supports:
+            try:
+                mentions._qualified_evidence(db, study_id, revision, member, support, today, records)
+            except Conflict:
+                continue
+            break
+        else:
+            for support in allowed:
+                dependencies = _dependencies(db, study_id, revision, member, support)
+                for interval, _ in dependencies.values():
+                    if interval.record_id not in restricted:
+                        row = mentions.corpus.source_row(db, study_id, interval.record_id, today)
+                        access = qualification(row, today)
+                        restricted[interval.record_id] = access["status"] in {
+                            "revoked", "retention_expired", "policy_restricted", "source_restricted", "excluded",
+                        }
+                if any(restricted[interval.record_id] for interval, _ in dependencies.values()):
+                    tombstones[member] = {"mention_id": member, "segment_revision": revision,
+                                          "tombstone": True, "reason": "EVIDENCE_UNAVAILABLE"}
+                    break
+    return tombstones
+
+
 def project_mentions(db, mentions, study_id, *, registry_version=None, segment_revision=None,
-                     mention_id=None, filters=None, can_read=None, today):
+                     mention_id=None, filters=None, can_read=None, can_audit=None, today):
     """Return project-only mention status and visible eligible evidence references."""
     filters = _project_filters(filters)
     resolved, members, _, reasons = _project_snapshot(
@@ -421,18 +472,24 @@ def project_mentions(db, mentions, study_id, *, registry_version=None, segment_r
     )
     if reasons:
         return _result([], resolved, reasons=reasons)
-    if mention_id is not None and mention_id not in members:
-        raise KeyError(mention_id)
+    revision = resolved["segment_revision"]
     if mention_id is not None:
-        members = {mention_id: members[mention_id]}
-    replacements = _replacement_links(db, mentions, study_id, resolved["segment_revision"], members, can_read, today)
+        members = {key: member for key, member in members.items() if key == mention_id}
+    tombstones = {}
+    # Removed evidence cannot establish membership in a filtered slice.
+    if can_audit is not None and revision is not None and not filters.keys() - {"mode", "time_field"}:
+        tombstones = _tombstones(db, mentions, study_id, revision, mention_id, can_audit, today)
+    if mention_id is not None and not members and not tombstones:
+        raise KeyError(mention_id)
+    replacements = _replacement_links(db, mentions, study_id, revision, members, can_read, today)
     items = []
     for ref in sorted(members):
         item = members[ref]
         item["intents"] = [item["intents"][key] for key in sorted(item["intents"])]
         item["replacements"] = replacements[ref]
         items.append(item)
-    return _result(items, resolved)
+    items.extend(tombstones.values())
+    return _result(sorted(items, key=lambda item: item["mention_id"]), resolved)
 
 
 def product_intent_edges(db, mentions, study_id, *, registry_version=None, segment_revision=None,
@@ -445,14 +502,16 @@ def product_intent_edges(db, mentions, study_id, *, registry_version=None, segme
         filters["intent_id"] = (intent_id,)
     resolved, _, relations, reasons = _project_snapshot(
         db, mentions, study_id, registry_version=registry_version, segment_revision=segment_revision,
-        filters=filters, can_read=can_read, today=today,
+        filters=filters, can_read=can_read, today=today, require_registry=True,
     )
     if reasons:
         return _result([], resolved, reasons=reasons)
+    catalog = filters.get("catalog_version")
+    if any(scope["mapping_status"] == "unresolved" for scope in resolved["scope_mappings"]):
+        return _result([], resolved, reasons=("SCOPE_MAPPING_UNRESOLVED",))
     version = resolved["registry_version"]
     if intent_id is not None:
         definitions(db, "intent", registry_version=version, object_id=intent_id)
-    catalog = filters.get("catalog_version")
     if product_id is not None:
         if not db.execute(
             """SELECT 1 FROM m06_product product JOIN m06_registry registry USING (registry_version)
@@ -492,7 +551,4 @@ def product_intent_edges(db, mentions, study_id, *, registry_version=None, segme
         refs = item["evidence_refs"]
         item["evidence_refs"] = [refs[key] for key in sorted(refs)]
         rows.append(item)
-    reasons = ("SCOPE_MAPPING_UNRESOLVED",) if not rows and filters.get("scope_id") and any(
-        scope["mapping_status"] == "unresolved" for scope in resolved["scope_mappings"]
-    ) else ()
-    return _result(rows, resolved, reasons=reasons)
+    return _result(rows, resolved)

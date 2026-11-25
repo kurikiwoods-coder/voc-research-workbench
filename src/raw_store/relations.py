@@ -143,13 +143,19 @@ class RelationStore:
                 db, registry_version=registry_version, task_id=task_id, intent_id=intent_id, role=role, **filters,
             )
 
-    def _project_query(self, query, study, mode, versions, filters, **selection):
+    def _project_query(self, query, study, mode, versions, filters, *, audit_tombstones=False, **selection):
         if mode not in {"formal", "engineering", "synthetic"}:
             raise ValueError("关系浏览模式无效。")
         with self._transaction(study) as (db, access):
             can_read = None
             if not access.permits("read", study, entire_project=True):
                 can_read = lambda revision, mention, evidence: access.permits("read", study, (revision, mention, evidence))
+            if audit_tombstones and access.permits("audit", study):
+                def can_audit(revision, mention, evidence):
+                    reference = (revision, mention, evidence)
+                    return all(access.permits(operation, study, reference) for operation in ("read", "audit"))
+
+                selection["can_audit"] = can_audit
             return query(db, self.mentions, study, **versions, **selection, filters={**(filters or {}), "mode": mode},
                          can_read=can_read, today=access.at.date().isoformat())
 
@@ -166,7 +172,7 @@ class RelationStore:
         return self._project_query(
             relation_queries.project_mentions, study_id, mode,
             {"registry_version": registry_version, "segment_revision": segment_revision},
-            filters, mention_id=mention_id,
+            filters, mention_id=mention_id, audit_tombstones=True,
         )
 
     def read_evidence(self, study_id, revision, mention_id, evidence_id):

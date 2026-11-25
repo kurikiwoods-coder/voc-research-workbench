@@ -13,7 +13,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints
 
 from src.dashboard.api_setup import body
 from src.raw_store.store import Busy, Conflict, now
@@ -74,6 +74,7 @@ class RelationRoute(APIRoute):
 IDENTIFIER = r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$"
 Id = Annotated[str, Field(pattern=IDENTIFIER)]
 PathId = Annotated[str, Path(pattern=IDENTIFIER)]
+SourceLabel = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=128, pattern=r"^[^\p{Cc}]+$")]
 Revision = Annotated[int, Field(gt=0, le=2**53 - 1)]
 Mode = Literal["engineering", "synthetic", "formal"]
 TaskStatus = Literal["candidate", "confirmed", "rejected", "merged", "retired"]
@@ -121,7 +122,7 @@ class ProjectFilters(PageQuery):
     mapping_revision: Revision | None = None
     catalog_version: Id | None = None
     batch_id: tuple[UUID, ...] = Field(default=(), max_length=20)
-    source: tuple[Id, ...] = Field(default=(), max_length=20)
+    source: tuple[SourceLabel, ...] = Field(default=(), max_length=20)
     time_field: Literal["published_at", "collected_at"] = "published_at"
     from_: AwareDatetime | date | None = Field(default=None, alias="from")
     to: AwareDatetime | date | None = None

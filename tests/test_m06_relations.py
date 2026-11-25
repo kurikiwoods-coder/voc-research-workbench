@@ -1,9 +1,15 @@
 """C4 definition, grant and historical protection checks on synthetic data."""
 
 from dataclasses import replace
+from hashlib import sha256
 import unittest
 
+from fastapi.testclient import TestClient
+
+import test_corpus as corpus_fixtures
 import test_m06_relations_transactions as fixtures
+from src.dashboard.app import create_app
+from src.raw_store.mentions import EvidenceInterval, MentionStore
 from src.raw_store.relation_registry import protect_published_products
 from src.raw_store.relations import PublishedProductRef, RelationStore
 from src.raw_store.store import Conflict
@@ -115,6 +121,47 @@ class RelationTests(unittest.TestCase):
             self.store.read_evidence(self.study, 1, mention, evidence)
         self.fixture.grants[:] = [exact]
         self.assertEqual(self.store.read_evidence(self.study, 1, mention, evidence), same)
+
+    def test_http_source_filter_accepts_exact_english_and_chinese_source_labels(self):
+        self.fixture.publish()
+        corpus = self.fixture.case.case
+        study, scope = corpus.project()
+        sources = ("论坛", "社区", "forum")
+        drafts = []
+        for number, source in enumerate(sources, 1):
+            text = f"合成公开原话 {number}"
+            row = [text, source, f"https://synthetic.invalid/source/{number}", *corpus_fixtures.ROW[3:]]
+            _, [record] = corpus.import_rows([row], study=study, scope=scope)
+            corpus.app.state.corpus.review(
+                study, record, decision="verified", role="user_quote", reason="合成资料人工核验",
+                basis="核对合成来源和许可", retention_until=corpus.retain,
+                license_status="authorized", license_evidence_ref="local:synthetic-license",
+            )
+            interval = EvidenceInterval(record, sha256(text.encode()).hexdigest(), 0, len(text))
+            drafts.append(self.fixture.case.member(f"source-{number}", interval, segment_no=number))
+        mentions = MentionStore(self.fixture.db, authorize=lambda target, _: fixtures.ACTOR if target == study else None)
+        mentions.publish_revision(study, key="synthetic-source-labels", expected_revision=0,
+                                  rule_version="synthetic-v1", members=drafts)
+        grant = replace(self.fixture.grants[1], study_id=study)
+        app = create_app(corpus.settings, relation_grants=lambda: (grant,))
+        path = f"/api/studies/{study}/mentions"
+        with TestClient(app, base_url=str(corpus.client.base_url), client=("127.0.0.1", 29205)) as client:
+            for labels in (("论坛",), ("论坛", "社区"), ("论坛", "forum")):
+                with self.subTest(labels=labels):
+                    reply = client.get(path, params={"source": labels})
+                    self.assertEqual(reply.status_code, 200, reply.text)
+                    self.assertEqual(reply.headers["Cache-Control"], "no-store")
+                    payload = reply.json()
+                    self.assertCountEqual(payload["filter_echo"]["source"], labels)
+                    self.assertCountEqual(
+                        [ref["source"] for row in payload["items"] for ref in row["evidence_refs"]], labels,
+                    )
+            invalid = "synthetic-control" + chr(1) + "论坛"
+            for label in (invalid, " " * 2, "论坛" * 65):
+                reply = client.get(path, params={"source": label})
+                self.assertEqual(reply.status_code, 422, reply.text)
+                self.assertEqual(reply.json()["code"], "INVALID_REQUEST")
+                self.assertNotIn(label, reply.text)
 
     def test_protected_product_ancestor_and_historical_registry_are_immutable(self):
         db_store = self.fixture.db
