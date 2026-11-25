@@ -73,11 +73,12 @@ class PackyCodePreflightTests(unittest.TestCase):
 
     def run_probe(
         self, transport, store=None, key=KEY, vault_revision=VAULT_REVISION,
-        recheck_vault=None, reconcile=console_acknowledgement,
+        recheck_vault=None, reconcile=console_acknowledgement, resume_second=False,
     ):
         return run_preflight(
             store or self.store, key, self.proof, vault_revision=vault_revision,
-            recheck_vault=recheck_vault, reconcile=reconcile, transport=transport,
+            recheck_vault=recheck_vault, reconcile=reconcile, resume_second=resume_second,
+            transport=transport,
         )
 
     def assert_consumed(self, *, store=None, key=KEY, vault_revision=VAULT_REVISION):
@@ -384,6 +385,126 @@ class PackyCodePreflightTests(unittest.TestCase):
         self.assertEqual(report["posts_reserved"], 1)
         self.assertEqual(report["input_tokens"], 17)
         self.assert_consumed()
+
+    def test_resume_uses_one_existing_first_shard_and_appends_a_second_receipt(self):
+        transport = Mock(side_effect=lambda _method, _url, payload, _headers: response(payload))
+        first = self.run_probe(transport, reconcile=None)
+        self.assertEqual(first["stop_reason"], "first_shard_billing_unverified")
+        transport.assert_called_once()
+        prior_rows = self.store.rows("SELECT * FROM evidence ORDER BY id")
+        prior_ledger = self.store.ledger(first["run_id"])
+        reopened = self.fixture_store("main")
+
+        invalid = Mock(return_value=("0.00", "2.00"))
+        try:
+            blocked = self.run_probe(transport, store=reopened, reconcile=invalid, resume_second=True)
+        except (Denied, Conflict):
+            pass
+        else:
+            self.assertEqual(blocked["status"], "BLOCKED")
+        invalid.assert_called_once()
+        transport.assert_called_once()
+        self.assertEqual(reopened.ledger(first["run_id"]), prior_ledger)
+
+        reconciled = Mock(side_effect=console_acknowledgement)
+        report = self.run_probe(transport, store=reopened, reconcile=reconciled, resume_second=True)
+        self.assertEqual(report["status"], "PASS")
+        self.assertEqual(report["run_id"], first["run_id"])
+        self.assertEqual(report["posts_reserved"], 2)
+        self.assertEqual((report["input_tokens"], report["output_tokens"]), (34, 6))
+        self.assertEqual(set(report["answers"]), set(questions()))
+        self.assertEqual(transport.call_count, 2)
+        method, url, payload, headers = transport.call_args.args
+        self.assertEqual((method, url, payload["state"]), ("POST", ENDPOINT, SYNTHETIC_STATE))
+        self.assertEqual(payload["questions"], split(questions())[1])
+        reconciled.assert_called_once_with(first["shards"][0])
+        self.assertEqual(reopened.ledger(first["run_id"])[0], prior_ledger[0])
+        self.assertNotEqual(headers["Idempotency-Key"], prior_ledger[0]["request_key"])
+        rows = reopened.rows("SELECT * FROM evidence ORDER BY id")
+        self.assertEqual(rows[:len(prior_rows)], prior_rows)
+        self.assertGreater(len(rows), len(prior_rows))
+
+        try:
+            self.run_probe(transport, store=reopened, resume_second=True)
+        except (Denied, Conflict):
+            pass
+        self.assertEqual(transport.call_count, 2)
+
+    def test_resume_requires_eligible_state_intact_ledger_and_original_account_proof(self):
+        transport = Mock(side_effect=AssertionError("Ineligible resume reached transport"))
+        recoverable = self.fixture_store("recoverable")
+        metered = Mock(side_effect=lambda _method, _url, payload, _headers: response(payload))
+        self.run_probe(
+            metered, store=recoverable, reconcile=None,
+        )
+        inconsistent_ledger = self.fixture_store("inconsistent-ledger")
+        first = self.run_probe(metered, store=inconsistent_ledger, reconcile=None)
+        with inconsistent_ledger.db() as connection:
+            connection.execute("UPDATE shards SET tokens=100 WHERE run_id=? AND shard_no=1", (first["run_id"],))
+        invalid_response = self.fixture_store("invalid-response")
+        self.run_probe(Mock(return_value=Response(403, {})), store=invalid_response)
+        cases = (
+            ("empty", self.store, self.document, KEY, VAULT_REVISION),
+            ("non-billing failure", invalid_response, self.document, KEY, VAULT_REVISION),
+            ("inconsistent first usage", inconsistent_ledger, self.document, KEY, VAULT_REVISION),
+            ("changed proof", recoverable, self.document | {"evidence_reference": "local:other"}, KEY, VAULT_REVISION),
+            ("changed key", recoverable, self.document, "synthetic-other-credential", VAULT_REVISION),
+            ("changed vault", recoverable, self.document | {"vault_sha256": "b" * 64}, KEY, "b" * 64),
+        )
+        for label, store, proof, key, revision in cases:
+            with self.subTest(case=label):
+                self.write_evidence(proof)
+                reconcile = Mock(side_effect=AssertionError("Ineligible resume requested reconciliation"))
+                try:
+                    report = self.run_probe(
+                        transport, store=store, key=key, vault_revision=revision,
+                        reconcile=reconcile, resume_second=True,
+                    )
+                except (Denied, Conflict):
+                    pass
+                else:
+                    self.assertNotEqual(report["status"], "PASS")
+                reconcile.assert_not_called()
+                transport.assert_not_called()
+        self.assertEqual(self.store.rows("SELECT id FROM runs"), [])
+
+    def test_concurrent_resume_and_interrupted_second_shard_never_retry(self):
+        first_transport = Mock(side_effect=lambda _method, _url, payload, _headers: response(payload))
+        first = self.run_probe(first_transport, reconcile=None)
+        entered = Event()
+        release = Event()
+
+        def interrupt_post(_method, _url, payload, _headers):
+            self.assertEqual(payload["questions"], split(questions())[1])
+            entered.set()
+            if not release.wait(5):
+                raise AssertionError("Concurrent test did not release the second request")
+            raise KeyboardInterrupt
+
+        second_transport = Mock(side_effect=interrupt_post)
+        extra_transport = Mock(side_effect=AssertionError("Reserved second shard must not be retried"))
+        reopened = self.fixture_store("main")
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            resumed = executor.submit(self.run_probe, second_transport, resume_second=True)
+            try:
+                self.assertTrue(entered.wait(5))
+                try:
+                    self.run_probe(extra_transport, store=reopened, resume_second=True)
+                except (Busy, Conflict, Denied):
+                    pass
+                extra_transport.assert_not_called()
+            finally:
+                release.set()
+            with self.assertRaises(KeyboardInterrupt):
+                resumed.result(timeout=5)
+        first_transport.assert_called_once()
+        second_transport.assert_called_once()
+        self.assertEqual([row["state"] for row in reopened.ledger(first["run_id"])], ["received", "sending"])
+        try:
+            self.run_probe(extra_transport, store=reopened, resume_second=True)
+        except (Denied, Conflict):
+            pass
+        extra_transport.assert_not_called()
 
     def test_concurrent_triggers_share_the_same_one_shot_limit(self):
         entered = Event()

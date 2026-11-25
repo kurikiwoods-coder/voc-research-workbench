@@ -4,6 +4,8 @@
 
 负责人批准一次固定 8+3 的 PackyCode 合成契约试验，最多两次 POST，使用独立、不可重置的小额令牌和 100,000 输入 Token 本地预算目标。首片通过后须核对扣费和余额再发第二片。独立 SQLite 保存预约、分片证据及回执。正式 G-1 为 **BLOCKED**，M06 继续冻结，M07 工程通过，M08 及 M12 未启动。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
 
+首片 HTTP 200，返回固定模型、三类完整响应和 488 输入 / 162 输出 Token，单笔实扣 **$0.000144**。合成契约为 **PARTIAL**。负责人追加授权同一账本续接第二片，工程入口和专项回归已完成。发出原定 3 题前仍需核对同一测试令牌当前余额。[验收证据](docs/evidence/g1-rb-p/README.md#第二片续接记录)
+
 ## G-1-R-A PackyCode 工程接入
 
 从开发分支 `a7b1de491c85fb879bed4b2ce25f9f3164add6a0` 接续。M02 增加独立 PackyCode 候选通道，固定 `typesafe-officially`、`jev-1.14.0` 和 SystemOne。沿用分片账本和 DPAPI，使用当前账户独立审查。报价估算、真实扣费与余额分别登记。[接入及取证](docs/packycode.md) · [工程证据](docs/evidence/g1-ra/README.md)

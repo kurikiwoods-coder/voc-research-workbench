@@ -9,7 +9,7 @@ PackyCode 是 M02 中独立的 Jev 候选供应商。当前记录为 `PACKYCODE_
 | 项目 | 公开证据及实测范围 |
 | --- | --- |
 | 地址、分组、模型 | 通用生产网关为 `https://cf.api.fan`。分组说明和公开模型目录列出 `typesafe-officially`、`jev-1.14.0` 和 `POST /v1/systemone`。本地固定完整端点 `https://cf.api.fan/v1/systemone`。[网关说明](https://docs.packyapi.com/docs/register/6-cli.html) · [分组说明](https://docs.packyapi.com/docs/token/2-group.html) · [公开模型元数据](https://www.packyapi.ai/api/pricing) |
-| 认证及请求 | 连接器采用 `Authorization: Bearer`，发送固定 `model`、`state` 和 `questions`，沿用 Choice、Score、Noul 和 8+3 分片。上游 OpenAPI 描述了相应认证、类型和输入输出用量字段。PackyCode 经该账户接受同样认证、返回全部字段及处理幂等键的行为仍待实测。[TypeSafe OpenAPI](https://api.typesafe.ai/openapi.json) |
+| 认证及请求 | 连接器采用 `Authorization: Bearer`，发送固定 `model`、`state` 和 `questions`，沿用 Choice、Score、Noul 和 8+3 分片。该账户首片 HTTP 200，实报模型为 `jev-1.14.0`，三类字段完整。客户端每片只预约并发送一次，网关如何处理幂等键仍未核实。[TypeSafe OpenAPI](https://api.typesafe.ai/openapi.json) |
 | 公开计费参数 | PackyCode 元数据列出模型倍率 `0.021`、输出倍率 `0`、分组倍率 `7` 和每计价单位配额 `500000`。按 New API 公开公式可复算负责人提供的候选报价，每百万输入 token **USD 0.294**，输出 **USD 0**。账户实际计价、折算、舍入、扣费和余额需单独核验。[公开模型元数据](https://www.packyapi.ai/api/pricing) · [公开平台元数据](https://www.packyapi.ai/api/status) · [计量公式](https://docs.newapi.pro/zh/docs/guide/console/settings/rate-settings#额度计算公式) |
 | 独立账户审核 | PackyCode 有公开服务条款及数据处理协议入口。需取得适用于当前账户、分组和实际上游的书面材料。TypeSafe 的组织级 ZDR 审批由 TypeSafe 单独确认，分组文字不作为账户审核依据。[服务条款](https://www.packyapi.ai/service-specific-terms) · [数据处理协议](https://www.packyapi.ai/dpa) · [TypeSafe ZDR 说明](https://help.typesafe.ai/articles/9520184411-do-you-offer-zdr) |
 
@@ -58,6 +58,11 @@ Set-Location -LiteralPath 'C:\Users\kurik\Documents\Codex\VOC Workbench 研究'
 
 4. 证据完整后运行 `.\.venv\Scripts\python.exe -m src.execution.packycode_preflight --execute --account-evidence .\runtime\packycode-preflight-account.json`。有效期用带时区的 ISO 8601 时间，以证据及凭证到期时间较早者为准。保留 `runtime/packycode-preflight` 下账本及其 SQLite 辅助文件。此授权限当前个人电脑的工作台安装，更换目录也不得重发。
 5. 首片返回后，如模型、字段和用量均通过，命令暂停，等待输入消费明细中的首片实际扣费与当前令牌余额（美元，用空格分隔）。命令用首片实报输入加第二片 65,536 Token 估算核对预算。缺项、金额不明或预计超预算时停止。第二片完成后，单独从控制台核对最终实际扣费与余额，只留存脱敏结果。
+6. 已在首片对账点以 `first_shard_billing_unverified` 停止时，先取得首片的单笔扣费和原限额令牌当前余额，再用原账户证据文件运行下列命令。用同一 Windows 用户和原凭证，保留账户材料的原始内容及有效期。命令在账本写锁内核对原回执、首片证据和预算，追加第二片预约。第二片存在任何预约即拒绝再次发送。历史回执保留，查询默认显示最新结果。
+
+   ```powershell
+   .\.venv\Scripts\python.exe -m src.execution.packycode_preflight --resume-second --account-evidence .\runtime\packycode-preflight-account.json
+   ```
 
 ## 账户材料及下一轮
 
