@@ -1,6 +1,6 @@
 # PackyCode 通道与准入准备
 
-PackyCode 是 M02 中独立的 Jev 候选供应商。当前记录为 `PACKYCODE_LIVE_CONTRACT = NOT_TESTED`、`PACKYCODE_PROVIDER_APPROVAL = PENDING`、`G1_RB = NOT_STARTED`、`G-1 = BLOCKED`。工程阶段使用隔离合成夹具，真实研究 API 调用为 0。
+PackyCode 是 M02 中独立的 Jev 候选供应商。当前记录为 `PACKYCODE_LIVE_CONTRACT = PARTIAL`（首片通过）、`PACKYCODE_PROVIDER_APPROVAL = PENDING`、`G1_RB = BLOCKED`、`G-1 = BLOCKED`。负责人授权的独立合成预检见[安全决定](decisions/packycode-synthetic-preflight.md)和[工程证据](evidence/g1-rb-p/README.md)。
 
 ## 契约及证据
 
@@ -27,12 +27,41 @@ Set-Location -LiteralPath 'C:\Users\kurik\Documents\Codex\VOC Workbench 研究'
 1. 打开 [工作台](http://127.0.0.1:8765/)，进入 **API 配置中心**，找到 **PackyCode** 卡片并核对分组、固定模型和登记端点。可从卡片打开[注册](https://www.packyapi.ai/register)及[定价](https://www.packyapi.ai/pricing)页面。
 2. 负责人在该本机卡片录入 PackyCode 密钥并保存。Windows 使用当前用户的 DPAPI 保存。轮换及删除也通过该卡片处理。密钥和未脱敏账户材料留在授权设备。
 3. 账户及通道审查完成后，经卡片导入审查 JSON 和对应附件。审查绑定当前账户。更换或删除 PackyCode 密钥会撤销原审查绑定，新密钥需重新导入审核。
-4. 连接和接口契约保留当前实际状态。工程版本的 PackyCode 真实诊断由服务端拒绝，G-1 正式批次也在发现、研究调用和持久化新批次前被拦截。
+4. 工作台原有诊断和正式批次继续执行 PackyCode 阻断。一次性合成接口预检使用下列本机命令。
+
+## 一次性合成接口预检
+
+普通 Windows PowerShell 在项目目录运行 `.\.venv\Scripts\python.exe -m src.execution.packycode_preflight` 查询独立账本。
+
+1. 在 [PackyAPI 令牌管理](https://docs.packyapi.com/docs/register/4-token.html)核对本机凭证对应独立测试令牌，并核对分组、固定模型、有效期、金额限额及余额。本轮使用最多 2 美元的一次性限额令牌，额度关闭无限及自动重置。100,000 输入 Token 是本地预算目标。网关对单次在途扣费或上游重试的处理尚未获得证明。
+2. 记录可追溯的材料出处。在工作台普通用户会话计算默认 DPAPI 凭证文件密文的 SHA-256，执行 `(Get-FileHash -LiteralPath .\runtime\credentials\local-api.json -Algorithm SHA256).Hash.ToLowerInvariant()`。使用自定义数据目录时，将 `$env:VOC_DATA_DIR` 指向工作台实际目录，并用该目录下的凭证文件计算哈希。
+3. 在 Git 忽略的本机目录（如 `runtime`）准备 JSON。用控制台实证填写额度、余额及重置字段。三个许可字段仅在负责人核实后填写 `true`。
+
+   ```json
+   {
+     "provider": "packycode",
+     "group": "typesafe-officially",
+     "model": "jev-1.14.0",
+     "endpoint": "https://cf.api.fan/v1/systemone",
+     "protocol": "SystemOne",
+     "synthetic_use_permitted": false,
+     "current_key_entitled": false,
+     "quota_available": false,
+     "token_quota_usd": "",
+     "token_remaining_usd": "",
+     "quota_resets": null,
+     "evidence_reference": "",
+     "expires_at": "",
+     "vault_sha256": ""
+   }
+   ```
+
+4. 证据完整后运行 `.\.venv\Scripts\python.exe -m src.execution.packycode_preflight --execute --account-evidence .\runtime\packycode-preflight-account.json`。有效期用带时区的 ISO 8601 时间，以证据及凭证到期时间较早者为准。保留 `runtime/packycode-preflight` 下账本及其 SQLite 辅助文件。此授权限当前个人电脑的工作台安装，更换目录也不得重发。
+5. 首片返回后，如模型、字段和用量均通过，命令暂停，等待输入消费明细中的首片实际扣费与当前令牌余额（美元，用空格分隔）。命令用首片实报输入加第二片 65,536 Token 估算核对预算。缺项、金额不明或预计超预算时停止。第二片完成后，单独从控制台核对最终实际扣费与余额，只留存脱敏结果。
 
 ## 账户材料及下一轮
 
 - 准备适用当前组织和账户的条款、证据出处和审查日期。材料应能核对请求及响应留存、训练用途、删除机制、处理地区、分处理商、公开语料处理授权、实际转发的上游，以及组织级 ZDR 的适用结果。
 - 审查记录包含审核人、时间、地区、条款引用、上游引用、供应商、分组、固定模型、完整端点、公开语料授权、审核项目记录及附件 SHA-256。现行接口要求保留审查附件并与当前密钥绑定。可按[连接性文档](connectivity.md)查看共用字段。
-- 负责人补充授权限一次小额合成真实预检。单次预检使用 8+3 问题分片，对登记端点发送两次 POST，累计最多 **100,000 输入 token**，执行后停止。输入仅使用独立合成文本，排除真实原话、内部资料、CX 数据和个人信息。当前账户级审核缺失，本机密钥尚未配置，真实调用门禁仍关闭，预检输入用量为 0。
-- 放行后在工作台受控入口核对账户、端点、用量上限和固定模型，再记录两片实测响应、问题 ID 对齐、合并结果以及 Choice、Score、Noul 的完整字段和分布。单独登记实际用量、扣费、余额、Schema 缺项和正式准入缺口。限流、传输中断或扣费不明时停止发送并核对账户账单，保留已有证据。
+- 本机 DPAPI 凭证与负责人截图中的限额测试令牌掩码一致。实际接口结果见[验收证据](evidence/g1-rb-p/README.md)。
 - G-1-R-B 需记录固定模型、按真实阶段要求完成的 8+3 分片、三类实际响应、各片用量和经账户证据核对的余额或扣费。保留原 C0-1 至 C0-6 同批标准及 G-1 正式放行条件。单次合成预检用于连接取证，正式研究数据和流程由下一轮授权及准入条件控制。

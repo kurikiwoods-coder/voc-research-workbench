@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现，G-1-R-B 为 **NOT_STARTED**，M08–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [开发状态](DEVELOPMENT_STATUS.md)
+M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 真实接口 **PARTIAL**，首片通过、第二片待对账。G-1-R-B 为 **BLOCKED**。M08–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md)
 
 [ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 35 项，待推进 44 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 

@@ -1,5 +1,9 @@
 # 开发交接
 
+## G-1-R-B-P 接续
+
+在个人电脑普通 Windows 用户会话运行 `python -m src.execution.packycode_preflight` 查询合成回执。按[本机操作说明](docs/packycode.md#一次性合成接口预检)核对限额令牌，首片通过后对账并确认本地预算。保留现有账本和已消费的一次性授权。正式 G-1 的供应商审核及 C0-1 至 C0-6 同批验收仍适用。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
+
 ## G-1-R-A 接续
 
 本机工作台打开「API 配置」，在 PackyCode 卡片查看端点、分组、固定模型、凭证、审查和计费状态。负责人可在普通 Windows 用户会话通过该卡录入独立短期凭证。账户审核材料先留本机，绑定到当前凭证后再导入。轮换或删除凭证会清除关联审批。[配置、供应商证据和后续预检](docs/packycode.md)
