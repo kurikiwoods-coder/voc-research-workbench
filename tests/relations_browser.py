@@ -234,7 +234,6 @@ def check_scope_availability(page, base, headers, output, directory):
     second = response.json()
     second_scope = second["scope"]["scope_id"]
     expect(page.request.post(f"{study_url}/scopes/{second_scope}/freeze", headers=headers)).to_be_ok()
-    expect(page.request.post(f"{study_url}/select", headers=headers)).to_be_ok()
     with (Path(directory) / GRANT_FILE).open("a", encoding="ascii") as grants:
         grants.write("\n" + study)
     store = Store(Path(directory))
@@ -279,6 +278,7 @@ def check_scope_availability(page, base, headers, output, directory):
     }
 
     page.goto(base + "/#relations")
+    page.get_by_label("研究项目", exact=True).select_option(study)
     unavailable = page.get_by_text("冻结范围的产品映射未解析", exact=True)
     empty = page.get_by_text("暂无符合条件的关系。", exact=True)
     next_button = page.locator('[data-relation-action="next"]')
