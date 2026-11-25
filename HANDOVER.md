@@ -1,6 +1,15 @@
 # 开发交接
 
-## M06-C2-V 验收及 C3 交接
+## M06-C3 交付及 C4 接入
+
+先核对 `codex/p0-0-connectivity` 的远端 HEAD、草稿 PR #1、对应 CI 和 [C3 验收](docs/evidence/m06-c3/README.md)。C3 源码基线为 `43c72026e1776f6b78b78beeb3d87b7126016924`，工程验收、Windows 11 实机和部署门禁均已通过。M06-C4 = **NOT_STARTED**，工程前置已验证，等待负责人单独授权。G-1 = **BLOCKED**，专案 v2.2 的 27 页原 PDF 待补。
+
+- `MentionStore` 在原始层提供 `publish_revision`、`review_products`、`read_evidence`、`read_revision`。服务依赖可信的项目权限回调，默认拒绝。C4 的 HTTP 与 M11 正式审核入口须核验真实授权。
+- 关系固定引用 `study_id`、`segment_revision`、`mention_id` 和 `evidence_id`。每条 E 绑定原始 `record_id`、冻结 `scope_id`、`raw_sha256` 和 Unicode 半开码点区间。产品边再绑定 `product_category_id`、`catalog_version`、`mapping_revision` 与逐边 `decision_seq`。发生、证据、文本重复组和产品边各有独立键。
+- C4 组合命令由外层拥有主库连接、`BEGIN IMMEDIATE`、幂等键、版次检查和整项提交／回滚。C3 公共写方法已各自拥有事务。组合接入须复用同连接辅助逻辑，在 C2 `qualified_write_inputs` 范围内完成依赖写并立即提交。依赖从精确成员、原帖、跨句上下文及逐边证据推导。遇 UTC 跨日、旧 WAL 快照或失败提交，整项回滚后在新事务重算。
+- C3 投影对历史读取也执行当前资格。重新授权后的产品边需要新的人工确认。完整三层关系命令、API 与六角色授权联验由 C4 验收。正式统计分母、重算及报告发布依 C5、M12、M13 和 G-1 的原门槛。[冻结实施计划](docs/architecture/m06-implementation-plan.md)
+
+## 历史记录 · M06-C2-V 验收及 C3 交接
 
 M06-C2 = **ENGINEERING_PASS**。[三项实现 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45532356340) 均通过。C2 实现为 `965a4b8`。现有 Python/GET 合同及 SQLite v7 保持兼容。C2 在 Linux 已执行 190 项 Python、2 项 Node、8 个 Chromium 场景、三次冷启动及四份归档。桌面端在 `6ef5b2e` 完成独立验证，M06-C2-V、Windows 11 实机及部署门禁均为 **PASS**。四项独立反例和四项事务探针均通过。普通登录用户 DPAPI、三类路径、同库恢复及 SQLite v7 迁移均通过。测试只用隔离夹具，真实研究 API 调用 0。[Windows 11 验收证据](docs/evidence/m06-c2/windows11-closeout.md)
 

@@ -56,6 +56,16 @@ M06-C2 = **ENGINEERING_PASS**。实现提交 `965a4b8` 的[三平台 CI](https:/
 | CAT-8、CAT-10 的资格前提；B04、B08、B09、B13、B14 | 核对全部传入原话及上下文、拒绝已撤销依赖，读取/错误导出/暂存回查已检查 | M/E、版次发行、编码回执、历史报告及正式分母仍待后续阶段。逐案见[C2 证据](evidence/m06-c2/README.md) |
 | Windows 11 平台 | 基线 `6ef5b2e` 的 M06-C2-V、实机和部署门禁均为 **PASS**。四项独立撤销及到期反例、四项事务探针、全量回归与平台专项均通过。[Windows 11 验收证据](evidence/m06-c2/windows11-closeout.md) | Windows Server 2022 CI 单独记录。正式研究 G-1 BLOCKED，C3 NOT_STARTED |
 
+## M06-C3 工程核对
+
+| 对应条款 | C3 实现及实测证据 | 保留验收 |
+|---|---|---|
+| RAW、CAT-6、CAT-8、§6.6、§9.3 | 项目内稳定 M/E，原话码点区间与摘要、独立与转载身份、分拆与合并谱系、历史资格回查。 | 正式语料及逐源许可仍依 G-1 标准。 |
+| BIZ-SCOPE、CAT-6/7/8 | 精确冻结范围、目录版及映射版，产品关系以逐条证据及可信人工确认生效。明确非产品空集与未解析范围分别记录。 | C4 双向查询与组合审核，完整 CAT 及正式准确性按原矩阵。 |
+| SOURCE-POLICY、PRIVACY、CAT-10 前置 | 同写事务内复核直接及上下文依赖，整个命令原子写入。旧版读取、批量失败、最终提交失败及重试均有反例。 | 编码回执、正式分母、报告再核及外发保持所属阶段的验收门槛。 |
+
+源码基线 `43c7202`。M06-C3 = **ENGINEERING_PASS**，WINDOWS_11_REAL_MACHINE = **PASS**，WINDOWS_11_DEPLOYMENT_GATE = **PASS**。独立复审及 CI 结果见 [C3 证据](evidence/m06-c3/README.md)。G-1 = **BLOCKED**。
+
 ## C1 历史 Windows 11 部署工程验收
 
 2026-11-25 在公司 Windows 11 Enterprise 25H2 x64 实机验收 C1 代码基线 `29dd1ffec595dccb3fad08b1194f5151b12decda`。实机和 Windows 11 部署门禁均为 **PASS**。证据覆盖原版启动器、三次空库冷启动、DPAPI 凭证生命周期、完整回归及 SQLite v7 迁移恢复。真实研究 API 调用 0 次。G-1 仍为 **BLOCKED**，正式语料、许可、审计及研究验收仍按矩阵既有条款核定。[Windows 11 实机证据](evidence/m06-c1/windows11-closeout.md)

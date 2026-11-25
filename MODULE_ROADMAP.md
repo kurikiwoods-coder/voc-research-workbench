@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-B-F 架构审核 PASS，负责人批准五项政策，架构 FROZEN。M06-C1 落地 SQLite v7，C2 为 **ENGINEERING_PASS**，已交付实时资格与同事务复核。C2 独立复验、Windows 11 实机及部署门禁均为 **PASS**。C3 NOT_STARTED，工程前置条件满足，等待负责人单独授权。[验收证据](docs/evidence/m06-c2/windows11-closeout.md) · [开发状态](DEVELOPMENT_STATUS.md)
+M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-B-F 架构审核 PASS，负责人批准五项政策，架构 FROZEN。M06-C1 落地 SQLite v7，C2 为 **ENGINEERING_PASS**，已交付实时资格与同事务复核。C3 为 **ENGINEERING_PASS**，当前版本 Windows 11 实机及部署门禁为 **PASS**。C4 **NOT_STARTED**，等待负责人单独授权。[C3 验收证据](docs/evidence/m06-c3/README.md) · [开发状态](DEVELOPMENT_STATUS.md)
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
@@ -104,14 +104,14 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 |---|---|
 | PDT 与矩阵编号 | §6、§6.6、§6.9、§9.3；C0-6、CAT-1～CAT-10（CAT-4 协作）、J-14 接口 |
 | 模块职责 | 维护 Product Category、Task Category、Intent 以及证据驱动的双向关系。 |
-| 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。M06-B-F 架构已冻结。负责人已授权 C1 和 C2。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
-| 工程开发 | M06-B-F 审核 PASS，审批 APPROVED，架构 FROZEN。C1 为 ENGINEERING_PASS，涵盖数据库迁移、关系约束及本机与实施提交的远端回归。C2 提供调用方写锁内的资格复核和 UTC 日界回滚。[六份设计文档](docs/architecture/m06-design.md) |
-| 工程测试 | C0-6 冒烟和 C1 数据库断言分别取证。C2 Linux Python 190/190、Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4。Windows 11 同项全部通过，另有独立反例与事务探针各 4/4，DPAPI、路径启动和 v7 迁移通过。正式关系 API 待 C4。[Linux 工程验收](docs/evidence/m06-c2/README.md) · [Windows 11 验收](docs/evidence/m06-c2/windows11-closeout.md) |
+| 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。M06-B-F 架构已冻结。负责人已授权 C1–C3。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
+| 工程开发 | M06-B-F 审核 PASS，审批 APPROVED，架构 FROZEN。C1 为 ENGINEERING_PASS，涵盖 v7 数据库迁移与关系约束。C2 提供调用方写锁内的资格复核与 UTC 日界回滚。C3 交付稳定发生和证据、区间和拆并谱系、精确冻结映射、逐边人工审核。[六份设计文档](docs/architecture/m06-design.md) |
+| 工程测试 | C3 Windows 11 Python 215/215（新增 C3 25 项）、Node 2/2、Chromium 8/8、冷启动 3/3、启动器 6/6、归档 4/4。DPAPI、v7 迁移恢复及独立复审通过。源码 CI 三项通过。正式关系 API 待 C4。[C3 验收](docs/evidence/m06-c3/README.md) · [C2 历史 Windows 11 验收](docs/evidence/m06-c2/windows11-closeout.md) |
 | 正式业务验收 | CAT 系列待验。 |
 | 数据库及 API | 已有产品品类、任务大类、意图、证据-品类和统计桶 Schema。SQLite 007 新增 20 张关系与审计表。双向查找和发布事务接口归后续阶段。 |
 | 前端页面 | 正式品类、任务、意图双向页面未实现。 |
 | 验收标准 | 已确认意图唯一主任务大类。产品关系由合格原话证据得出。仅 published_classified 的 distinct mention_id 入分母，主大类合计精确对账。 |
-| 最近相关提交 | C2 实现 `965a4b8`，M06-B 审核基线 `2651d66`，架构裁定见[负责人批准记录](docs/architecture/m06-owner-approval.md)。 |
+| 最近相关提交 | C3 验收源码 `43c7202`，C2 实现 `965a4b8`，M06-B 审核基线 `2651d66`。[C3 验收证据](docs/evidence/m06-c3/README.md) · [负责人批准记录](docs/architecture/m06-owner-approval.md) |
 | 测试结果与证据 | C0-6 合成冒烟为 2 个产品品类、3 个任务大类、30 个意图、两次跨品类命中。C1 在 Windows 10 实机通过 Python 173/173（新增 33 项）及既有回归，见[迁移与工程验收证据](docs/evidence/m06-c1/README.md)。 |
 | 剩余问题 | 40 例设计推演可回放。C2 当前记录级许可竞态已有工程实证。六角色跨项目授权、完整资格规模及正式业务验收留在所属阶段。专案 v2.2 原 PDF 待补。[分阶段计划](docs/architecture/m06-implementation-plan.md) · [专项矩阵](docs/architecture/m06-test-plan.md) |
 

@@ -1,6 +1,12 @@
 # VOC Research Workbench 开发状态
 
-## M06-C2-V 独立验证与 Windows 11 实机验收
+## M06-C3 发生、区间、证据及产品边
+
+2026-11-25 自 `e64141b76f78e17508133de0b91510d80e9daa81` 实施 C3。源码验收基线为 `43c72026e1776f6b78b78beeb3d87b7126016924`。SQLite v7 的 Python 服务可登记稳定发生和证据、封存片段版和拆并谱系、消费冻结范围和精确目录映射，并保存逐边人工审核与撤销。读和写均按当前 M05 资格校验实际直接证据与上下文。G-1 = **BLOCKED**，M06-C4 = **NOT_STARTED**，PRE_M06_DEVELOPMENT_GATE = **PASS**，真实研究 API 调用 0 次。[C3 实机及独立复审证据](docs/evidence/m06-c3/README.md)
+
+M06-C3 = **ENGINEERING_PASS**，WINDOWS_11_REAL_MACHINE = **PASS**，WINDOWS_11_DEPLOYMENT_GATE = **PASS**。最终功能源码在原生 Windows 11 通过全量 Python 215/215、Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4、DPAPI、三类路径共 6 次启动及 SQLite v7 迁移和恢复。独立探针与同源副本复验通过，C3 未解决 P0/P1 为 0。[源码基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45544903551)
+
+## 历史记录 · M06-C2-V 独立验证与 Windows 11 实机验收
 
 2026-11-25，开发分支快进至实测基线 `6ef5b2e2d9a269dc072fa2db1d8296aae38e2e93`。M06-C2-V、WINDOWS_11_REAL_MACHINE、WINDOWS_11_DEPLOYMENT_GATE 均为 **PASS**。Windows 11 全量 Python 190/190，C2 专项 17/17 另行复跑，独立合成反例及事务探针各 4/4。Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4、DPAPI、三类路径启动与同库重启、SQLite v7 迁移恢复均通过。新增 P0/P1 为 0，真实研究 API 调用 0 次。PRE_M06_DEVELOPMENT_GATE = PASS。G-1 = BLOCKED。C3 = NOT_STARTED，工程前置条件满足，等待负责人单独授权。[Windows 11 验收证据](docs/evidence/m06-c2/windows11-closeout.md)
 
