@@ -19,6 +19,13 @@ from src.raw_store.studies import StudyStore
 
 PAGE_SIZE = 20
 ROLES = {"user_quote", "background", "internal", "synthetic"}
+SOURCE_ROWS = f"""
+    SELECT {ROW_COLUMNS}, r.originals_json, r.issues_json, r.status AS import_status,
+           b.batch_id, b.study_id, b.scope_id, 'v' || s.version_no AS scope_version,
+           b.file_id, f.filename, f.kind, f.sha256 AS file_sha256, b.sheet_name,
+           b.created_at AS collected_at, snap.raw_sha256, v.dedupe_group
+    {ROW_SOURCE} WHERE b.study_id=:study_id
+"""
 
 
 def checksum(text):
@@ -102,11 +109,7 @@ class CorpusStore:
     @staticmethod
     def source_row(db, study_id, record_id, today):
         row = db.execute(
-            f"""SELECT {ROW_COLUMNS}, r.originals_json, r.issues_json, r.status AS import_status,
-                       b.batch_id, b.study_id, b.scope_id, 'v' || s.version_no AS scope_version,
-                       b.file_id, f.filename, f.kind, f.sha256 AS file_sha256, b.sheet_name,
-                       b.created_at AS collected_at, snap.raw_sha256, v.dedupe_group
-                {ROW_SOURCE} WHERE b.study_id=:study_id AND r.record_id=:record_id AND {CANDIDATE}""",
+            f"{SOURCE_ROWS} AND r.record_id=:record_id AND {CANDIDATE}",
             {"study_id": study_id, "record_id": record_id, "today": today},
         ).fetchone()
         if row is None:
@@ -121,6 +124,9 @@ class CorpusStore:
             f"""SELECT {ROW_COLUMNS} {ROW_SOURCE}
                 WHERE b.study_id=:study_id AND v.dedupe_group=:dedupe_group
                     AND v.decision='verified' AND v.role='user_quote'
+                    AND r.record_id IN (
+                        SELECT record_id FROM corpus_reviews WHERE dedupe_group=:dedupe_group
+                    )
                 ORDER BY snap.created_at, snap.record_id""",
             {"study_id": row["study_id"], "dedupe_group": row["dedupe_group"], "today": today},
         )
@@ -181,6 +187,32 @@ class CorpusStore:
         if not qualification(row, today)["engineering_eligible"]:
             raise Conflict("这条语料当前不符合本机原话处理资格。")
         return row
+
+    def statistics_inputs(self, db, study_id, record_ids, *, today, batch=True):
+        """Use the M05 policy in a caller snapshot, projecting only statistical inputs."""
+        if not db.in_transaction:
+            raise ValueError("当前资格复核需要活动事务。")
+        params = {"study_id": study_id, "today": today}
+        ids = sorted(set(record_ids))
+        size = 500 if batch else 1
+        for offset in range(0, len(ids), size):
+            chunk = {f"record_{index}": key for index, key in enumerate(ids[offset:offset + size])}
+            markers = ", ".join(f":{key}" for key in chunk)
+            for row in db.execute(f"{SOURCE_ROWS} AND r.record_id IN ({markers}) AND {CANDIDATE}",
+                                  {**params, **chunk}):
+                if row["privacy"] != "public":
+                    continue
+                access = qualification(row, today)
+                trace = {key: row[key] for key in
+                         ("study_id", "scope_id", "scope_version", "batch_id", "collected_at")}
+                record = {"trace": trace, "record_id": row["record_id"], "review_id": row["review_id"],
+                          "status": access["status"], "license_status": access["license_status"],
+                          "engineering_eligible": access["engineering_eligible"]}
+                if access["engineering_eligible"]:
+                    record.update(raw_text=row["raw_text"], raw_sha256=row["raw_sha256"],
+                                  metadata=safe_metadata(row["fields_json"]))
+                yield record
+        self._check_day(today)
 
     def qualified_record_in_transaction(self, db, study_id, record_id, *, today):
         """Project one input in the caller's snapshot. Writes use qualified_write_inputs."""

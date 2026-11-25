@@ -37,7 +37,7 @@ def is_relation_path(path):
     return (any(path == root or path.startswith(root + "/") for root in PATH_ROOTS)
             or path == "/api/studies/relations/projects"
             or len(parts) > 3 and parts[:2] == ["api", "studies"]
-            and parts[3] in {"mentions", "relations", "registry", "product-relations"})
+            and parts[3] in {"mentions", "relations", "registry", "product-relations", "denominators"})
 
 
 def relation_error(status):
@@ -114,9 +114,11 @@ class TaskEdgeQuery(PageQuery):
     intent_id: Id | None = None
 
 
-class ProjectFilters(PageQuery):
+class ProjectSlice(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    registry_version: Id | None = None
     segment_revision: Revision | None = None
-    mode: Mode = "engineering"
     scope_id: UUID | None = None
     scope_version: str | None = Field(default=None, pattern=r"^v[1-9][0-9]{0,12}$")
     mapping_revision: Revision | None = None
@@ -129,9 +131,20 @@ class ProjectFilters(PageQuery):
     product_category_id: tuple[Id, ...] = Field(default=(), max_length=20)
     category_id: tuple[Id, ...] = Field(default=(), max_length=20)
     intent_id: tuple[Id, ...] = Field(default=(), max_length=20)
-    confidence_band: Id | None = None
     index_version: Id | None = None
     counting_policy_version: Literal["M06-B-F.1"] = "M06-B-F.1"
+
+
+class ProjectFilters(ProjectSlice):
+    mode: Mode = "engineering"
+    confidence_band: Id | None = None
+    limit: int = Field(default=25, ge=1, le=100)
+    cursor: str | None = Field(default=None, max_length=256)
+
+
+class DenominatorQuery(ProjectSlice):
+    mode: Mode
+    confidence_band: tuple[Id, ...] = Field(default=(), max_length=20)
 
 
 class ProjectEdgeQuery(ProjectFilters):
@@ -358,6 +371,13 @@ def register_relations(app):
     @router.get("/studies/{study_id}/mentions")
     def mentions(request: Request, study_id: UUID, query: Annotated[ProjectFilters, Query()], db=db_dep):
         return _project_request(request, db, query, str(study_id), mentions=True)
+
+    @router.get("/studies/{study_id}/denominators")
+    def denominators(study_id: UUID, query: Annotated[DenominatorQuery, Query()], db=db_dep):
+        return db.denominators(
+            str(study_id), mode=query.mode, registry_version=query.registry_version,
+            segment_revision=query.segment_revision, filters=_query_filters(query),
+        )
 
     @router.get("/studies/{study_id}/mentions/{mention_id}")
     def mention(request: Request, study_id: UUID, mention_id: PathId,

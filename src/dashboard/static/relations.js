@@ -1,3 +1,5 @@
+import { denominatorPage } from "./denominators.js";
+
 const paths = { products: "product-categories", tasks: "categories", intents: "intents" };
 const directions = {
   "product-intent": "产品品类 → 意图",
@@ -24,13 +26,22 @@ const apiPath = (...parts) => "/api/" + parts.map(enc).join("/");
 const scopeKey = scope => JSON.stringify([scope.scope_id, scope.scope_version, scope.mapping_revision, scope.catalog_version]);
 
 function withQuery(path, fields) {
-  const params = new URLSearchParams(Object.entries(fields).filter(([, value]) => value));
+  const params = new URLSearchParams();
+  for (const [key, values] of Object.entries(fields)) {
+    for (const value of Array.isArray(values) ? values : [values]) {
+      if (value) params.append(key, value);
+    }
+  }
   return params.size ? path + "?" + params : path;
 }
 
 export function mountRelations(root, _route, { api, esc }) {
   const selected = { study: "", scope: "", version: "", revision: "", mode: "engineering",
-    direction: "product-intent", product: "", task: "", intent: "" };
+    direction: "product-intent", product: "", task: "", intent: "",
+    source: "", batch: "", timeField: "published_at", from: "", to: "", confidence: "", index: "" };
+  const denominatorSets = { product: [], task: [], intent: [] };
+  let denominatorOpened = false;
+  let currentView = "relations";
   let sequence = 0;
   let evidenceSequence = 0;
   let next = null;
@@ -42,6 +53,10 @@ export function mountRelations(root, _route, { api, esc }) {
   let trigger = null;
 
   root.innerHTML = `<header class="page-head relation-head"><div><h1>三层关系</h1></div></header>
+    <div class="actions relation-views" role="group" aria-label="三层关系页面">
+      <button type="button" class="btn" data-relation-view="relations" aria-pressed="true">关系查看</button>
+      <button type="button" class="btn" data-relation-view="denominators" aria-pressed="false">分母对账</button>
+    </div>
     <section class="panel relation-panel" aria-label="关系筛选"><div class="relation-filters"></div>
       <div class="actions"><button type="button" class="btn" data-relation-action="refresh">重新查询</button></div></section>
     <section class="panel relation-panel" aria-labelledby="relation-results-title">
@@ -56,11 +71,14 @@ export function mountRelations(root, _route, { api, esc }) {
   const dialog = root.querySelector(".relation-drawer");
   const evidenceView = root.querySelector(".relation-evidence");
   const nextButton = root.querySelector('[data-relation-action="next"]');
+  const resultsTitle = root.querySelector("#relation-results-title");
+  const closeButton = root.querySelector('[data-relation-action="close"]');
 
   function options(items, value, placeholder) {
     const pairs = placeholder === null ? items : [["", placeholder], ...items];
+    const current = Array.isArray(value) ? value : [value];
     return pairs.map(([id, label]) =>
-      `<option value="${esc(id)}" ${id === value ? "selected" : ""}>${esc(label)}</option>`).join("");
+      `<option value="${esc(id)}" ${current.includes(id) ? "selected" : ""}>${esc(label)}</option>`).join("");
   }
 
   function filters() {
@@ -69,19 +87,39 @@ export function mountRelations(root, _route, { api, esc }) {
       ["scope", "冻结研究范围", mappings.map(item => [scopeKey(item),
         [item.scope_version, item.mapping_revision && "映射版 " + item.mapping_revision,
           item.catalog_version && "目录 " + item.catalog_version, item.scope_id].filter(Boolean).join(" · ")]), "全部可见范围"],
-      ["direction", "关系方向", Object.entries(directions), null],
       ["product", "产品品类", definitions.products.map(item => [item.product_category_id, `${item.name} · ${item.product_category_id}`]), "全部产品品类"],
       ["task", "任务大类", definitions.tasks.map(item => [item.category_id, item.name]), "全部任务大类"],
       ["intent", "用户意图", definitions.intents.map(item => [item.intent_id, item.name]), "全部用户意图"],
       ["mode", "查询模式", Object.entries(modes), null],
     ];
+    if (currentView === "relations") controls.splice(2, 0, ["direction", "关系方向", Object.entries(directions), null]);
+    else controls.push(["timeField", "时间依据", [["published_at", "发布时间"], ["collected_at", "采集时间"]], null]);
     const focused = document.activeElement?.dataset.relationFilter;
-    fields.innerHTML = controls.map(([name, label, items, placeholder]) =>
-      `<label for="relation-filter-${name}">${label}</label><select id="relation-filter-${name}" class="field" data-relation-filter="${name}">
-       ${options(items, selected[name], placeholder)}</select>`).map(control => `<div class="relation-control">${control}</div>`).join("") +
+    fields.innerHTML = controls.map(([name, label, items, placeholder]) => {
+      const multi = currentView === "denominators" && Object.hasOwn(denominatorSets, name);
+      return `<div class="relation-control"><label for="relation-filter-${name}">${label}</label>
+        <select id="relation-filter-${name}" class="field" data-relation-filter="${name}"
+          ${multi ? 'multiple size="3" aria-describedby="denominator-multiselect-help"' : ""}>
+          ${options(items, multi ? denominatorSets[name] : selected[name], multi ? null : placeholder)}</select></div>`;
+    }).join("") +
       `<label>注册表版本<input class="field" data-relation-filter="version" value="${esc(selected.version)}" placeholder="当前封版"></label>
        <label>片段版本<input class="field" type="number" min="1" step="1" data-relation-filter="revision"
         value="${esc(selected.revision)}" placeholder="当前封版"></label>`;
+    if (currentView === "denominators") {
+      fields.insertAdjacentHTML("afterbegin",
+        '<p id="denominator-multiselect-help" class="relation-meta">产品品类、任务大类和用户意图可多选，未选时查询全部。</p>');
+      const inputs = [
+        ["source", "来源", "text", "多个来源可用逗号分隔"],
+        ["batch", "批次 ID", "text", "多个批次可用逗号分隔"],
+        ["from", "起始日（UTC，含）", "date", ""],
+        ["to", "截止日（UTC，不含）", "date", ""],
+        ["confidence", "置信度", "text", "多个置信度可用逗号分隔"],
+        ["index", "编码索引版本", "text", ""],
+      ];
+      fields.insertAdjacentHTML("beforeend", inputs.map(([name, title, type, hint]) =>
+        `<label>${title}<input class="field" type="${type}" data-relation-filter="${name}"
+          value="${esc(selected[name])}"${hint ? ` placeholder="${hint}"` : ""}></label>`).join(""));
+    }
     if (focused) fields.querySelector(`[data-relation-filter="${focused}"]`)?.focus({ preventScroll: true });
   }
 
@@ -196,6 +234,15 @@ export function mountRelations(root, _route, { api, esc }) {
       scope_id: scope?.scope_id, scope_version: scope?.scope_version, mapping_revision: scope?.mapping_revision,
       catalog_version: scope?.catalog_version, category_id: selected.task, intent_id: selected.intent,
       product_category_id: selected.product };
+    if (currentView === "denominators") {
+      const selectedValues = text => text.split(/[,，]/).map(value => value.trim()).filter(Boolean);
+      return { path: apiPath("studies", selected.study, "denominators"), renderer: "denominators",
+        options: { ...options, source: selectedValues(selected.source), batch_id: selectedValues(selected.batch),
+          time_field: selected.timeField, from: selected.from, to: selected.to,
+          confidence_band: selectedValues(selected.confidence), index_version: selected.index,
+          product_category_id: denominatorSets.product, category_id: denominatorSets.task,
+          intent_id: denominatorSets.intent } };
+    }
     if (selected.direction === "product-intent" && selected.product) {
       return { path: apiPath(paths.products, selected.product, "intents"), options: { ...options, study_id: selected.study }, renderer: "product" };
     }
@@ -206,6 +253,14 @@ export function mountRelations(root, _route, { api, esc }) {
   }
 
   function paint(page, renderer) {
+    if (renderer === "denominators") {
+      results.innerHTML = denominatorPage(page, {
+        esc, project: projects.find(project => project.study_id === selected.study)?.name || selected.study,
+        category: id => nameOf("tasks", "category_id", id),
+        evidence: (title, ref) => entry(title, "", [ref]),
+      });
+      return true;
+    }
     const versions = page.resolved_versions || {};
     const reasons = [...(page.reasons || [])];
     if (renderer === "mentions" && page.availability === "available") {
@@ -236,7 +291,7 @@ export function mountRelations(root, _route, { api, esc }) {
     visibleRefs = [];
     next = null;
     nextButton.hidden = true;
-    status("正在核对关系…");
+    status(currentView === "denominators" ? "正在核对统计分母…" : "正在核对关系…");
     try {
       if (!cursor) {
         const [list, projectList] = await Promise.all([
@@ -251,7 +306,7 @@ export function mountRelations(root, _route, { api, esc }) {
         definitions = { products: list.items, tasks: taskList.items, intents: intentList.items };
         projects = projectList.items;
         if (!selected.study) selected.study = projectList.current_study_id || projects[0]?.study_id || "";
-        const global = selected.direction === "task-intent" || selected.direction === "intent-task";
+        const global = currentView === "relations" && ["task-intent", "intent-task"].includes(selected.direction);
         if (global) {
           const taskFirst = selected.direction === "task-intent";
           const key = taskFirst ? selected.task : selected.intent;
@@ -271,8 +326,11 @@ export function mountRelations(root, _route, { api, esc }) {
           }
         } else {
           if (!selected.study || !projects.some(project => project.study_id === selected.study)) {
+            selected.scope = "";
+            mappings = [];
             filters();
-            status([preserveNotice, "暂无获准查询关系证据的项目。"].filter(Boolean).join(" "));
+            const missing = currentView === "denominators" ? "暂无获准查询统计的项目。" : "暂无获准查询关系证据的项目。";
+            status([preserveNotice, missing].filter(Boolean).join(" "));
             return;
           }
           requestForPage = projectQuery();
@@ -290,13 +348,17 @@ export function mountRelations(root, _route, { api, esc }) {
       filters();
       const available = paint(page, request.renderer);
       if (preserveNotice) results.insertAdjacentHTML("afterbegin", `<p role="status">${esc(preserveNotice)}</p>`);
-      next = available ? page.next_cursor : null;
+      next = available && request.renderer !== "denominators" ? page.next_cursor : null;
       nextButton.hidden = !next;
     } catch (error) {
       if (!root.isConnected || id !== sequence) return;
       if (error.status === 409 && cursor) {
         load({ preserveNotice: "关系版本或资格已变化，已从第一页重新核验。" });
         return;
+      }
+      if (error.status === 403 || error.status === 404) {
+        selected.scope = "";
+        mappings = [];
       }
       filters();
       status(error.message, true);
@@ -331,7 +393,8 @@ export function mountRelations(root, _route, { api, esc }) {
       const invalid = error.status === 409 || error.status === 404 || error.status === 403;
       if (invalid) {
         clearEvidence(true);
-        load({ preserveNotice: "原话已失格或当前访问受限，已重新核验关系。" });
+        const target = currentView === "denominators" ? "统计" : "关系";
+        load({ preserveNotice: `原话已失格或当前访问受限，已重新核验${target}。` });
       } else {
         evidenceView.innerHTML = `<p role="alert">${esc(error.message)}</p>
           <button type="button" class="btn" data-relation-action="evidence" data-index="${index}">重试核验</button>`;
@@ -342,16 +405,43 @@ export function mountRelations(root, _route, { api, esc }) {
   root.addEventListener("change", event => {
     const key = event.target.dataset.relationFilter;
     if (!key) return;
-    selected[key] = event.target.value;
+    if (event.target.multiple) {
+      denominatorSets[key] = Array.from(event.target.selectedOptions, option => option.value);
+    } else {
+      selected[key] = event.target.value;
+    }
     if (key === "study" || key === "revision" || key === "version") {
       selected.scope = "";
       mappings = [];
     }
     if (key === "study" || key === "version") selected.revision = "";
-    if (key === "version") selected.product = selected.task = selected.intent = "";
+    if (key === "version") {
+      for (const field of Object.keys(denominatorSets)) {
+        denominatorSets[field] = [];
+        selected[field] = "";
+      }
+    }
     load();
   });
   root.addEventListener("click", event => {
+    const view = event.target.closest("[data-relation-view]");
+    if (view && view.dataset.relationView !== currentView) {
+      currentView = view.dataset.relationView;
+      if (currentView === "denominators" && !denominatorOpened) {
+        for (const field of Object.keys(denominatorSets)) {
+          if (selected[field]) denominatorSets[field] = [selected[field]];
+        }
+        denominatorOpened = true;
+      }
+      for (const control of root.querySelectorAll("[data-relation-view]")) {
+        control.setAttribute("aria-pressed", String(control === view));
+      }
+      resultsTitle.textContent = currentView === "denominators" ? "分母对账" : "关系结果";
+      closeButton.textContent = currentView === "denominators" ? "返回对账" : "返回关系";
+      filters();
+      load();
+      return;
+    }
     const button = event.target.closest("[data-relation-action]");
     if (!button) return;
     const action = button.dataset.relationAction;

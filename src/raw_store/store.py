@@ -86,6 +86,9 @@ class Store:
                     raise sqlite3.IntegrityError("数据库迁移外键检查失败")
                 if db.execute("PRAGMA integrity_check").fetchone()[0] != "ok":
                     raise sqlite3.DatabaseError("数据库迁移完整性检查失败")
+            if target >= 7:
+                db.execute("""CREATE INDEX IF NOT EXISTS corpus_review_excluded
+                              ON corpus_reviews(review_id) WHERE decision='excluded'""")
             db.execute("COMMIT")
         except BaseException:
             if db.in_transaction:

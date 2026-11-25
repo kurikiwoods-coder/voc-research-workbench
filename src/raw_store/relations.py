@@ -9,6 +9,7 @@ import sqlite3
 from uuid import uuid4
 
 from src.raw_store import relation_queries
+from src.raw_store.denominators import denominators
 from src.raw_store.corpus_policy import safe_source_url
 from src.raw_store.mention_segments import validate_interval
 from src.raw_store.mentions import MentionStore, _dependencies, _get_support, _grants, _head, _insert, _reference
@@ -174,6 +175,11 @@ class RelationStore:
             {"registry_version": registry_version, "segment_revision": segment_revision},
             filters, mention_id=mention_id, audit_tombstones=True,
         )
+
+    def denominators(self, study_id, *, registry_version=None, segment_revision=None, filters=None,
+                     mode, synthetic=None, batch_qualification=True):
+        return denominators(self, study_id, registry_version=registry_version, segment_revision=segment_revision,
+                            filters=filters, mode=mode, synthetic=synthetic, batch_qualification=batch_qualification)
 
     def read_evidence(self, study_id, revision, mention_id, evidence_id):
         with self._transaction(study_id, operation="evidence") as (db, access):

@@ -39,8 +39,10 @@ def withdrawal_match(study_id, record_id, originals):
 
 
 def withdrawal_id(study_id, record_id, originals):
-    return f"""(SELECT MAX(w.review_id) FROM corpus_withdrawals w
-        WHERE {withdrawal_match(study_id, record_id, originals)})"""
+    return f"""(SELECT MAX(w.review_id) FROM corpus_reviews excluded
+        CROSS JOIN corpus_withdrawals w
+        WHERE excluded.decision='excluded' AND w.review_id=excluded.review_id
+          AND {withdrawal_match(study_id, record_id, originals)})"""
 
 
 def current_restore(record_id, review_id):

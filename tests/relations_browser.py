@@ -294,6 +294,102 @@ def check_scope_availability(page, base, headers, output, directory):
     print("C4 Chromium scope E2E passed: unavailable, valid empty scope, and cursor suppression.")
 
 
+def check_denominators_http(page, base, study, other, scope, quotes):
+    path = f"{base}/api/studies/{study}/denominators"
+    mode = {"mode": "engineering"}
+
+    def get(query, expected=200, url=path, headers=None):
+        response = page.request.get(f"{url}?{urlencode(query, doseq=True)}", headers=headers)
+        assert response.status == expected, (response.status, response.text())
+        assert response.headers["cache-control"] == "no-store"
+        assert all(text not in response.text() for _, text in FIXTURES.values())
+        return response.json()
+
+    report = get(mode)
+    counts = report["counts"]
+    assert counts["N_eligible_dedup"] == 3
+    assert counts["N_discovered_urls"] is None and counts["N_accessible_pages"] is None
+    assert counts["N_published_classified"] is None and counts["buckets"]["other_pending"] == 3
+    assert "M12_RECEIPTS_MISSING" in report["coverage"]["N_published_classified"]
+    assert report["mode"] == "engineering" and report["counting_policy_version"] == "M06-B-F.1"
+    assert report["reconciliation"]["eligible_difference"] == report["reconciliation"]["primary_difference"] == 0
+    product_view = get(mode | {"product_category_id": [PRODUCT_A, PRODUCT_B]})
+    assert product_view["counts"]["N_eligible_dedup"] == 2
+    cross = get(mode | {"product_category_id": PRODUCT_A, "batch_id": quotes[PRODUCT_B][0]})
+    assert cross["counts"]["N_eligible_dedup"] == 0
+    assert get(mode | {"scope_id": scope}, 400)["code"] == "FILTER_CONFLICT"
+    assert get(mode | {"from": "2026-11-02", "to": "2026-11-01"}, 400)["code"] == "FILTER_CONFLICT"
+    assert get(mode | {"from": "2026-11-01T08:00:00+08:00"})["filter_echo"]["from"] == "2026-11-01T00:00:00Z"
+    for invalid in ({}, mode | {"limit": 1}, mode | {"cursor": "invalid"}, mode | {"role": "private-marker"}):
+        assert get(invalid, 422)["code"] == "INVALID_REQUEST"
+    denied = get(mode, 404, f"{base}/api/studies/{other}/denominators", headers={"X-VOC-Role": "owner"})
+    assert denied == get(mode, 404, f"{base}/api/studies/{uuid4()}/denominators")
+    assert get({"mode": "synthetic"})["counts"] is None
+    formal = get({"mode": "formal"})
+    assert formal["availability"] == "unavailable" and formal["counts"] is None
+    assert formal["reconciliation"] is None and "G1_BLOCKED" in formal["reasons"]
+    print("C5 localhost HTTP E2E passed: filters, complete unpaginated counts, blocked formal mode, and access.")
+
+
+def check_denominators_browser(page, base, output, grant_file, study):
+    page.goto(base + "/#relations")
+    button = page.get_by_role("button", name="分母对账")
+    button.click()
+    expect(button).to_have_attribute("aria-pressed", "true")
+    expect(page.get_by_role("heading", name="分母对账")).to_be_visible()
+    expect(page.get_by_role("heading", name="分母链")).to_be_visible()
+    for heading in ("六桶分布", "主任务大类", "排除原因", "对账差额", "异常证据"):
+        expect(page.get_by_role("heading", name=heading)).to_be_visible()
+    eligible = page.locator('[data-denominator-stage="N_eligible_dedup"]')
+    assert eligible.inner_text().splitlines()[0] == "3"
+    expect(page.locator('[data-denominator-stage="N_discovered_urls"]')).to_contain_text("不可用")
+    expect(page.locator(".denominator-bar [data-counting-bucket=other_pending]")).to_be_visible()
+    evidence = page.get_by_role("button", name="查看证据 1", exact=True)
+    evidence.press("Enter")
+    dialog = page.get_by_role("dialog", name="原话证据")
+    expect(dialog.locator("blockquote")).to_contain_text("合成")
+    page.keyboard.press("Escape")
+    expect(evidence).to_be_focused()
+    assert all(text not in page.content() for _, text in FIXTURES.values())
+    page.screenshot(path=str(output / "c5-denominators.png"), full_page=True)
+    for width in (390, 320):
+        page.set_viewport_size({"width": width, "height": 844})
+        assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+        page.screenshot(path=str(output / f"c5-denominators-mobile-{width}.png"), full_page=True)
+    mode = page.get_by_label("查询模式", exact=True)
+    mode.select_option("formal")
+    expect(page.get_by_text("G-1 尚未通过", exact=True)).to_be_visible()
+    expect(eligible).to_contain_text("不可用")
+    expect(page.get_by_role("heading", name="六桶分布")).to_have_count(0)
+    expect(page.get_by_role("button", name="下一页")).to_be_hidden()
+    page.screenshot(path=str(output / "c5-denominators-formal.png"), full_page=True)
+    mode.select_option("engineering")
+    expect(eligible).to_contain_text("3")
+    product = page.get_by_label("产品品类", exact=True)
+    product.select_option([PRODUCT_A, PRODUCT_B])
+    expect(eligible).to_contain_text("2")
+    product.select_option(PRODUCT_A)
+    expect(eligible).to_contain_text("1")
+    page.get_by_label("来源", exact=True).fill("不存在的合成来源")
+    page.get_by_label("来源", exact=True).press("Tab")
+    expect(eligible).to_contain_text("0")
+    page.get_by_label("来源", exact=True).fill("")
+    page.get_by_label("来源", exact=True).press("Tab")
+    expect(eligible).to_contain_text("1")
+    grant_file.write_text("", encoding="ascii")
+    try:
+        evidence.click()
+        expect(dialog).to_be_hidden()
+        expect(page.get_by_text("原话已失格或当前访问受限", exact=False)).to_be_visible()
+        expect(eligible).to_have_count(0)
+        assert all(text not in page.content() for _, text in FIXTURES.values())
+    finally:
+        grant_file.write_text(study, encoding="ascii")
+    page.set_viewport_size({"width": 1440, "height": 960})
+    page.reload()
+    print("C5 Chromium E2E passed: denominators, evidence, grant revocation, formal null, and 320/390px.")
+
+
 def relations_browser_checks(browser, base, output, directory):
     base = base.rstrip("/")
     headers = {"Origin": base, "X-VOC-Action": "connectivity"}
@@ -314,6 +410,7 @@ def relations_browser_checks(browser, base, output, directory):
     study, scope = fixture["study_id"], fixture["scope"]["scope_id"]
     quotes, members = seed(page, base, headers, directory, fixture)
     drill, path, filters, cursor = check_http(page, base, headers, study, scope, other["study_id"], quotes, members)
+    check_denominators_http(page, base, study, other["study_id"], scope, quotes)
     grant_file = Path(directory) / GRANT_FILE
     grant_file.write_text("", encoding="ascii")
     try:
@@ -322,9 +419,14 @@ def relations_browser_checks(browser, base, output, directory):
         assert restricted.status == missing.status == 404 and restricted.json() == missing.json()
         denied = page.request.get(f"{base}/api{drill}", params={"segment_revision": 2})
         assert denied.status == 404 and FIXTURES[PRODUCT_A][1] not in denied.text()
+        parameters = {"mode": "engineering"}
+        restricted = page.request.get(f"{base}/api/studies/{study}/denominators", params=parameters)
+        missing = page.request.get(f"{base}/api/studies/{uuid4()}/denominators", params=parameters)
+        assert restricted.status == missing.status == 404 and restricted.json() == missing.json()
     finally:
         grant_file.write_text(study, encoding="ascii")
     assert page.request.get(f"{base}/api{drill}", params={"segment_revision": 2}).ok
+    check_denominators_browser(page, base, output, grant_file, study)
     page.goto(base + "/#relations")
     expect(page.get_by_role("heading", name="三层关系", exact=True)).to_be_visible()
     product = page.get_by_label("产品品类", exact=True)
@@ -375,6 +477,9 @@ def relations_browser_checks(browser, base, output, directory):
     assert expired.status == 409 and FIXTURES[PRODUCT_A][1] not in expired.text()
     stale = page.request.get(f"{base}/api{path}", params={**filters, "limit": 1, "cursor": cursor})
     assert stale.status == 409 and FIXTURES[PRODUCT_A][1] not in stale.text()
+    refreshed = page.request.get(f"{base}/api/studies/{study}/denominators", params={"mode": "engineering"})
+    expect(refreshed).to_be_ok()
+    assert refreshed.json()["counts"]["N_eligible_dedup"] == 2
     page.get_by_label("查询模式", exact=True).select_option("formal")
     expect(page.get_by_text("G-1 尚未通过", exact=False)).to_be_visible()
     page.set_viewport_size({"width": 1440, "height": 960})
