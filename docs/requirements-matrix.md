@@ -54,7 +54,7 @@ M06-C2 = **ENGINEERING_PASS**。实现提交 `965a4b8` 的[三平台 CI](https:/
 |---|---|---|
 | SOURCE-POLICY、PRIVACY；A07–09、A21 | Python、GET 及同连接写入复用实时资格，项目隔离、WAL 锁顺序、UTC 到期、副本、新授权及 M04 撤销回执兼容实测通过 | 仅本机工程资格。正式统计、外发及 G-1 依原矩阵 |
 | CAT-8、CAT-10 的资格前提；B04、B08、B09、B13、B14 | 核对全部传入原话及上下文、拒绝已撤销依赖，读取/错误导出/暂存回查已检查 | M/E、版次发行、编码回执、历史报告及正式分母仍待后续阶段。逐案见[C2 证据](evidence/m06-c2/README.md) |
-| Windows 11 平台 | C1 实机及该版部署门禁历史 PASS | C2 实机 NOT_TESTED，该版部署门禁 BLOCKED。Windows Server 2022 单独记录 |
+| Windows 11 平台 | 基线 `6ef5b2e` 的 M06-C2-V、实机和部署门禁均为 **PASS**。四项独立撤销及到期反例、四项事务探针、全量回归与平台专项均通过。[Windows 11 验收证据](evidence/m06-c2/windows11-closeout.md) | Windows Server 2022 CI 单独记录。正式研究 G-1 BLOCKED，C3 NOT_STARTED |
 
 ## C1 历史 Windows 11 部署工程验收
 

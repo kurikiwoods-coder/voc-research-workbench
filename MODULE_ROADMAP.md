@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-B-F 架构审核 PASS，负责人批准五项政策，架构 FROZEN。M06-C1 落地 SQLite v7，C2 为 **ENGINEERING_PASS**，已交付实时资格与同事务复核。C2 的 Windows 11 实机 NOT_TESTED，部署门禁 BLOCKED。C3 NOT_STARTED。[开发状态](DEVELOPMENT_STATUS.md)
+M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-B-F 架构审核 PASS，负责人批准五项政策，架构 FROZEN。M06-C1 落地 SQLite v7，C2 为 **ENGINEERING_PASS**，已交付实时资格与同事务复核。C2 独立复验、Windows 11 实机及部署门禁均为 **PASS**。C3 NOT_STARTED，工程前置条件满足，等待负责人单独授权。[验收证据](docs/evidence/m06-c2/windows11-closeout.md) · [开发状态](DEVELOPMENT_STATUS.md)
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
@@ -106,7 +106,7 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | 模块职责 | 维护 Product Category、Task Category、Intent 以及证据驱动的双向关系。 |
 | 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。M06-B-F 架构已冻结。负责人已授权 C1 和 C2。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
 | 工程开发 | M06-B-F 审核 PASS，审批 APPROVED，架构 FROZEN。C1 为 ENGINEERING_PASS，涵盖数据库迁移、关系约束及本机与实施提交的远端回归。C2 提供调用方写锁内的资格复核和 UTC 日界回滚。[六份设计文档](docs/architecture/m06-design.md) |
-| 工程测试 | C0-6 冒烟和 C1 数据库断言分别取证。C2 Linux Python 190/190、Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4。[C2 实测](docs/evidence/m06-c2/README.md)。正式关系 API 待 C4。 |
+| 工程测试 | C0-6 冒烟和 C1 数据库断言分别取证。C2 Linux Python 190/190、Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4。Windows 11 同项全部通过，另有独立反例与事务探针各 4/4，DPAPI、路径启动和 v7 迁移通过。正式关系 API 待 C4。[Linux 工程验收](docs/evidence/m06-c2/README.md) · [Windows 11 验收](docs/evidence/m06-c2/windows11-closeout.md) |
 | 正式业务验收 | CAT 系列待验。 |
 | 数据库及 API | 已有产品品类、任务大类、意图、证据-品类和统计桶 Schema。SQLite 007 新增 20 张关系与审计表。双向查找和发布事务接口归后续阶段。 |
 | 前端页面 | 正式品类、任务、意图双向页面未实现。 |

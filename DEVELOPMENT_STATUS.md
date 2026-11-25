@@ -1,8 +1,12 @@
 # VOC Research Workbench 开发状态
 
-## M06-C2 云端工程验收
+## M06-C2-V 独立验证与 Windows 11 实机验收
 
-2026-11-25，从 C1 基线 `776acfe` 实施 C2。实现提交 `965a4b8b3596c03437f9629f2f203e11af617726`。M06-C2 = **ENGINEERING_PASS**。该实现的[Ubuntu、Windows Server 2022 和 Chromium CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45532356340) 均通过。C2 的 Python/GET 与调用方写事务共用 M05 当前资格，修复同文件行撤销和到期的四项缺陷。Linux 全量 Python 190/190（新增 17）、Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4。当前 C2 实机 Windows 11 NOT_TESTED，部署门禁 BLOCKED；以下 C1 实机记录按原基线保留。Pre-M06 开发门禁 PASS，G-1 BLOCKED，C3 NOT_STARTED，真实研究 API 调用 0。[C2 工程证据](docs/evidence/m06-c2/README.md)
+2026-11-25，开发分支快进至实测基线 `6ef5b2e2d9a269dc072fa2db1d8296aae38e2e93`。M06-C2-V、WINDOWS_11_REAL_MACHINE、WINDOWS_11_DEPLOYMENT_GATE 均为 **PASS**。Windows 11 全量 Python 190/190，C2 专项 17/17 另行复跑，独立合成反例及事务探针各 4/4。Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4、DPAPI、三类路径启动与同库重启、SQLite v7 迁移恢复均通过。新增 P0/P1 为 0，真实研究 API 调用 0 次。PRE_M06_DEVELOPMENT_GATE = PASS。G-1 = BLOCKED。C3 = NOT_STARTED，工程前置条件满足，等待负责人单独授权。[Windows 11 验收证据](docs/evidence/m06-c2/windows11-closeout.md)
+
+## 历史记录 · M06-C2 云端工程验收
+
+2026-11-25，从 C1 基线 `776acfe` 实施 C2。实现提交 `965a4b8b3596c03437f9629f2f203e11af617726`。M06-C2 = **ENGINEERING_PASS**。该实现的[Ubuntu、Windows Server 2022 和 Chromium CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45532356340) 均通过。C2 的 Python/GET 与调用方写事务共用 M05 当前资格，修复同文件行撤销和到期的四项缺陷。Linux 全量 Python 190/190（新增 17）、Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4。云端实施交付时 C2 实机 Windows 11 为 NOT_TESTED，部署门禁为 BLOCKED。Pre-M06 开发门禁 PASS，G-1 BLOCKED，C3 NOT_STARTED，真实研究 API 调用 0。[C2 工程证据](docs/evidence/m06-c2/README.md)
 
 核查日期 2026-11-25。接管分支 `codex/p0-0-connectivity`，历史接管基线 `bca93639043e176f4159b9bf9fb98b4b2e2b32d8`。[PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1) · [接管基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45341736949) · [15 个模块](MODULE_ROADMAP.md)
 

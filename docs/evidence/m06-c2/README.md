@@ -36,7 +36,7 @@ Python `CorpusStore.qualified_record(study_id, record_id)` 和 GET `/api/corpus/
 
 云端 Python 3.12.14、SQLite 3.53.1、Node 24.22.3。C1 基线 Python 173/173；实现版 190/190，包含新增 C2 17 项、既有 M05-R2、Pre-M06 A–H 和 C1 33 项约束及迁移测试。新增 17 项另行连续运行三轮，每轮校验临时主库 integrity_check=ok，foreign_key_check 无记录。Node 2/2、Chromium 8/8、冷启动 3/3、归档 4/4、暂存文件敏感信息扫描通过。
 
-本机的系统 Chromium 启动器缺少目标二进制，Playwright 下载端点返回拒绝。通过 npm 安装隔离的 Chromium 141.0.7390.0 headless，以仓库支持的 VOC_CHROMIUM 参数完成基线与实现版的原版浏览器测试。GitHub 的 Chromium 作业按 CI 依赖安装浏览器。C2 版 Windows 11 实机 NOT_TESTED，平台部署门禁 BLOCKED，交桌面端复验。C1 的 Windows 11 实机及其部署门禁历史 PASS。
+本机的系统 Chromium 启动器缺少目标二进制，Playwright 下载端点返回拒绝。通过 npm 安装隔离的 Chromium 141.0.7390.0 headless，以仓库支持的 VOC_CHROMIUM 参数完成基线与实现版的原版浏览器测试。GitHub 的 Chromium 作业按 CI 依赖安装浏览器。云端交付时 C2 的 Windows 11 实机为 NOT_TESTED，部署门禁为 BLOCKED。随后以 `6ef5b2e` 完成独立复验，实机及部署门禁均通过。[Windows 11 验收](windows11-closeout.md)
 
 ~~~sh
 bash scripts/smoke-test.sh
