@@ -10,7 +10,7 @@
 
 M05-R2 已关闭两项许可缺陷及旧库副本复核问题，状态为 **ENGINEERING_PASS**。M04 已通过独立工程验收。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-B-F 架构审核 PASS，负责人批准五项政策，架构 FROZEN。M06-C1 落地 SQLite v7，C2 至 C5 等待各阶段授权。[开发状态](DEVELOPMENT_STATUS.md)
 
-M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**，Windows 11 实机为 **NOT_TESTED**，该平台部署门禁和 G-1 均为 **BLOCKED**。[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
+M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
 ## M01 基础工程与连通性
 
@@ -27,7 +27,7 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | 验收标准 | 同一批次的六项都通过且供应商审核可追溯才放行 G-1。G0 另有 Windows 本地三次冷启动，G7 按矩阵执行故障与安全实测。 |
 | 最近相关提交 | `47051f3` |
 | 测试结果与证据 | [M01 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45325025692)记录六个新增恢复回归和四份归档的完整性核验。[认证 Tavily 批次](docs/evidence/p0-0/tavily-live/README.md)记录历史业务结果。 |
-| 剩余问题 | JevModel 审查、固定模型真实响应和额度实测待补。当前基线的 Windows 10 实机已通过，Windows 11 实机待补。 |
+| 剩余问题 | JevModel 审查、固定模型真实响应和额度实测待补。当前 C1 基线在 Windows 10 和 Windows 11 实机均已通过。 |
 
 ## M02 API 配置中心
 

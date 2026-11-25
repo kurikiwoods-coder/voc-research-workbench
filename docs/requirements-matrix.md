@@ -40,11 +40,16 @@
 | C0-6 | PASS | 2 个产品品类、3 个任务大类、30 个合成意图，两次跨品类 Top-12 命中。 |
 | G-1 | BLOCKED | C0-1、C0-2、C0-4 和供应商留存审查待完成。下一阶段等待准入。 |
 
-Windows Server 2022 工程 CI 完成三次空库冷启动和中文、空格路径下的启动器验证。Windows 10/11 真机记录仍为 NOT_TESTED。G-1 以正式认证批次的状态汇总。[原帖复核](evidence/p0-0/closeout/public-source.json) · [API 配置](connectivity.md#注册与创建密钥)
+该历史批次的 Windows Server 2022 工程 CI 完成三次空库冷启动和中文、空格路径下的启动器验证。Windows 11 平台的后续实机结果见下文部署工程验收。G-1 以正式认证批次的状态汇总。[原帖复核](evidence/p0-0/closeout/public-source.json) · [API 配置](connectivity.md#注册与创建密钥)
 
 P0-0 补充的设置向导、本机凭证保存与诊断均有独立工程测试。诊断使用单独的 SQLite，Jev 合成句子、搜索回源和脱敏证据的正式研究分母为零。真实 Jev 账本、指定搜索源和 G-1 继续按下表原有要求验收。[API 接入操作](connectivity.md#从工作台配置-api) · [工程测试用例](../tests/test_api_setup.py)
 
 每项的时间、证据 ID、请求与响应可由 [JSON 与 SQLite 验收包](evidence/p0-0/README.md) 复核。下方映射表定义验收标准；重新运行页面将读取本机当前批次的结果。
+
+## Windows 11 部署工程验收
+
+2026-11-25 在公司 Windows 11 Enterprise 25H2 x64 实机验收 C1 代码基线 `29dd1ffec595dccb3fad08b1194f5151b12decda`。实机和 Windows 11 部署门禁均为 **PASS**。证据覆盖原版启动器、三次空库冷启动、DPAPI 凭证生命周期、完整回归及 SQLite v7 迁移恢复。真实研究 API 调用 0 次。G-1 仍为 **BLOCKED**，正式语料、许可、审计及研究验收仍按矩阵既有条款核定。[Windows 11 实机证据](evidence/m06-c1/windows11-closeout.md)
+
 
 ## 技术路线与数据设计
 
