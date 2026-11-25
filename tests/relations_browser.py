@@ -29,11 +29,11 @@ def relation_fixture_grants(directory):
     path = Path(directory) / GRANT_FILE
     if not path.is_file():
         return ()
-    return (RelationGrant(
+    return tuple(RelationGrant(
         "synthetic-reviewer", "project_reviewer", "synthetic-owner", "local:browser-fixture",
         "2000-01-01T00:00:00Z", "2099-01-01T00:00:00Z",
-        frozenset({"attribute", "evidence", "read", "validate"}), path.read_text("ascii"),
-    ),)
+        frozenset({"attribute", "evidence", "read", "validate"}), study_id,
+    ) for study_id in path.read_text("ascii").splitlines())
 
 
 def project(page, base, headers, name):
@@ -42,10 +42,11 @@ def project(page, base, headers, name):
     })
     expect(response).to_be_ok()
     result = response.json()
-    expect(page.request.post(
+    response = page.request.post(
         f"{base}/api/studies/{result['study_id']}/scopes/{result['scope']['scope_id']}/freeze", headers=headers,
-    )).to_be_ok()
-    return result
+    )
+    expect(response).to_be_ok()
+    return response.json()
 
 
 def definitions_and_mapping(store, study, scope, supports):
@@ -214,9 +215,83 @@ def check_http(page, base, headers, study, scope, other, quotes, members):
     reflected = page.request.get(f"{api}/studies/{study}/mentions", params={"unknown": "synthetic-no-reflection"})
     assert reflected.status == 422 and "synthetic-no-reflection" not in reflected.text()
     page_one = get(path, **filters, limit=1)
-    assert page_one["next_cursor"]
+    cursor = page_one["next_cursor"]
+    assert cursor
     print("C4 localhost HTTP E2E passed: exact versions, bidirectional witnesses, filters, cursors, preflight and access.")
-    return drill, path, filters, page_one["next_cursor"]
+    return drill, path, filters, cursor
+
+
+def check_scope_availability(page, base, headers, output, directory):
+    fixture = project(page, base, headers, "C4 冻结范围合成回归")
+    study = fixture["study_id"]
+    study_url = f"{base}/api/studies/{study}"
+    first_scope = fixture["scope"]["scope_id"]
+    response = page.request.put(study_url, headers=headers, data={
+        "name": fixture["name"], "revision": fixture["revision"],
+        "scope": {"mode": "open", "topic": "合成非产品范围"},
+    })
+    expect(response).to_be_ok()
+    second = response.json()
+    second_scope = second["scope"]["scope_id"]
+    expect(page.request.post(f"{study_url}/scopes/{second_scope}/freeze", headers=headers)).to_be_ok()
+    expect(page.request.post(f"{study_url}/select", headers=headers)).to_be_ok()
+    with (Path(directory) / GRANT_FILE).open("a", encoding="ascii") as grants:
+        grants.write("\n" + study)
+    store = Store(Path(directory))
+    mapping = "c4-browser-non-product"
+    with store.db() as db:
+        db.execute("BEGIN IMMEDIATE")
+        command(db, mapping, study)
+        insert(db, "m06_scope_binding", study_id=study, scope_id=second_scope, mapping_revision=1,
+               previous_revision=None, registry_version=CATALOG, mapping_status="non_product",
+               scope_reviewer_ref="synthetic-scope-review", catalog_reviewer_ref="synthetic-catalog-review",
+               basis_ref=BASIS, command_id=mapping)
+
+    members = []
+    for scoped_fixture, filename, segments in (
+        (fixture, "映射待定 合成.csv", [f"合成原话 {number:02d}。" for number in range(26)]),
+        (second, "非产品范围 合成.csv", ["合成非产品原话。"]),
+    ):
+        text = "".join(segments)
+        add_batch(page, base, scoped_fixture, filename,
+                  f"https://synthetic.invalid/scope/{scoped_fixture['scope']['scope_id']}", text=text)
+        page.goto(f"{base}/#corpus/{study}")
+        open_record(page, filename)
+        verify_quote(page, text)
+        record = unquote(urlsplit(page.url).fragment.split("/")[-1])
+        digest = sha256(text.encode()).hexdigest()
+        start = 0
+        for segment in segments:
+            end = start + len(segment)
+            number = len(members) + 1
+            members.append(MentionTests.member(f"SCOPE-{number}", EvidenceInterval(record, digest, start, end),
+                                               segment_no=number))
+            start = end
+    mentions = MentionStore(store, authorize=lambda candidate, _: "synthetic-reviewer" if candidate == study else None)
+    mentions.publish_revision(study, key="c4-browser-scopes-r1", expected_revision=0,
+                              rule_version="synthetic-browser-segments", members=members)
+    response = page.request.get(f"{study_url}/mentions", params={"registry_version": CATALOG})
+    expect(response).to_be_ok()
+    result = response.json()
+    assert result["availability"] == "available" and len(result["items"]) == 25 and result["next_cursor"]
+    assert {row["scope_id"]: row["mapping_status"] for row in result["resolved_versions"]["scope_mappings"]} == {
+        first_scope: "unresolved", second_scope: "non_product",
+    }
+
+    page.goto(base + "/#relations")
+    unavailable = page.get_by_text("冻结范围的产品映射未解析", exact=True)
+    empty = page.get_by_text("暂无符合条件的关系。", exact=True)
+    next_button = page.locator('[data-relation-action="next"]')
+    expect(unavailable).to_be_visible()
+    expect(empty).to_have_count(0)
+    expect(next_button).to_be_hidden()
+    page.screenshot(path=str(output / "c4-unresolved-scope.png"), full_page=True)
+    scope = page.get_by_label("冻结研究范围", exact=True)
+    scope.select_option(label=f"v2 · 映射版 1 · 目录 {CATALOG} · {second_scope}")
+    expect(empty).to_be_visible()
+    expect(unavailable).to_have_count(0)
+    expect(next_button).to_be_hidden()
+    print("C4 Chromium scope E2E passed: unavailable, valid empty scope, and cursor suppression.")
 
 
 def relations_browser_checks(browser, base, output, directory):
@@ -239,6 +314,17 @@ def relations_browser_checks(browser, base, output, directory):
     study, scope = fixture["study_id"], fixture["scope"]["scope_id"]
     quotes, members = seed(page, base, headers, directory, fixture)
     drill, path, filters, cursor = check_http(page, base, headers, study, scope, other["study_id"], quotes, members)
+    grant_file = Path(directory) / GRANT_FILE
+    grant_file.write_text("", encoding="ascii")
+    try:
+        restricted = page.request.get(f"{base}/api{path}", params={**filters, "limit": 1, "cursor": cursor})
+        missing = page.request.get(f"{base}/api{path}", params={**filters, "study_id": str(uuid4()), "limit": 1})
+        assert restricted.status == missing.status == 404 and restricted.json() == missing.json()
+        denied = page.request.get(f"{base}/api{drill}", params={"segment_revision": 2})
+        assert denied.status == 404 and FIXTURES[PRODUCT_A][1] not in denied.text()
+    finally:
+        grant_file.write_text(study, encoding="ascii")
+    assert page.request.get(f"{base}/api{drill}", params={"segment_revision": 2}).ok
     page.goto(base + "/#relations")
     expect(page.get_by_role("heading", name="三层关系", exact=True)).to_be_visible()
     product = page.get_by_label("产品品类", exact=True)
@@ -291,6 +377,8 @@ def relations_browser_checks(browser, base, output, directory):
     assert stale.status == 409 and FIXTURES[PRODUCT_A][1] not in stale.text()
     page.get_by_label("查询模式", exact=True).select_option("formal")
     expect(page.get_by_text("G-1 尚未通过", exact=False)).to_be_visible()
+    page.set_viewport_size({"width": 1440, "height": 960})
+    check_scope_availability(page, base, headers, output, directory)
     assert not errors, errors
     assert not outbound, outbound
     page.close()

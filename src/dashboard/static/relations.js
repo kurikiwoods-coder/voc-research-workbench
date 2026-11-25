@@ -139,7 +139,7 @@ export function mountRelations(root, _route, { api, esc }) {
   function mentionRows(items) {
     const groups = new Map();
     for (const mention of items) {
-    for (const edge of mention.product_intent_edges || []) {
+      for (const edge of mention.product_intent_edges || []) {
         const key = JSON.stringify([edge.product_category_id, edge.catalog_version, edge.intent_id]);
         if (!groups.has(key)) {
           const intent = mention.intents.find(item => item.intent_id === edge.intent_id);
@@ -206,26 +206,35 @@ export function mountRelations(root, _route, { api, esc }) {
   }
 
   function paint(page, renderer) {
-    if (page.availability === "unavailable") {
-      status((page.reasons || []).map(reason => reasonLabels[reason] || "当前版本缺少可核数据").join(" · ") || "当前关系不可用。");
-      return;
+    const versions = page.resolved_versions || {};
+    const reasons = [...(page.reasons || [])];
+    if (renderer === "mentions" && page.availability === "available") {
+      if (!versions.registry_version) reasons.push("REGISTRY_UNAVAILABLE");
+      if (versions.scope_mappings?.some(scope => scope.mapping_status === "unresolved")) {
+        reasons.push("SCOPE_MAPPING_UNRESOLVED");
+      }
+    }
+    if (page.availability === "unavailable" || reasons.length) {
+      status(reasons.map(reason => reasonLabels[reason] || "当前版本缺少可核数据").join(" · ") || "当前关系不可用。");
+      return false;
     }
     const rows = { product: () => page.items.map(productIntentRow).join(""), mentions: () => mentionRows(page.items),
       task: () => taskRows(page.items), definitions: definitionRows }[renderer]();
     const matchScope = mappings.find(item => scopeKey(item) === selected.scope);
-    const versions = page.resolved_versions || {};
     const versionLine = [versions.registry_version && "注册表 " + versions.registry_version,
       versions.segment_revision && "片段版 " + versions.segment_revision,
       matchScope?.mapping_revision && "映射版 " + matchScope.mapping_revision,
       matchScope?.catalog_version && "目录 " + matchScope.catalog_version].filter(Boolean).join(" · ");
     results.innerHTML = (versionLine ? `<p class="relation-meta">${esc(versionLine)}</p>` : "") +
       (rows ? '<ul class="relation-list">' + rows + "</ul>" : '<p class="state-box">暂无符合条件的关系。</p>');
+    return true;
   }
 
   async function load({ cursor = null, preserveNotice = null } = {}) {
     const id = ++sequence;
     clearEvidence();
     visibleRefs = [];
+    next = null;
     nextButton.hidden = true;
     status("正在核对关系…");
     try {
@@ -279,9 +288,9 @@ export function mountRelations(root, _route, { api, esc }) {
         selected.revision = page.resolved_versions.segment_revision || selected.revision;
       }
       filters();
-      paint(page, request.renderer);
+      const available = paint(page, request.renderer);
       if (preserveNotice) results.insertAdjacentHTML("afterbegin", `<p role="status">${esc(preserveNotice)}</p>`);
-      next = page.next_cursor;
+      next = available ? page.next_cursor : null;
       nextButton.hidden = !next;
     } catch (error) {
       if (!root.isConnected || id !== sequence) return;
