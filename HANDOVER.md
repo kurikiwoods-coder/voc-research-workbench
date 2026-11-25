@@ -1,5 +1,14 @@
 # 开发交接
 
+## M06-C5 统计接口
+
+开发分支为 `codex/p0-0-connectivity`，C5 开发基线为 `db0c2c86385950b6630a2691e1263d5dd429aa32`，实测源码为 `a9eebee24616984dda8e72bab1242373555b06db`。交接时确认草稿 PR #1 的 HEAD 和实际交付提交一致，且三项 CI 通过。C5 的独立复审、Windows 11 实机及 1K/10K/100K 恢复证据均已归档。[C5 工程证据](docs/evidence/m06-c5/README.md) · [源码 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45569514279) · [PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)
+
+- 消费 `RelationStore.denominators` 或本机 `GET /api/studies/{study_id}/denominators`。按同一授权切片使用返回的 `resolved_versions`、`filter_echo`、`as_of_utc`、`coverage` 和 `M06-B-F.1`。跨来源、批次或品类汇总应重新查询并集。
+- M07 复用稳定发生、片段版和精确证据引用，将发现状态及身份待核作为本地流转依据。M12 提供实际输入、资格授权版本及唯一当前回执，绑定题组、模型、索引、校准与回执版。M13 使用同一结果检查两条恒等式、正式批准和报告发放要件，权限、输入变化或过期后重新统计。
+- 正式模式当前 `unavailable`，正式计数和对账均为 `null`。工程和隔离合成结果分别使用。G-1 = **BLOCKED**，M07 = **NOT_STARTED**。专案 v2.2 的 27 页原 PDF 待补。下一阶段 M06-R 需负责人单独授权。
+- 获准启动 M06-R 后，从交付 SHA 的隔离源码归档贯穿 C1–C5 复核迁移及恢复、写锁内当前资格、M/E 及谱系、C4 权限和组合事务、C5 同证据交集与对账。重点复核资格或授权在版本切换及长查询时变化的边界，并复核十万档批量路径的实测慢点。
+
 ## M06-C4 交付及 C5 接口
 
 开发分支为 `codex/p0-0-connectivity`，对应草稿 PR #1。C4 从 `71a0668a9c9677c805ffe0f494c070fc6b9645d3` 接续，验收源码为 `fce76a06195c7f45638c39b0347301fbb6bfbbae`。C4 为 **ENGINEERING_PASS**，Windows 11 实机与该版本部署门禁为 **PASS**。接续时核对开发分支、草稿 PR 和同一验收提交的检查。[C4 工程证据](docs/evidence/m06-c4/README.md) · [PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)
@@ -10,7 +19,7 @@
 - C4 的工程归属回执绑定精确 E 及其依赖核验版本。正式统计仍需 M12 当前完整编码回执、C5 对账及正式准入。缺项返回 `unavailable` 和 `counts:null`。明确非产品范围可返回有效的工程空集。
 - 产品关系中涉及未解析冻结映射时返回不可用。治理审核者的当前精确审计授权只允许看脱敏失格记录。检测、统计、排序、导出及编码依赖应继续使用当前合格证据集合。审计失格记录仅供复核。
 - 组合写保持单主库、`BEGIN IMMEDIATE`、C2 同连接复核及失败整项回滚。跨项目继承代表证据保守拒绝。将来由获准联合流程逐项目核验。保护已发布目录节点和祖先时，调用方提供可信已发布引用，正式报告引用来源由 M13 接入。
-- M06-C5 = **NOT_STARTED**，待负责人另行授权。G-1 = **BLOCKED**。专案 v2.2 的 27 页原 PDF 待补。
+- C5 当前交付及后续授权见本页顶部。G-1 = **BLOCKED**。专案 v2.2 的 27 页原 PDF 待补。
 
 ## 历史记录 · M06-C3 交付及 C4 接入
 

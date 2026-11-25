@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M01–M05 与 M06-C1–C4 为 **ENGINEERING_PASS**。M06-B-F 五项政策与架构保持冻结。C4 的 Windows 11 实机与版本部署门禁均为 **PASS**。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-C5 为 **NOT_STARTED**，待负责人另行授权。[C4 验收证据](docs/evidence/m06-c4/README.md) · [开发状态](DEVELOPMENT_STATUS.md)
+M01–M05 与 M06-C1–C4 为 **ENGINEERING_PASS**。M06-B-F 五项政策与架构保持冻结。C5 的 Windows 11 实机与版本部署门禁均为 **PASS**，C5 工程通过按本轮三项 CI 的生效条件记录。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-R 等待负责人单独授权，M07 为 **NOT_STARTED**。[C5 工程证据](docs/evidence/m06-c5/README.md) · [开发状态](DEVELOPMENT_STATUS.md)
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
@@ -104,16 +104,16 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 |---|---|
 | PDT 与矩阵编号 | §6、§6.6、§6.9、§9.3；C0-6、CAT-1～CAT-10（CAT-4 协作）、J-14 接口 |
 | 模块职责 | 维护 Product Category、Task Category、Intent 以及证据驱动的双向关系。 |
-| 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。M06-B-F 架构已冻结。负责人已授权 C1–C4。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
-| 工程开发 | M06-B-F 审核 PASS，审批 APPROVED，架构 FROZEN。C1 为 ENGINEERING_PASS，涵盖 v7 数据库迁移与关系约束。C2 提供调用方写锁内的资格复核与 UTC 日界回滚。C3 交付稳定发生和证据、区间和拆并谱系、精确冻结映射、逐边人工审核。C4 在此基础上交付双向关系、权限和原子组合事务。[六份设计文档](docs/architecture/m06-design.md) |
-| 工程测试 | C4 前置复验通过原有 Python 215 项与 3 个独立探针。最终源码通过 Windows 11 全量 Python 247/247、Node 2/2、Chromium 10 组和本机 HTTP 1 组，以及部署回归和独立复审。三个源码 CI 作业均通过。[C4 工程证据](docs/evidence/m06-c4/README.md) · [源码 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45560884986) |
+| 前置依赖 | 依赖 M03 冻结范围、M05-R2 工程冻结与实时资格契约。M06-B-F 架构已冻结。负责人已授权 C1–C5。正式语料接入按 G-1 与逐源业务验收执行。与 M07 共享注册表约束，与 M11 协作候选事务。[数据契约](HANDOVER.md#m05--m06-数据契约) |
+| 工程开发 | M06-B-F 审核 PASS，审批 APPROVED，架构 FROZEN。C1 涵盖 v7 迁移与关系约束。C2 提供写锁内资格复核与 UTC 日界回滚。C3 提供稳定发生、证据、区间、拆并谱系及人工审核。C4 提供双向关系、权限和原子组合事务。C5 提供固定统计版本、分母链、六桶、主类及排除账。[六份设计文档](docs/architecture/m06-design.md) |
+| 工程测试 | C5 前置复验 Python 247/247，最终实机 Python 269/269、Node 2/2、Chromium 11 组、本机 HTTP 2 组。C5 专项独立复审及三档规模恢复测试通过，三个源码 CI 作业均通过。[C5 工程证据](docs/evidence/m06-c5/README.md) · [源码 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45569514279) |
 | 正式业务验收 | CAT 系列待验。 |
-| 数据库及 API | SQLite v7。C4 提供定义、关系双向、项目片段、合格证据和预检 HTTP。原子组合发行作为内部工程接口。正式联合确认归 M07/M11。 |
-| 前端页面 | C4 中文基础关系浏览，支持主次任务、冻结版本和合格证据下钻。 |
-| 验收标准 | 已确认意图唯一主任务大类。产品关系由合格原话证据得出。仅 published_classified 的 distinct mention_id 入分母，主大类合计精确对账。 |
-| 最近相关提交 | C4 验收源码 `fce76a0`，C3 验收源码 `43c7202`，C2 实现 `965a4b8`，M06-B 审核基线 `2651d66`。[C4 验收证据](docs/evidence/m06-c4/README.md) · [负责人批准记录](docs/architecture/m06-owner-approval.md) |
+| 数据库及 API | SQLite v7。C4 提供定义、双向关系、项目片段、合格证据及预检。C5 提供 `GET /api/studies/{study_id}/denominators`。原子组合发行是内部接口，正式联合确认归 M07/M11。 |
+| 前端页面 | 中文工作台提供基础关系与分母对账，支持冻结版本、筛选、失格遮蔽及合格证据下钻。 |
+| 验收标准 | 已确认意图只有一个主任务。产品关系由当前合格原话证据决定。先在同一证据上相交，再按唯一 `mention_id` 分别核对合格发生与六桶、已发布归类与主任务大类两条恒等式。 |
+| 最近相关提交 | C5 验收源码 `a9eebee`，C4 验收源码 `fce76a0`，C3 验收源码 `43c7202`，C2 实现 `965a4b8`。[C5 工程证据](docs/evidence/m06-c5/README.md) · [负责人批准记录](docs/architecture/m06-owner-approval.md) |
 | 测试结果与证据 | C0-6 合成冒烟为 2 个产品品类、3 个任务大类、30 个意图、两次跨品类命中。C1 在 Windows 10 实机通过 Python 173/173（新增 33 项）及既有回归，见[迁移与工程验收证据](docs/evidence/m06-c1/README.md)。 |
-| 剩余问题 | C5 对账及规模未启动。完整身份及审核入口、真实编码、正式统计和发布仍待所属阶段验收。专案 v2.2 原 PDF 待补。[分阶段计划](docs/architecture/m06-implementation-plan.md) · [专项矩阵](docs/architecture/m06-test-plan.md) |
+| 剩余问题 | C5 对账及规模见本轮工程证据。完整身份及审核入口、真实编码、正式统计和发布仍待所属阶段验收。专案 v2.2 原 PDF 待补。[分阶段计划](docs/architecture/m06-implementation-plan.md) · [专项矩阵](docs/architecture/m06-test-plan.md) |
 
 ## M07 意图注册表及版本管理
 

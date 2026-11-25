@@ -1,10 +1,18 @@
 # VOC Research Workbench 开发状态
 
+## M06-C5 统计分母、六桶与对账
+
+2026-11-25 从 `db0c2c86385950b6630a2691e1263d5dd429aa32` 接续。**M06-C5_ENTRY_CHECK = PASS**，原生 Windows 11 的基线 Python 247/247，独立前置复核另有 7 个探针。统计实现固定 `M06-B-F.1`，同一证据相交后按唯一发生汇总，分别核六桶、主任务和排除账。SQLite schema 保持 v7。真实研究 API 调用 0 次。
+
+源码 `a9eebee24616984dda8e72bab1242373555b06db` 通过 Windows 11 实机和部署门禁。Python 269/269（新增 22），Node 2/2，Chromium 11 组，隔离独立复审 22/22 加 6/6 探针。1K、10K、100K 三档完成 SQLite 全路径、双路资格比较及备份恢复，十万原始行得到 59,999 个合格唯一发生。未解决 P0/P1 为 0。**M06-C5 = ENGINEERING_PASS** 在本验收提交的 Ubuntu、Windows Server 2022 和 Chromium CI 全部通过时生效。[本轮证据](docs/evidence/m06-c5/README.md) · [草稿 PR #1 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)
+
+G-1 = **BLOCKED**，M07 = **NOT_STARTED**。M06-R 等待负责人单独授权。正式业务准入继续执行原验收标准。
+
 ## M06-C4 三层关系、组合事务与权限
 
 2026-11-25 从 `71a0668a9c9677c805ffe0f494c070fc6b9645d3` 接续。**M06-C4_ENTRY_CHECK = PASS**。原生 Windows 11 上 C3 基线 Python 215/215，另通过 3 项 C1–C3 同连接、依赖及最终提交独立探针。
 
-C4 提供已封版共享定义、三层双向查询、精确证据下钻、可撤回的服务端授权、预检及单连接组合事务。SQLite 保持 v7。实机、复审和 CI 状态见 [C4 工程证据](docs/evidence/m06-c4/README.md)。G-1 = **BLOCKED**，PRE_M06_DEVELOPMENT_GATE = **PASS**，M06-C5 = **NOT_STARTED**。真实研究 API 调用 0 次。
+C4 提供已封版共享定义、三层双向查询、精确证据下钻、可撤回的服务端授权、预检及单连接组合事务。SQLite 保持 v7。实机、复审和 CI 状态见 [C4 工程证据](docs/evidence/m06-c4/README.md)。G-1 = **BLOCKED**，PRE_M06_DEVELOPMENT_GATE = **PASS**。真实研究 API 调用 0 次。
 
 在验收源码 `fce76a06195c7f45638c39b0347301fbb6bfbbae` 上，**M06-C4 = ENGINEERING_PASS**，**WINDOWS_11_REAL_MACHINE = PASS**，**WINDOWS_11_DEPLOYMENT_GATE = PASS**。原生 Windows 11 的 Python 247/247（既有 215、新增 32）、Node 2/2、Chromium 10 组、本机 HTTP 1 组及其余实机检查均通过。独立复审确认的三项 P1 和两项 P2 已修复，另修复一项 Chromium 测试夹具串扰。未解决 P0/P1 为 0。草稿 PR #1 保留验收提交的检查记录。[源码 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45560884986) · [PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)
 
