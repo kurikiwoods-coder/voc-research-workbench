@@ -13,13 +13,13 @@ FIXTURE_TEXT = "我希望能提前选择预约时段，并在临近日期时收�
 FILENAME = "语料审核 合成数据.csv"
 
 
-def add_batch(page, base, project, filename, source_url):
+def add_batch(page, base, project, filename, source_url, *, text=FIXTURE_TEXT):
     columns = ["raw_text", "source_type", "source_url", "published_at",
                "access_policy", "privacy", "content_role"]
     stream = StringIO()
     writer = csv.writer(stream)
     writer.writerow(columns)
-    writer.writerow([FIXTURE_TEXT, "forum", source_url, "2026-11-01",
+    writer.writerow([text, "forum", source_url, "2026-11-01",
                      "仅供隔离工程测试的合成许可", "public", "user_quote"])
     headers = {"Origin": base.rstrip("/"), "X-VOC-Action": "connectivity"}
     target = f"{base}/api/imports/{project['study_id']}"
@@ -45,7 +45,7 @@ def open_record(page, filename):
     expect(page.locator("blockquote.corpus-quote b")).to_have_count(0)
 
 
-def verify_quote(page):
+def verify_quote(page, text=FIXTURE_TEXT):
     page.get_by_label("审核结论").select_option("verified")
     page.get_by_label("语料角色").select_option("user_quote")
     page.get_by_label("许可状态").select_option("authorized")
@@ -56,7 +56,7 @@ def verify_quote(page):
     page.get_by_label("保留至（UTC）").fill(date.isoformat())
     page.get_by_role("button", name="保存审核", exact=True).click()
     expect(page.locator(".corpus-record-state")).to_contain_text("已核验")
-    expect(page.locator("blockquote.corpus-quote")).to_have_text(FIXTURE_TEXT)
+    expect(page.locator("blockquote.corpus-quote")).to_have_text(text)
     expect(page.locator("blockquote.corpus-quote b")).to_have_count(0)
 
 

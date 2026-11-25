@@ -3,6 +3,7 @@ from dataclasses import replace
 from ipaddress import ip_address
 import json
 from pathlib import Path
+from secrets import token_bytes
 from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Request
@@ -16,6 +17,7 @@ from src.dashboard.api_setup import register_setup, setup_view
 from src.dashboard.corpus_api import register_corpus
 from src.dashboard.study_api import register_studies
 from src.dashboard.import_api import register_imports
+from src.dashboard.relations_api import is_relation_path, register_relations, relation_error
 from src.execution.checks import run_checks
 from src.raw_store.corpus import CorpusStore
 from src.raw_store.credentials import CredentialVault, VaultError
@@ -206,14 +208,18 @@ class Batch(BaseModel):
     request_key: UUID
 
 
-def create_app(settings=None):
+def create_app(settings=None, *, relation_grants=None):
     @asynccontextmanager
     async def lifespan(app):
+        from src.raw_store.relations import RelationStore
+
         app.state.settings = settings or Settings.load_base()
         app.state.store = Store(app.state.settings.directory)
         app.state.studies = StudyStore(app.state.store)
         app.state.imports = ImportStore(app.state.store)
         app.state.corpus = CorpusStore(app.state.store)
+        app.state.relations = RelationStore(app.state.store, grants=relation_grants)
+        app.state.relation_cursor_key = token_bytes(32)
         app.state.diagnostics = Store(app.state.settings.directory, diagnostic=True)
         app.state.vault = CredentialVault(app.state.settings.directory)
         yield
@@ -226,7 +232,9 @@ def create_app(settings=None):
     @app.middleware("http")
     async def local_controls(request: Request, call_next):
         path = request.url.path
-        private_api = path.startswith(("/api/setup/", "/api/studies/", "/api/imports/", "/api/corpus/")) or path == "/api/studies"
+        relation_api = is_relation_path(path)
+        private_api = (relation_api or path == "/api/studies"
+                       or path.startswith(("/api/setup/", "/api/studies/", "/api/imports/", "/api/corpus/")))
         local_data = private_api or path in {"/api/workspace", "/api/runs"} or path.startswith("/api/runs/")
         if local_data:
             try:
@@ -234,11 +242,15 @@ def create_app(settings=None):
             except ValueError:
                 loopback = False
             if not loopback:
+                if relation_api:
+                    return relation_error(403)
                 return JSONResponse({"detail": "请从本机 localhost 打开工作台。"}, status_code=403)
         if request.method not in ("GET", "HEAD", "OPTIONS"):
             origin = request.headers.get("origin")
             expected = f"{request.url.scheme}://{request.headers.get('host')}"
             if request.headers.get("X-VOC-Action") != "connectivity" or ((origin or private_api) and origin != expected):
+                if relation_api:
+                    return relation_error(403)
                 return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403)
         reply = await call_next(request)
         reply.headers["Referrer-Policy"] = "no-referrer"
@@ -326,6 +338,7 @@ def create_app(settings=None):
     register_studies(app)
     register_imports(app)
     register_corpus(app)
+    register_relations(app)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
 

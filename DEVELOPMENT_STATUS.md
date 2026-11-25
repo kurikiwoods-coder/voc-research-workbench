@@ -1,6 +1,12 @@
 # VOC Research Workbench 开发状态
 
-## M06-C3 发生、区间、证据及产品边
+## M06-C4 三层关系、组合事务与权限
+
+2026-11-25 从 `71a0668a9c9677c805ffe0f494c070fc6b9645d3` 接续。**M06-C4_ENTRY_CHECK = PASS**。原生 Windows 11 上 C3 基线 Python 215/215，另通过 3 项 C1–C3 同连接、依赖及最终提交独立探针。
+
+C4 提供已封版共享定义、三层双向查询、精确证据下钻、可撤回的服务端授权、预检及单连接组合事务。SQLite 保持 v7。实机、复审和 CI 状态见 [C4 工程证据](docs/evidence/m06-c4/README.md)。G-1 = **BLOCKED**，PRE_M06_DEVELOPMENT_GATE = **PASS**，M06-C5 = **NOT_STARTED**。真实研究 API 调用 0 次。
+
+## 历史记录 · M06-C3 发生、区间、证据及产品边
 
 2026-11-25 自 `e64141b76f78e17508133de0b91510d80e9daa81` 实施 C3。源码验收基线为 `43c72026e1776f6b78b78beeb3d87b7126016924`。SQLite v7 的 Python 服务可登记稳定发生和证据、封存片段版和拆并谱系、消费冻结范围和精确目录映射，并保存逐边人工审核与撤销。读和写均按当前 M05 资格校验实际直接证据与上下文。G-1 = **BLOCKED**，M06-C4 = **NOT_STARTED**，PRE_M06_DEVELOPMENT_GATE = **PASS**，真实研究 API 调用 0 次。[C3 实机及独立复审证据](docs/evidence/m06-c3/README.md)
 

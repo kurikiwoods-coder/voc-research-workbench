@@ -12,6 +12,7 @@ const pages = {
   studies: ["研究项目", "folder"],
   imports: ["数据导入中心", "download"],
   corpus: ["原始语料库", "file"],
+  relations: ["三层关系", "branch"],
   checks: ["连通性检查", "pulse"],
   matrix: ["验收矩阵", "grid"],
   history: ["运行记录", "clock"],
@@ -22,6 +23,7 @@ const researchViews = {
   studies: () => import("./studies.js").then(module => module.mountStudies),
   imports: () => import("./imports.js").then(module => module.mountImports),
   corpus: () => import("./corpus.js").then(module => module.mountCorpus),
+  relations: () => import("./relations.js").then(module => module.mountRelations),
 };
 function pageFromLocation() {
   const page = location.hash.slice(1);
@@ -148,11 +150,14 @@ async function api(url, options) {
   }
   if (!response.ok) {
     let message = "本地服务暂时不可用";
+    let code;
     try {
       const data = await response.json();
       if (typeof data.detail === "string") message = data.detail;
+      if (typeof data.message === "string") message = data.message;
+      code = data.code;
     } catch {}
-    throw new Error(message + "（" + response.status + "）");
+    throw Object.assign(new Error(message + "（" + response.status + "）"), { status: response.status, code });
   }
   try {
     return await response.json();
@@ -392,7 +397,7 @@ function render() {
   if (main.firstElementChild?.dataset.workspaceRoute === hash) return;
   const view = document.createElement("div");
   const title = pages[current][0];
-  view.className = { studies: "study-root", imports: "import-root", corpus: "corpus-root" }[current];
+  view.className = { studies: "study-root", imports: "import-root", corpus: "corpus-root", relations: "relation-root" }[current];
   view.dataset.workspaceRoute = hash;
   view.innerHTML = '<p class="panel state-box" role="status">正在读取' + title + '…</p>';
   main.replaceChildren(view);

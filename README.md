@@ -16,7 +16,7 @@ VOC 工作台用于研究任意产品、服务或跨品类用户需求。一个�
 
 ```sh
 python -m pip install -r requirements.txt
-python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
+python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-headers
 ```
 
 首次启动可跟随向导，也可以从「设置 → API 接入」继续。选择 TypeSafe 或 JevModel，配置 Tavily 或 Brave 中的至少一家。粘贴密钥后点「保存密钥」，立即生效。导入所选 Jev 通道的留存审查，再逐服务点「检查连接」。[用户操作说明](docs/connectivity.md#从工作台配置-api) · [供应商注册与取钥](docs/connectivity.md#注册与创建密钥)

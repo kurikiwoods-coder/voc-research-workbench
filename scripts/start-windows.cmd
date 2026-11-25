@@ -27,5 +27,5 @@ if not exist ".env" (
 ".venv\Scripts\python.exe" -m pip install -r requirements.txt
 if errorlevel 1 exit /b 1
 echo Open http://127.0.0.1:8765/ in your browser. Press Ctrl+C to stop.
-".venv\Scripts\python.exe" -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765
+".venv\Scripts\python.exe" -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-headers
 exit /b %errorlevel%

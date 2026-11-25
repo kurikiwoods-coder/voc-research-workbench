@@ -31,6 +31,7 @@ def main():
                     "src.dashboard.app:app",
                     "--host",
                     "127.0.0.1",
+                    "--no-proxy-headers",
                     "--port",
                     str(port),
                     "--log-level",

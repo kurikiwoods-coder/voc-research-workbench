@@ -26,6 +26,7 @@ sys.path.insert(0, str(ROOT))
 from src.config import Settings
 from src.dashboard.app import create_app
 from test_api_setup import review_pair
+from relations_browser import relation_fixture_grants, relations_browser_checks
 
 
 def serve(data, port):
@@ -33,8 +34,9 @@ def serve(data, port):
 
     # Keep the real service and SQLite, and exercise the unavailable-source path without egress.
     with patch("src.execution.transport.build_opener", side_effect=URLError("offline browser regression")):
-        uvicorn.run(create_app(Settings(Path(data))), host="127.0.0.1", port=port, log_level="warning",
-                    use_colors=False)
+        app = create_app(Settings(Path(data)), relation_grants=lambda: relation_fixture_grants(data))
+        uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning", use_colors=False,
+                    proxy_headers=False)
 
 
 def api_setup_checks(page, output):
@@ -105,10 +107,12 @@ def api_setup_checks(page, output):
     print("API setup E2E passed: wizard, local key save/rotation/delete, preflight evidence, and 320/390 layouts.")
 
 
-def browser_checks(base, output, studies_only=False):
+def browser_checks(base, output, directory, studies_only=False, relations_only=False):
     output.mkdir(parents=True, exist_ok=True)
     with sync_playwright() as pw:
         browser = pw.chromium.launch(executable_path=os.getenv("VOC_CHROMIUM") or None)
+        if relations_only:
+            return relations_browser_checks(browser, base, output, directory)
         page = browser.new_page(viewport={"width": 1440, "height": 960}, locale="zh-CN")
         if studies_only:
             page.goto(base)
@@ -220,6 +224,7 @@ def browser_checks(base, output, studies_only=False):
         study_ids = study_browser_checks(browser, base, output)
         import_ids = imports_browser_checks(browser, base, output)
         corpus_ids = corpus_browser_checks(browser, base, output)
+        relations_browser_checks(browser, base, output, directory)
         return study_ids, import_ids, corpus_ids
 
 
@@ -249,6 +254,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--serve", nargs=2, metavar=("DIR", "PORT"))
     parser.add_argument("--studies-only", action="store_true")
+    parser.add_argument("--relations-only", action="store_true")
     parser.add_argument("--output", type=Path, default=ROOT / "test-results/browser")
     args = parser.parse_args()
     if args.serve:
@@ -258,7 +264,10 @@ def main():
             port_probe.bind(("127.0.0.1", 0))
             port = port_probe.getsockname()[1]
         with server(directory, port) as base:
-            result = browser_checks(base, args.output, args.studies_only)
+            result = browser_checks(base, args.output, directory, args.studies_only, args.relations_only)
+        if args.relations_only:
+            print("Chromium E2E passed. Screenshots:", args.output)
+            return
         with server(directory, port) as base, sync_playwright() as pw:
             browser = pw.chromium.launch(executable_path=os.getenv("VOC_CHROMIUM") or None)
             if args.studies_only:
