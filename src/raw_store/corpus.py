@@ -120,13 +120,19 @@ class CorpusStore:
     def duplicate(db, row, today, status):
         if not row["dedupe_group"] or row["role"] != "user_quote" or status != "verified":
             return None
+        source = ROW_SOURCE.replace(
+            "FROM import_rows r\n    JOIN import_batches b",
+            "FROM duplicate_candidates candidate\n"
+            "    CROSS JOIN import_rows r ON r.record_id=candidate.record_id\n"
+            "    CROSS JOIN import_batches b",
+        )
         group = db.execute(
-            f"""SELECT {ROW_COLUMNS} {ROW_SOURCE}
+            f"""WITH duplicate_candidates AS MATERIALIZED (
+                    SELECT DISTINCT record_id FROM corpus_reviews WHERE dedupe_group=:dedupe_group
+                )
+                SELECT {ROW_COLUMNS} {source}
                 WHERE b.study_id=:study_id AND v.dedupe_group=:dedupe_group
                     AND v.decision='verified' AND v.role='user_quote'
-                    AND r.record_id IN (
-                        SELECT record_id FROM corpus_reviews WHERE dedupe_group=:dedupe_group
-                    )
                 ORDER BY snap.created_at, snap.record_id""",
             {"study_id": row["study_id"], "dedupe_group": row["dedupe_group"], "today": today},
         )
