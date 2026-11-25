@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，第二片实扣待补证。G-1-R-B 为 **BLOCKED**。M08 为 **PARTIAL**，A/B 工程通过，C/D/E 及 M09–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-A/B 证据](docs/evidence/m08-ab/README.md)
+M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，第二片实扣待补证。G-1-R-B 为 **BLOCKED**。M08 的 P0 A–D 工程通过，正式业务 **PENDING**，P1 的 M08-E 及 M09–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-C/D 证据](docs/evidence/m08-cd/README.md)
 
 [ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 35 项，待推进 44 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 
@@ -140,7 +140,7 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | PDT 与矩阵编号 | 专案 §3/§5；C0-3、INGEST、G1/G2、SOURCE-POLICY、PRIVACY、P1-SOURCES |
 | 模块职责 | 实现合规搜索发现、来源回源、采样日志及来源故障切换。 |
 | 前置依赖 | M02 接入凭证、M03 范围、M05 原文库与来源授权；CSV 兜底来自 M04。 |
-| 工程开发 | M08-A/B 已实现来源权限契约、冻结范围预览、Tavily/Brave 发现和 Stack Exchange 夹具回源。M08-C/D/E 待授权。 |
+| 工程开发 | M08-A–D 已通过隔离工程。包含 Tavily/Brave 模拟发现、Stack Exchange 与 YouTube 许可夹具、可恢复任务、预算及 M04/M05 合成兜底。M08-E 的第二论坛、YouTube 评论扩展及期刊背景对照属于 P1。 |
 | 工程测试 | 双搜索、故障切换、许可和 URL 边界以合成夹具验证。[实测证据](docs/evidence/m08-ab/README.md) |
 | 正式业务验收 | PENDING。历史 C0-3 有通过证据，正式同批 G-1、G1/G2、INGEST、SOURCE-POLICY 与 P1-SOURCES 待验。 |
 | 数据库及 API | 工作库 v8，离线演示账本 v1。来源、预览和演示 API 可本机访问，正式采集 403。 |

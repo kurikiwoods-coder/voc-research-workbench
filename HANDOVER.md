@@ -1,10 +1,16 @@
 # 开发交接
 
+## M08-C/D 接续
+
+「来源采集」页面支持固定合成计划、平台许可、任务检查点、暂停及继续。Stack Exchange 与 YouTube 在隔离夹具中回源，Reddit 是禁用候选。每任务独立 v8 工作库保存 M04 批次、M05 审核和本机回执，任务 v1 账本在 `m08-sampling/ledger.sqlite3`。结果未知的计量预约继续阻断。只有已提交的本机回执可以恢复结算。[平台回源](docs/architecture/m08-platform-retrieval-contract.md) · [任务契约](docs/architecture/m08-acquisition-task-contract.md) · [验收证据](docs/evidence/m08-cd/README.md)
+
+M08 的 P0 工程通过。M09 获得授权后，按项目、冻结范围、批次、记录、M06 片段版本及 M07 精确注册表版接续。当前合成样本仅允许工程回查。正式业务和 G-1 的来源、供应商、同批验收要求继续适用。[M09 消费交接](docs/architecture/m08-consumer-handover.md)
+
 ## M08-A/B 接续
 
 本机工作台左栏进入「来源采集」，选择项目及冻结范围。查询计划显示供应商映射和限制，离线演示以固定合成文本产生发现及页面访问回执。运行目录中的 `m08-offline/acquisition.sqlite3` 保存演示证据。正式采集返回 403，正式漏斗缺数据时为 `null`。[来源权限契约](docs/architecture/m08-source-adapter-contract.md) · [双搜索与回源契约](docs/architecture/m08-search-and-retrieval-contract.md) · [验收证据](docs/evidence/m08-ab/README.md)
 
-下一次授权若覆盖 M08-C，按来源核对逐项访问、存储和研究许可及常规删除，沿用固定端点与当前资格。M08-D 再接 M04 批次、M05 授权和 M06 分母，补齐任务、预算、恢复及正式采样证据。G-1 仍为 **BLOCKED**，PackyCode 供应商审批、实际完整对账和同批六项正式验收继续待办。
+本节保留 A/B 结项记录。G-1 仍为 **BLOCKED**，PackyCode 供应商审批、实际完整对账和同批六项正式验收继续待办。
 
 ## G-1-R-B-P 接续
 

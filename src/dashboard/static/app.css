@@ -1663,7 +1663,7 @@ dialog::backdrop {
 .acquisition-grid > label { display: grid; gap: 6px; min-width: 0; font-weight: 650; }
 .acquisition-root :is(.field, button) { min-height: 40px; }
 .acquisition-root .field { width: 100%; min-width: 0; color: var(--ink); font-weight: 400; }
-#acquisition-fields { border: 0; margin: 0; min-width: 0; padding: 0; }
+#acquisition-fields, #acquisition-task-config { border: 0; margin: 0; min-width: 0; padding: 0; }
 .acquisition-domains {
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -1686,6 +1686,15 @@ dialog::backdrop {
 .acquisition-records { margin: 8px 0 0; padding-inline-start: 1.3em; }
 .acquisition-records li { padding: 7px 0; }
 .acquisition-records h4 { margin: 0 0 5px; }
+.acquisition-budgets { width: 100%; }
+.acquisition-task-heading { display: flex; gap: 8px 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.acquisition-task-heading > h2 { margin: 0; }
+.acquisition-task-cards { display: grid; gap: 10px; }
+.acquisition-task-cards .acquisition-task-heading { margin-bottom: 12px; }
+.acquisition-task-id { overflow-wrap: anywhere; text-align: start; font-family: var(--mono); }
+.acquisition-task-state { color: var(--teal); font-weight: 650; }
+.acquisition-receipts details details { margin: 8px 0 0 12px; }
+.acquisition-receipts [data-evidence-result]:not(:empty) { margin-top: 8px; }
 @media (max-width: 520px) {
   .acquisition-head { display: block; }
   .acquisition-head > button { margin-top: 9px; }

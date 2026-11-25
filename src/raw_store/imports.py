@@ -205,34 +205,39 @@ class ImportStore:
         return batch_record(row)
 
     def commit(self, file, sheet, index, mapping, privacy, signature, rows, summary):
-        study_id, scope_id, file_id = (file[field] for field in ("study_id", "scope_id", "file_id"))
         with self.write() as db:
-            self.target(db, study_id, scope_id)
-            if not db.execute("SELECT 1 FROM import_files WHERE study_id=? AND file_id=?",
-                              (study_id, file_id)).fetchone():
-                raise KeyError(file_id)
-            previous = db.execute("""SELECT batch_id FROM import_batches
-                                     WHERE study_id=? AND scope_id=? AND signature=?""",
-                                  (study_id, scope_id, signature)).fetchone()
-            if previous:
-                return self.saved_batch(db, study_id, previous["batch_id"])
-            check_sheet_access(db, file, index)
-            check_sheet_sources(db, study_id, sheet)
-            ident = str(uuid4())
-            db.execute("""INSERT INTO import_batches
-                       (batch_id, study_id, scope_id, file_id, sheet_index, sheet_name, header_line, headers_json,
-                        mapping_json, privacy, signature, summary_json, created_at)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                       (ident, study_id, scope_id, file_id, index, sheet.name, sheet.header_line, dump(sheet.columns),
-                        dump(mapping), privacy, signature, dump(summary), now()))
-            db.executemany("""INSERT INTO import_rows
-                           (record_id, batch_id, line_number, raw_text, originals_json, fields_json, status,
-                            privacy, text_fingerprint, duplicate_of_line, issues_json)
-                           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-                          ((f"{ident}:{row['line_number']}", ident, row["line_number"], row["raw_text"],
-                            dump(row["original_fields"]), dump(row["fields"]), row["status"], row["privacy"],
-                            row["text_fingerprint"], row["duplicate_of_line"], dump(row["issues"])) for row in rows))
-            return self.saved_batch(db, study_id, ident)
+            return self.commit_in_transaction(db, file, sheet, index, mapping, privacy, signature, rows, summary)
+
+    def commit_in_transaction(self, db, file, sheet, index, mapping, privacy, signature, rows, summary):
+        if not db.in_transaction:
+            raise ValueError("导入批次需要活动写事务。")
+        study_id, scope_id, file_id = (file[field] for field in ("study_id", "scope_id", "file_id"))
+        self.target(db, study_id, scope_id)
+        if not db.execute("SELECT 1 FROM import_files WHERE study_id=? AND file_id=?",
+                          (study_id, file_id)).fetchone():
+            raise KeyError(file_id)
+        previous = db.execute("""SELECT batch_id FROM import_batches
+                                 WHERE study_id=? AND scope_id=? AND signature=?""",
+                              (study_id, scope_id, signature)).fetchone()
+        if previous:
+            return self.saved_batch(db, study_id, previous["batch_id"])
+        check_sheet_access(db, file, index)
+        check_sheet_sources(db, study_id, sheet)
+        ident = str(uuid4())
+        db.execute("""INSERT INTO import_batches
+                   (batch_id, study_id, scope_id, file_id, sheet_index, sheet_name, header_line, headers_json,
+                    mapping_json, privacy, signature, summary_json, created_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                   (ident, study_id, scope_id, file_id, index, sheet.name, sheet.header_line, dump(sheet.columns),
+                    dump(mapping), privacy, signature, dump(summary), now()))
+        db.executemany("""INSERT INTO import_rows
+                       (record_id, batch_id, line_number, raw_text, originals_json, fields_json, status,
+                        privacy, text_fingerprint, duplicate_of_line, issues_json)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                      ((f"{ident}:{row['line_number']}", ident, row["line_number"], row["raw_text"],
+                        dump(row["original_fields"]), dump(row["fields"]), row["status"], row["privacy"],
+                        row["text_fingerprint"], row["duplicate_of_line"], dump(row["issues"])) for row in rows))
+        return self.saved_batch(db, study_id, ident)
 
     def history(self, study_id, offset):
         with self.store.db() as db:

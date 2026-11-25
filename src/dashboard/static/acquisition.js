@@ -1,5 +1,9 @@
+import { mountAcquisitionTasks } from "./acquisition-tasks.js";
+
 const endpoint = "/api/acquisition";
-const providers = { tavily: "Tavily", brave: "Brave Search", stackexchange: "Stack Exchange" };
+const providers = {
+  tavily: "Tavily", brave: "Brave Search", stackexchange: "Stack Exchange", youtube: "YouTube", reddit: "Reddit",
+};
 const capabilities = {
   discover: "搜索发现", access: "原文访问", store: "原文存储", research: "研究使用", transmit: "外部模型传输",
 };
@@ -8,11 +12,20 @@ const statuses = {
   disabled: "停用", restricted: "受限制", revoked: "已撤销", expired: "已过期",
   offline_fixture: "离线合成夹具", pending: "待核验", background: "仅背景参考",
   background_only: "仅背景参考", internal: "内部或非公开", synthetic: "合成",
-  fixture_reported: "夹具提供", unsynced: "未同步", credit: "Credit", request: "请求",
+  fixture_reported: "夹具提供", unsynced: "未同步", credit: "Credit", request: "请求", youtube_quota_unit: "YouTube 配额单位",
+  blocked_candidate: "候选 · 受阻", background_reference: "背景参考", user_quote: "用户原话",
+  product_or_merchant: "产品说明或商家内容", deferred: "后续范围",
+  authorization_required: "须授权", owner_authorization_required: "须视频权利人授权", quota_unit: "配额单位",
   discovered: "已发现", accessible: "可访问", inaccessible: "不可访问", permission_pending: "许可待核验",
   permission_denied: "许可拒绝", quote_extracted: "已提取原文", extraction_failed: "提取失败",
 };
-const sourceTypes = { search: "搜索引擎", public_forum: "公开论坛" };
+const sourceTypes = {
+  search: "搜索引擎", public_forum: "公开论坛", video: "视频平台", backup_forum: "备用论坛",
+};
+const objectKinds = {
+  question: "问题", answer: "回答", comment: "评论", search: "搜索发现", video: "视频", description: "视频描述",
+  metadata: "公开元数据", caption_track: "字幕轨道", caption_text: "字幕文本", reply: "回复", post: "帖子",
+};
 const reasons = {
   missing_key: "凭证未配置", query_too_long: "查询超出接口长度限制",
   invalid_request: "请求参数无效", quota_exhausted: "额度用尽",
@@ -100,7 +113,7 @@ export function mountAcquisition(root, _route, { api, esc }) {
 
   root.innerHTML = `
     <header class="page-head acquisition-head">
-      <div><h1>来源采集</h1><p>基于冻结研究范围预览查询，查看合成发现和回源回执。</p></div>
+      <div><h1>来源采集</h1><p>基于冻结研究范围预览查询、运行合成任务和审计回源批次。</p></div>
       <button class="secondary" type="button" aria-describedby="acquisition-gate" disabled>正式采集</button>
     </header>
     <p id="acquisition-gate" class="state-box acquisition-gate" role="status">G-1 门禁 · 正式采集关闭</p>
@@ -157,7 +170,8 @@ export function mountAcquisition(root, _route, { api, esc }) {
     <section class="panel acquisition-panel" id="acquisition-results" aria-labelledby="acquisition-result-heading" hidden>
       <h2 id="acquisition-result-heading" tabindex="-1">查询结果</h2>
       <div id="acquisition-result-body"></div>
-    </section>`;
+    </section>
+    <div id="acquisition-tasks"></div>`;
 
   const get = id => root.querySelector("#acquisition-" + id);
   const form = get("plan");
@@ -168,9 +182,30 @@ export function mountAcquisition(root, _route, { api, esc }) {
   const buttons = [fields.namedItem("preview"), fields.namedItem("demo")];
   let scopesReady = false;
   let frozenVersion = "";
+  let frozenWindow = {};
   let scopeRequest = 0;
   let resultRequest = 0;
   let running = false;
+  const tasks = mountAcquisitionTasks(get("tasks"), {
+    api, esc, pairs, message, funnel, queryPreview, nameOf, statusOf, reasonOf,
+    onReceipts: attempts => {
+      for (const attempt of attempts) {
+        const time = attempt.received_at;
+        if (!time || attempt.receipt?.status === "skipped_by_fallback_policy" || attempt.checkpoint.kind === "import") continue;
+        const card = [...get("sources").querySelectorAll("[data-source-id]")].find(
+          item => item.dataset.sourceId === attempt.checkpoint.source_id
+        );
+        const field = card?.querySelector("dd[data-source-last-executed]");
+        if (field && time > (field.dataset.sourceLastExecuted || "")) {
+          field.textContent = field.dataset.sourceLastExecuted = time;
+        }
+      }
+    },
+    selection: () => scopesReady ? {
+      plan: scopeInput(new FormData(form)), projectName: study.selectedOptions[0]?.textContent,
+      dateWindow: frozenWindow,
+    } : null,
+  });
 
   function setFormState() {
     for (const button of buttons) button.disabled = running || !scopesReady;
@@ -184,6 +219,7 @@ export function mountAcquisition(root, _route, { api, esc }) {
     get("error").hidden = true;
     get("plan-state").textContent = "";
     setFormState();
+    tasks.invalidatePreview();
   }
 
   function errorText(error) {
@@ -195,26 +231,40 @@ export function mountAcquisition(root, _route, { api, esc }) {
   function showSources(data) {
     const reason = data.formal_collection.reason;
     get("gate").textContent = `G-1 BLOCKED · ${reason}`;
-    get("sources").innerHTML = `<div class="acquisition-sources">${data.sources.map(source => `
-      <article class="acquisition-source" aria-label="${esc(nameOf(source.provider))}">
+    const sources = new Map(data.sources.map(source => [source.source_id, source]));
+    for (const platform of data.platforms || []) {
+      sources.set(platform.source_id, { ...sources.get(platform.source_id), ...platform });
+    }
+    get("sources").innerHTML = `<div class="acquisition-sources">${[...sources.values()].map(source => `
+      <article class="acquisition-source" aria-label="${esc(nameOf(source.provider))}" data-source-id="${esc(source.source_id)}">
         <h3>${esc(nameOf(source.provider))}</h3>
         <p class="acquisition-hint">${esc(statusOf(source.capability_status))} · 正式许可${esc(statusOf(source.permission_status))}</p>
         ${pairs([
           ...Object.entries(capabilities).map(([permission, label]) =>
-            [label, statusOf(source.permissions[permission] || "unknown")]
+            [label, statusOf(source.permissions?.[permission] || "unknown")]
           ),
-          ["离线操作", source.allowed_operations.map(operation => capabilities[operation] || operation)],
+          ["离线操作", (source.allowed_operations || []).map(operation => capabilities[operation] || operation)],
         ])}
         <details><summary>许可、留存和接口详情</summary>${pairs([
           ["来源 ID", source.source_id], ["来源类型", sourceTypes[source.source_type] || source.source_type],
           ["适配器版本", source.adapter_version], ["离线域名", source.allowed_domains],
           ["本机凭证", source.credential_status === "unavailable" ? "无法读取" :
-            source.credential_configured == null ? "无需配置" : source.credential_configured ? "已配置" : "未配置"],
+            source.credential_configured == null ? (source.credential_reference ? "正式凭证待核验" : "无需配置") :
+              source.credential_configured ? "已配置" : "未配置"],
           ["启用状态", statusOf(source.enabled_status)],
           ["许可依据", source.license_reference], ["署名要求", source.attribution_requirement],
           ["留存", source.retention_policy], ["删除", source.deletion_policy],
           ["限流", source.rate_limit], ["计费单位", statusOf(source.usage_unit)],
+          ["审批缺项", source.approval_gaps],
         ])}
+        <dl class="acquisition-pairs"><div><dt>最近已读取的合成执行时间</dt>
+          <dd data-source-last-executed="${esc(source.last_executed_at || "")}">${esc(source.last_executed_at || "未记录")}</dd>
+        </div></dl>
+        ${source.object_capabilities?.length ? `<ul class="acquisition-records">${source.object_capabilities.map(object =>
+          `<li><h4>${esc(objectKinds[object.kind] || object.kind)}</h4>${pairs([
+            ["状态", statusOf(object.status)], ["接口", object.endpoint],
+            ["内容角色", statusOf(object.content_role)], ["调用配额单位", object.quota_units],
+          ])}</li>`).join("")}</ul>` : ""}
         ${source.connection_diagnostic ? pairs([
           ["本机连接诊断用量", source.connection_diagnostic.local_usage],
           ["诊断记录的剩余额度", source.connection_diagnostic.remaining ?? "未同步"],
@@ -233,6 +283,7 @@ export function mountAcquisition(root, _route, { api, esc }) {
     const token = ++scopeRequest;
     scopesReady = false;
     frozenVersion = "";
+    frozenWindow = {};
     category.disabled = true;
     category.innerHTML = selectOptions("不另选品类", []);
     invalidateResult();
@@ -244,8 +295,10 @@ export function mountAcquisition(root, _route, { api, esc }) {
       category.innerHTML = selectOptions("不另选品类", (data.product_category_ids || []).map(id => [id, id]));
       category.disabled = category.options.length < 2;
       frozenVersion = data.scope_version;
+      frozenWindow = data.date_window || {};
       scopesReady = Boolean(data.frozen_at && frozenVersion);
       setFormState();
+      tasks.invalidatePreview();
     } catch (error) {
       if (root.isConnected && token === scopeRequest) errorText(error);
     }
@@ -255,10 +308,12 @@ export function mountAcquisition(root, _route, { api, esc }) {
     const token = ++scopeRequest;
     scopesReady = false;
     frozenVersion = "";
+    frozenWindow = {};
     scope.disabled = category.disabled = true;
     scope.innerHTML = selectOptions("选择冻结范围", []);
     category.innerHTML = selectOptions("不另选品类", []);
     invalidateResult();
+    tasks.setStudy(study.value, study.selectedOptions[0]?.textContent);
     if (!study.value) return;
     get("plan-state").textContent = "正在读取冻结范围…";
     try {
@@ -366,31 +421,36 @@ export function mountAcquisition(root, _route, { api, esc }) {
     </section>`;
   }
 
+  function scopeInput(input) {
+    const [mode, selectedProviders] = strategies[input.get("strategy")];
+    const data = {
+      scope_id: scope.value, scope_version: frozenVersion, data_class: "synthetic",
+      allowed_domains: input.getAll("domain"), limit: Number(input.get("limit")), mode, providers: selectedProviders,
+    };
+    for (const field of ["product_category_id", "language", "country", "date_from", "date_to"]) {
+      const value = (input.get(field) || "").trim();
+      if (value) data[field] = value;
+    }
+    return data;
+  }
+
   async function submit(event) {
     event.preventDefault();
     if (!scopesReady || running) return;
     const action = event.submitter?.value === "demo" ? "demo" : "preview";
     if (action === "demo" && ["limit", "date_from", "date_to"].some(key => !fields.namedItem(key).reportValidity())) return;
     const input = new FormData(form);
-    const domains = input.getAll("domain");
-    if (!domains.length) {
+    const data = scopeInput(input);
+    if (!data.allowed_domains.length) {
       errorText(new Error("请为本次查询勾选至少一个来源域名。"));
       return;
     }
-    const [mode, selectedProviders] = strategies[input.get("strategy")];
     const text = key => (input.get(key) || "").trim();
-    const data = {
-      scope_id: scope.value, scope_version: frozenVersion, data_class: "synthetic",
-      allowed_domains: domains, limit: Number(input.get("limit")), mode, providers: selectedProviders,
-    };
     if (action === "preview") {
       for (const [field] of queryInputs) {
         data[field] = ["keywords", "include_terms", "exclude_terms"].includes(field)
           ? listValues(text(field)) : text(field);
       }
-    }
-    for (const field of ["product_category_id", "language", "country", "date_from", "date_to"]) {
-      if (text(field)) data[field] = text(field);
     }
     const id = study.value;
     invalidateResult();

@@ -1,5 +1,11 @@
 # VOC Research Workbench 开发状态
 
+## M08-C/D 隔离工程验收
+
+起点 `411f43388daf140c1dc33bfd1de2e26d89b17641`。M08-A/B/C/D 均为 **ENGINEERING_PASS**，`M08_P0_ENGINEERING = ENGINEERING_PASS`，路线图 **39/79**。Windows 10 普通用户环境 Python 395/395、Node 2/2、Chromium 全量、冷启动 3/3、归档 4/4。三批 120 片段及 30/30 证据回查通过。已确认 P0/P1 关闭。本轮源码 Windows 11 实机为 **NOT_TESTED**。[M08-C/D 证据](docs/evidence/m08-cd/README.md)
+
+SQLite 正式工作库 v8，A/B 演示账本 v1，C/D 任务账本 v1 独立。M06 基线 **FROZEN**，M07 **ENGINEERING_PASS**，PackyCode 合成契约 **PASS**，供应商审批 **PENDING**。G-1 **BLOCKED**，M08 正式业务验收 **PENDING**，真实研究 API 调用 0。M08-E 及 M09–M15 为 **NOT_STARTED**。
+
 ## M08-A/B 隔离来源采集
 
 从 `81ce8818354f36ed33943d604e8890adde1f4c3f` 接续。M08-A、M08-B 的本机隔离工程验收均为 **ENGINEERING_PASS**，M08 为 **PARTIAL**，路线图已完成 **37/79**。Windows 10 Python 359/359、Node 2/2、Chromium 全量通过、冷启动 3/3、归档 4/4。复审确认的 P1 已关闭。工作库 SQLite v8。G-1 **BLOCKED**，M08 正式业务验收 **PENDING**。M08-C/D/E 及 M09–M15 为 **NOT_STARTED**，真实研究 API 调用 0。[工程证据](docs/evidence/m08-ab/README.md)

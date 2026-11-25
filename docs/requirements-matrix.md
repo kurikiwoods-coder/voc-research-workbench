@@ -12,6 +12,16 @@
 
 [来源权限契约](architecture/m08-source-adapter-contract.md) · [M08-A/B 证据](evidence/m08-ab/README.md)
 
+## M08-C/D 隔离工程范围
+
+| 原验收 | 工程实证 | 正式验收余项 |
+| --- | --- | --- |
+| G1/G2、INGEST、RAW | 3 批 120 条合成片段、30/30 精确回源。CSV 与 XLSX 进入同一 M04/M05 流程。 | 原标准所需三个正式来源批次、至少 100 条真实合格片段、30/30 正式回源。正式 M/E 受 M05 当前资格及 M06 精确版本约束。 |
+| G7 | 备用搜索切换、暂停及重启、逐单位预算、未知结果安全阻断、本机回执恢复。 | 正式通道、实际用量与费用、断网或授权失效演练。 |
+| SOURCE-POLICY、PRIVACY | 五项权限独立，当前授权回读，合成角色隔离，正式漏斗 `null`。 | 逐平台、账户、对象、用途、留存、撤销和删除须有实际审批及证据。 |
+
+[M08-C/D 证据](evidence/m08-cd/README.md) · [M09 接续](architecture/m08-consumer-handover.md)
+
 ## G-1-R-A PackyCode 工程范围
 
 | 原验收 | 本轮工程范围 | 正式验收余项 |

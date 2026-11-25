@@ -18,6 +18,7 @@ from src.config import (
 )
 from src.dashboard.api_setup import register_setup, setup_view
 from src.dashboard.acquisition_api import register_acquisition
+from src.ingestion.m08_sampling import SamplingTasks
 from src.dashboard.corpus_api import register_corpus
 from src.dashboard.study_api import register_studies
 from src.dashboard.import_api import register_imports
@@ -238,7 +239,7 @@ class Batch(BaseModel):
     request_key: UUID
 
 
-def create_app(settings=None, *, relation_grants=None):
+def create_app(settings=None, *, relation_grants=None, acquisition_permission=None):
     @asynccontextmanager
     async def lifespan(app):
         from src.raw_store.relations import RelationStore
@@ -246,6 +247,7 @@ def create_app(settings=None, *, relation_grants=None):
         app.state.settings = settings or Settings.load_base()
         app.state.store = Store(app.state.settings.directory)
         app.state.studies = StudyStore(app.state.store)
+        app.state.sampling = SamplingTasks(app.state.settings.directory, app.state.studies, acquisition_permission)
         app.state.imports = ImportStore(app.state.store)
         app.state.corpus = CorpusStore(app.state.store)
         app.state.relations = RelationStore(app.state.store, grants=relation_grants)
