@@ -1,5 +1,6 @@
 """Local review and replay of immutable M04 import records."""
 
+from contextlib import contextmanager
 from datetime import date
 import hashlib
 import json
@@ -168,16 +169,64 @@ class CorpusStore:
     def qualified_record(self, study_id, record_id):
         with self.store.db() as db:
             db.execute("BEGIN")
-            today = now()[:10]
-            row = self.source_row(db, study_id, record_id, today)
-            if not qualification(row, today)["engineering_eligible"]:
-                raise Conflict("这条语料当前不符合本机原话处理资格。")
-            record = self.describe(db, row, today)
-            return {name: record[name] for name in (
-                "record_id", "trace", "raw_text", "raw_sha256", "metadata", "duplicate", "status", "license_status",
-                "privacy", "role", "retention_until", "source_permission_revoked",
-                "engineering_eligible", "research_eligible", "outbound_allowed",
-            )}
+            return self.qualified_record_in_transaction(db, study_id, record_id, today=now()[:10])
+
+    @staticmethod
+    def _check_day(today):
+        if today != now()[:10]:
+            raise Conflict("UTC 日期已变化，请丢弃本次结果并重新执行。")
+
+    def _qualified_row(self, db, study_id, record_id, today):
+        row = self.source_row(db, study_id, record_id, today)
+        if not qualification(row, today)["engineering_eligible"]:
+            raise Conflict("这条语料当前不符合本机原话处理资格。")
+        return row
+
+    def qualified_record_in_transaction(self, db, study_id, record_id, *, today):
+        """Project one input in the caller's snapshot. Writes use qualified_write_inputs."""
+        if not db.in_transaction:
+            raise ValueError("当前资格复核需要活动事务。")
+        row = self._qualified_row(db, study_id, record_id, today)
+        record = self.describe(db, row, today)
+        self._check_day(today)
+        return {name: record[name] for name in (
+            "record_id", "trace", "raw_text", "raw_sha256", "metadata", "duplicate", "status", "license_status",
+            "privacy", "role", "retention_until", "source_permission_revoked",
+            "engineering_eligible", "research_eligible", "outbound_allowed",
+        )}
+
+    @contextmanager
+    def qualified_write_inputs(self, db, study_id, record_ids):
+        """Use inside caller's BEGIN IMMEDIATE, enclosing all dependent writes, just before commit."""
+        if not db.in_transaction:
+            raise ValueError("请先打开本机研究库的写事务。")
+        filename = db.execute("SELECT file FROM pragma_database_list WHERE name='main'").fetchone()[0]
+        if not filename or not self.store.path.samefile(filename):
+            raise ValueError("连接与当前研究库不一致。")
+        ids = tuple(dict.fromkeys(record_ids))
+        if not ids:
+            raise ValueError("请提供本次处理所依赖的语料记录。")
+
+        # sqlite3 exposes in_transaction but not sqlite3_txn_state(). A zero-row
+        # write requires the main WAL writer lock; an obsolete reader cannot upgrade.
+        db.execute("UPDATE main.corpus_reviews SET review_id=review_id WHERE 0")
+        today = now()[:10]
+        db.execute("SAVEPOINT corpus_qualified_inputs")
+        try:
+            records = {key: self.qualified_record_in_transaction(db, study_id, key, today=today)
+                       for key in ids}
+            yield records
+            # Also see governance changes made on this connection within the unit of work.
+            for key in ids:
+                self._qualified_row(db, study_id, key, today)
+            self._check_day(today)
+        except BaseException:
+            # A transaction-level SQLite failure can already have rolled back the outer transaction.
+            if db.in_transaction:
+                db.execute("ROLLBACK TO corpus_qualified_inputs")
+                db.execute("RELEASE corpus_qualified_inputs")
+            raise
+        db.execute("RELEASE corpus_qualified_inputs")
 
     @staticmethod
     def restoration_proof(db, row, evidence_ref, issued_on, today):

@@ -154,6 +154,26 @@ class ImportStore:
         with self.store.db() as db:
             check_sheet_sources(db, study_id, sheet)
 
+    def revoked_preview_receipt(self, study_id, file_id, index, mapping, privacy):
+        """Replay an unchanged, withdrawn staging plan without reopening its source bytes."""
+        with self.store.db() as db:
+            db.execute("BEGIN")
+            row = db.execute(
+                """SELECT b.scope_id, b.signature, b.summary_json FROM import_batches b
+                   WHERE b.study_id=? AND b.file_id=? AND b.sheet_index=? AND b.mapping_json=?
+                     AND b.privacy=? AND b.revoked_at IS NOT NULL AND NOT EXISTS (
+                         SELECT 1 FROM import_rows r JOIN corpus_reviews v USING(record_id)
+                         WHERE r.batch_id=b.batch_id
+                     )""",
+                (study_id, file_id, index, dump(mapping), privacy),
+            ).fetchone()
+            if row is None:
+                return None
+            self.target(db, study_id, row["scope_id"])
+            return {"preview_token": row["signature"], "status": "revoked",
+                    "summary": {**json.loads(row["summary_json"]), "source_types": {}},
+                    "sample_rows": [], "issue_rows": [], "more_issues": False}
+
     def confirmation_receipt(self, study_id, file_id, sheet_index, mapping, privacy, signature):
         with self.store.db() as db:
             db.execute("BEGIN")

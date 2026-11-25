@@ -173,7 +173,14 @@ def register_imports(app):
     @router.post("/{study_id}/uploads/{file_id}/preview")
     def preview(study_id: UUID, file_id: UUID, plan=Depends(form(Preview)), db=Depends(store)):
         with errors(), parse_slot():
-            file, scope = db.get_file(str(study_id), str(file_id), plan.sheet_index)
+            try:
+                file, scope = db.get_file(str(study_id), str(file_id), plan.sheet_index)
+            except Conflict:
+                receipt = db.revoked_preview_receipt(str(study_id), str(file_id), plan.sheet_index,
+                                                    plan.mapping, plan.privacy)
+                if receipt is None:
+                    raise
+                return receipt
             sheet = read_sheet(file.pop("source_bytes"), file["kind"], plan.sheet_index)
             db.check_preview_sources(str(study_id), sheet)
             rows, summary = evaluate(sheet, plan.mapping, scope, plan.privacy)

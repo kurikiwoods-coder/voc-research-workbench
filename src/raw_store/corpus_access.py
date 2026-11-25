@@ -27,6 +27,14 @@ def withdrawal_match(study_id, record_id, originals):
         w.source IS NOT NULL AND EXISTS (
             SELECT 1 FROM json_each({originals}) AS cell WHERE source_identity(cell.value)=w.source
         )
+    ) OR EXISTS (
+        SELECT 1 FROM import_rows origin JOIN import_batches ob ON ob.batch_id=origin.batch_id
+        JOIN import_files ofile ON ofile.file_id=ob.file_id
+        JOIN import_rows copy ON copy.record_id={record_id} AND copy.line_number=origin.line_number
+        JOIN import_batches cb ON cb.batch_id=copy.batch_id AND cb.study_id=ob.study_id
+                              AND cb.sheet_index=ob.sheet_index
+        JOIN import_files cf ON cf.file_id=cb.file_id AND cf.sha256=ofile.sha256
+        WHERE origin.record_id=w.record_id
     ))"""
 
 
@@ -51,27 +59,28 @@ def unresolved_sources(study_id):
            AND w.source IS NOT NULL AND NOT {current_restore("w.record_id", "w.review_id")}"""
 
 
-EFFECTIVE_RETENTION = """
-    CASE WHEN v.decision='excluded' THEN (
-        SELECT MIN(h.retention_until) FROM corpus_reviews h WHERE h.record_id=r.record_id
+def effective_retention(review, record):
+    return f"""CASE WHEN {review}.decision='excluded' THEN (
+        SELECT MIN(h.retention_until) FROM corpus_reviews h WHERE h.record_id={record}.record_id
         AND h.review_id>=COALESCE((SELECT MAX(a.review_id) FROM corpus_reviews a
-                                   WHERE a.record_id=r.record_id AND a.decision='verified'), 0)
-    ) ELSE v.retention_until END
-"""
+                                   WHERE a.record_id={record}.record_id AND a.decision='verified'), 0)
+    ) ELSE {review}.retention_until END"""
+
 
 # Preserve restrictions attached to one retained file and line, also for separately imported copies.
 # Project-wide source withdrawals have their own history and restoration boundary.
-RESTRICTED_FILE_ROWS = """
+RESTRICTED_FILE_ROWS = f"""
     FROM import_files restricted_file
     JOIN import_batches restricted_batch ON restricted_batch.file_id=restricted_file.file_id
     JOIN import_rows restricted_row ON restricted_row.batch_id=restricted_batch.batch_id
     JOIN study_scopes restricted_scope ON restricted_scope.study_id=restricted_batch.study_id
         AND restricted_scope.scope_id=restricted_batch.scope_id
-    JOIN corpus_reviews restricted_review ON restricted_review.review_id=(
+    LEFT JOIN corpus_reviews restricted_review ON restricted_review.review_id=(
         SELECT MAX(h.review_id) FROM corpus_reviews h WHERE h.record_id=restricted_row.record_id
     )
     LEFT JOIN corpus_licenses restricted_license ON restricted_license.review_id=restricted_review.review_id
-    WHERE (restricted_batch.revoked_at IS NOT NULL OR restricted_review.retention_until<:today
+    WHERE (restricted_batch.revoked_at IS NOT NULL OR
+        {effective_retention("restricted_review", "restricted_row")}<:today
         OR (restricted_review.decision='excluded' AND NOT EXISTS (
             SELECT 1 FROM corpus_withdrawals w WHERE w.review_id=restricted_review.review_id
         ))
@@ -91,7 +100,7 @@ ROW_COLUMNS = f"""
     r.record_id, r.line_number, r.privacy, r.fields_json, r.raw_text, s.content_json,
     b.revoked_at, p.status AS project_status, v.review_id, v.decision, v.role,
     l.state AS license_state, l.evidence_ref, l.issued_on, l.restored_withdrawal_id,
-    {EFFECTIVE_RETENTION} AS retention_until, {FILE_ALIAS_RESTRICTED} AS alias_restricted,
+    {effective_retention("v", "r")} AS retention_until, {FILE_ALIAS_RESTRICTED} AS alias_restricted,
     {withdrawal_id("b.study_id", "r.record_id", "r.originals_json")} AS withdrawal_id,
     (SELECT MAX(w.review_id) FROM corpus_withdrawals w WHERE w.record_id=r.record_id) AS own_withdrawal_id
 """
@@ -153,7 +162,7 @@ def qualification(row, today):
         "source_permission_revoked": withdrawn,
         "can_review": writable and not expired and not withdrawn
         and (row["decision"] is None or status in {"pending_review", "verified", "excluded"}),
-        "can_reauthorize": writable and withdrawn,
+        "can_reauthorize": writable and withdrawn and not expired,
         "engineering_eligible": (status == "verified" and row["privacy"] == "public"
                                  and row["role"] == "user_quote" and row["project_status"] != "archived"),
     }
