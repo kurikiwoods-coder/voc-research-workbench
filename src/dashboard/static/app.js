@@ -214,7 +214,7 @@ function renderQuota() {
       : `aria-valuenow="${Math.round(pct)}"`;
   const meterClass = t.percent == null ? "unknown" : pct < 5 ? "critical" : pct < 20 ? "low" : "";
   el("top-token").innerHTML =
-    `<button class="token-open" data-action="token-view" aria-label="查看 Jev Token Center" aria-describedby="token-status"><span class="token-summary">${ic("meter")}<span><strong>Jev Token Center</strong><small id="token-status">${esc(status)}</small></span></span><small class="desktop-token">消耗 ${number(t.input_tokens)}<br>${esc(sync)}</small></button><span class="minibar ${meterClass}" role="progressbar" aria-label="Jev 余额进度" ${progress}><i style="width:${pct}%"></i></span><a class="small-link" href="${esc(t.purchase_url)}" target="_blank" rel="noopener noreferrer">补充额度 ↗</a>`;
+    `<button class="token-open" data-action="token-view" aria-label="查看 Jev Token Center" aria-describedby="token-status"><span class="token-summary">${ic("meter")}<span><strong>Jev Token Center</strong><small id="token-status">${esc(status)}</small></span></span><small class="desktop-token">消耗 ${number(t.input_tokens)}<br>${esc(sync)}</small></button><span class="minibar ${meterClass}" role="progressbar" aria-label="Jev 余额进度" ${progress}><i style="width:${pct}%"></i></span>${t.purchase_url ? `<a class="small-link" href="${esc(t.purchase_url)}" target="_blank" rel="noopener noreferrer">补充额度 ↗</a>` : ""}`;
 }
 function head(kicker, title, subtitle, buttons = "") {
   return `<section class="page-head"><div><div class="kicker">${kicker}</div><h1>${title}</h1><p>${subtitle}</p></div><div class="actions">${buttons}</div></section>`;
@@ -277,7 +277,7 @@ function checks() {
     "run",
     ic("play") + (busy ? "执行中…" : "运行检查"),
     "primary",
-    busy ? "disabled" : "",
+    busy || jevAwaitingLiveAuthorization() ? "disabled" : "",
   );
   const hero = `<section class="hero"><div><span class="eyebrow">G-1　阶段准入</span><h2>${title}</h2><p>${desc}</p></div><div class="trackbox"><div class="tracklabel"><span>本批检查通过数</span><strong>${count("PASS")} <small>/ 6</small></strong></div><div class="segments">${rows.map((r) => `<button class="segment ${r.status}" data-action="detail" data-id="${r.requirement_id}" aria-label="${esc(r.requirement_id + " " + labels[r.status])}"></button>`).join("")}</div><div class="trackfoot"><span>C0-1</span><span>C0-6</span></div></div></section>`;
   const list = `<div class="chips" aria-label="按检查状态筛选">${options.map(([val, name, n]) => act("filter-check", name + " " + n, "chip " + (checkFilter === val ? "on" : ""), 'data-id="' + val + '" aria-pressed="' + (checkFilter === val) + '"')).join("")}</div><div class="wide-table"><table class="table workbench-table"><thead><tr><th>编号</th><th>检查项</th><th>状态</th><th>证据</th></tr></thead><tbody>${displayed.map((r) => `<tr class="check-row"><td class="id">${r.requirement_id}</td><td><span class="row-name">${esc(r.title)}</span><span class="row-sub">${esc(detailLabels[Number(r.requirement_id.at(-1)) - 1])}</span></td><td>${badge(r.status)}</td><td>${act("detail", "查看 ›", "link", 'data-id="' + r.requirement_id + '" aria-label="查看 ' + r.requirement_id + ' 证据"')}</td></tr>`).join("")}</tbody></table></div>${displayed.length ? "" : '<div class="state-box"><b>此筛选下没有检查项</b>可切换到全部检查。</div>'}`;
@@ -378,12 +378,12 @@ function tokens() {
       "额度中心",
       esc(t.provider) + " · " + esc(t.model) + " · 账户单位 " + esc(t.unit),
       (t.key_configured ? "" : act("config", "连接配置")) +
-        act("refresh", "刷新状态") + link(t.purchase_url, "补充额度"),
+        act("refresh", "刷新状态") + (t.purchase_url ? link(t.purchase_url, "补充额度") : ""),
     ) +
     (t.warning
       ? `<div class="warning">${esc(t.warning)} · 请核对供应商账户或查看最近分片。</div>`
       : t.key_configured ? "" : '<div class="warning">Jev 未连接。请在 API 接入页保存密钥，余额等待同步。</div>') +
-    metrics +
+    metrics + (t.billing ? shellPanel("用量及计费", t.billing.rate_source, packyBilling(t.billing)) : "") +
     shellPanel("最近验收分片", "按当前供应商与本机凭证隔离，最多 20 次。连接诊断在 API 接入页查看。", table)
   );
 }
@@ -445,6 +445,23 @@ const docReview = "https://github.com/kurikiwoods-coder/voc-research-workbench/b
 let wizardStep = null, setupBusy = false, lastProbeProvider = null;
 const diagnosticKeys = new Map();
 
+function jevAwaitingLiveAuthorization() {
+  return state.setup?.providers.find(provider => provider.selected)?.live_test_allowed === false;
+}
+
+function packyBilling(billing) {
+  const recorded = value => value == null ? "未记录" : number(value);
+  const amount = value => value == null ? "未记录" : "$" + esc(value);
+  return `<dl class="setup-quota">
+    <div><dt>响应输入 Token</dt><dd>${recorded(billing.input_tokens)}</dd></div>
+    <div><dt>响应输出 Token</dt><dd>${recorded(billing.output_tokens)}</dd></div>
+    <div><dt>按候选报价估算</dt><dd>${amount(billing.estimated_usd)}</dd></div>
+    <div><dt>实际扣费</dt><dd>${billing.actual_charge_usd == null
+      ? billing.charge_status === "UNKNOWN" ? "未知" : "无请求记录"
+      : amount(billing.actual_charge_usd)}</dd></div>
+    </dl>`;
+}
+
 function connectionBadge(status) {
   const tone = { READY: "PASS", CONNECTED: "PASS", ERROR: "FAIL",
     CAPABILITY_BLOCKED: "BLOCKED", REVIEW_REQUIRED: "BLOCKED" }[status] || "NOT_TESTED";
@@ -469,26 +486,43 @@ function diagnosticEvidence(test) {
   const { message, ...projection } = test;
   return `<details class="connector-detail"><summary>${esc(ts(test.checked_at, true))} · ${esc(status)} · 证据 #${test.evidence_id}</summary><p>${esc(message)}</p>${groups}<p>记录范围为连接诊断，正式研究分母为 0。</p><pre>${esc(JSON.stringify(projection, null, 2))}</pre></details>`;
 }
+function candidateContract(p, compact) {
+  const contract = p.candidate_contract;
+  if (!contract) return "";
+  return `<dl class="setup-evidence">
+    <dt>API 分组</dt><dd><code>${esc(contract.group)}</code></dd>
+    <dt>固定 Model ID</dt><dd><code>${esc(contract.model)}</code></dd>
+    <dt>候选 Base URL</dt><dd><code>${esc(contract.base_url)}</code></dd>
+    <dt>候选接口</dt><dd><code>${esc(contract.endpoint)}</code>${contract.endpoint_evidence === "DOCUMENTED" ? " · 文档已查证" : ""}</dd>
+    <dt>接口契约</dt><dd>${esc(connectionLabels[contract.live_status] || contract.live_status)} · 待验证实际接口</dd>
+    <dt>供应商审核</dt><dd>${p.review?.approved ? "本机审核记录已核验" : "未通过"}</dd>
+    <dt>候选报价</dt><dd>输入 $${number(contract.input_usd_per_million)} / 百万 Token，输出 $${number(contract.output_usd_per_million)} / 百万 Token</dd>
+    <dt>报价来源</dt><dd>${esc(contract.rate_source)} · 待独立核验</dd>
+    </dl>${p.live_test_allowed === false ? `<p class="connector-time" id="packycode-diagnostic-policy${compact ? "-wizard" : ""}">真实连接测试及正式验收待负责人另行授权。</p>` : ""}`;
+}
 function providerCard(p, compact = false) {
   const report = p.recent_tests?.[0];
   const attrs = 'data-id="' + p.id + '"';
   const editing = !p.configured;
   const testHint = report
     ? `${esc(report.message)} <span class="connector-time">${esc(ts(report.checked_at, true))}${report.http_status == null ? "" : " · HTTP " + report.http_status}</span>`
-    : "尚无当前凭证的连接诊断。";
-  const guides = `<p class="connector-purpose">${esc(p.purpose)} ${link(p.signup, "官方控制台")} ${link(p.docs, "接入文档")}</p><p class="connector-guide">${esc(p.guide)}</p>`;
+    : p.candidate_contract ? "最近测试 未实测。" : "尚无当前凭证的连接诊断。";
+  const guides = `<p class="connector-purpose">${esc(p.purpose)} ${p.signup ? link(p.signup, p.candidate_contract ? "注册入口" : "官方控制台") : ""} ${p.docs ? link(p.docs, "接入文档") : ""} ${p.candidate_contract && p.purchase_url ? link(p.purchase_url, "供应商计费页") : ""}</p><p class="connector-guide">${esc(p.guide)}</p>`;
   if (p.status === "PLANNED") {
     return `<article class="provider-row" aria-label="${esc(p.label)}"><header><h3>${esc(p.label)}</h3><span class="connector-time">${esc(p.stage)} 接入</span>${connectionBadge(p.status)}</header>${guides}<p class="connector-time">计量单位 ${esc(p.unit)}</p></article>`;
   }
   const useAction = p.group === "jev" && !p.selected ? act("setup-choose", "选为 Jev 通道", "secondary", attrs) : "";
-  const actions = `${useAction}${act("setup-test", "检查连接", "secondary", attrs)}${p.configured ? act("setup-delete", "删除密钥", "quiet remove-key", attrs) : ""}`;
+  const diagnosticAttrs = p.live_test_allowed === false
+    ? attrs + ` disabled aria-describedby="packycode-diagnostic-policy${compact ? "-wizard" : ""}"`
+    : attrs;
+  const actions = `${useAction}${act("setup-test", "检查连接", "secondary", diagnosticAttrs)}${p.configured ? act("setup-delete", "删除密钥", "quiet remove-key", attrs) : ""}`;
   const quota = `<dl class="setup-quota"><div><dt>计量单位</dt><dd>${esc(p.unit)}</dd></div><div><dt>已知余额</dt><dd>${p.remaining == null ? "未同步" : number(p.remaining)}</dd></div><div><dt>额度上限</dt><dd>${p.capacity == null ? "未提供" : number(p.capacity)}</dd></div><div><dt>${esc(p.usage_scope)}用量</dt><dd>${p.local_usage == null ? "未记录" : number(p.local_usage)}</dd></div></dl><p class="connector-time">最近余额同步 ${esc(ts(p.last_synced_at, true))}${p.warning ? " · " + esc(p.warning) : ""}</p>`;
-  return `<article class="provider-row" aria-label="${esc(p.label)}"><header><h3>${esc(p.label)}</h3>${p.selected ? '<span class="connector-time">当前 Jev 通道</span>' : ""}${connectionBadge(p.status)}</header>${guides}<p class="connector-time">凭证 ${p.configured ? "已配置" : "未配置"}${p.credential_source ? " · " + esc(sourceLabels[p.credential_source]) : ""} <code>${esc(p.env_var)}</code></p>${compact ? "" : quota}<div class="actions connector-actions">${actions}</div><details class="connector-detail" ${editing ? "open" : ""}><summary>${editing ? "填写密钥" : "更换密钥"}</summary>${credentialForm(p, compact ? "wizard-key" : "api-key")}</details>${p.review ? reviewForm(p) : ""}<div class="connector-result" role="status">${testHint}</div>${p.recent_tests.length ? `<details class="connector-detail" ${lastProbeProvider === p.id ? "open" : ""}><summary>最近测试证据</summary>${p.recent_tests.map(diagnosticEvidence).join("")}</details>` : ""}</article>`;
+  return `<article class="provider-row" aria-label="${esc(p.label)}"><header><h3>${esc(p.label)}</h3>${p.selected ? '<span class="connector-time">当前 Jev 通道</span>' : ""}${connectionBadge(p.status)}</header>${guides}${candidateContract(p, compact)}<p class="connector-time">凭证 ${p.configured ? "已配置" : "未配置"}${p.credential_source ? " · " + esc(sourceLabels[p.credential_source]) : ""} <code>${esc(p.env_var)}</code></p>${compact ? "" : quota + (p.billing ? packyBilling(p.billing) : "")}<div class="actions connector-actions">${actions}</div><details class="connector-detail" ${editing ? "open" : ""}><summary>${editing ? "填写密钥" : "更换密钥"}</summary>${credentialForm(p, compact ? "wizard-key" : "api-key")}</details>${p.review ? reviewForm(p) : ""}<div class="connector-result" role="status">${testHint}</div>${p.recent_tests.length ? `<details class="connector-detail" ${lastProbeProvider === p.id ? "open" : ""}><summary>最近测试证据</summary>${p.recent_tests.map(diagnosticEvidence).join("")}</details>` : ""}</article>`;
 }
 function setup() {
   const { providers, future, error } = state.setup;
   const gate = state.config.acceptance;
-  return `<section class="page-head setup-head"><div><h1>API 接入</h1><p>在本机保存密钥，逐一检查服务，然后运行 P0-0 正式验收。</p></div><div class="actions">${act("setup-wizard", "配置向导")}</div></section>${error ? '<p class="warning" role="alert">' + esc(error) + '</p>' : ""}<section class="panel setup-summary"><div><h2>开始 P0-0 验收</h2><p>连接诊断与正式验收分别记录。当前所选批次的 G-1 ${badge(gate)}</p></div>${prerequisiteStrip()}<div class="actions">${act("run", "运行正式验收", "primary", busy || error ? "disabled" : "")}${act("goto-checks", "查看连通性检查")}</div></section>${shellPanel("Jev 模型", "选一种通道，固定使用 jev-1.14.0。两家可分别保存密钥与审核材料。", providers.filter(p => p.group === "jev").map(p => providerCard(p)).join(""))}${shellPanel("公开搜索", "Tavily 或 Brave 任一可用于 P0-0。搜索命中会继续核对原始网页、许可和引用。", providers.filter(p => p.group === "search").map(p => providerCard(p)).join(""))}${shellPanel("后续接入", "首次设置可跳过，当前阶段无需凭证。", future.map(p => providerCard(p)).join(""))}`;
+  return `<section class="page-head setup-head"><div><h1>API 接入</h1><p>在本机保存密钥，逐一检查服务，然后运行 P0-0 正式验收。</p></div><div class="actions">${act("setup-wizard", "配置向导")}</div></section>${error ? '<p class="warning" role="alert">' + esc(error) + '</p>' : ""}<section class="panel setup-summary"><div><h2>开始 P0-0 验收</h2><p>连接诊断与正式验收分别记录。当前所选批次的 G-1 ${badge(gate)}</p></div>${prerequisiteStrip()}${jevAwaitingLiveAuthorization() ? '<p>当前 Jev 通道的正式验收待负责人另行授权。</p>' : ""}<div class="actions">${act("run", "运行正式验收", "primary", busy || error || jevAwaitingLiveAuthorization() ? "disabled" : "")}${act("goto-checks", "查看连通性检查")}</div></section>${shellPanel("Jev 模型", "选一种 Jev 通道，固定使用 jev-1.14.0。各供应商独立保存密钥与审核材料。", providers.filter(p => p.group === "jev").map(p => providerCard(p)).join(""))}${shellPanel("公开搜索", "Tavily 或 Brave 任一可用于 P0-0。搜索命中会继续核对原始网页、许可和引用。", providers.filter(p => p.group === "search").map(p => providerCard(p)).join(""))}${shellPanel("后续接入", "首次设置可跳过，当前阶段无需凭证。", future.map(p => providerCard(p)).join(""))}`;
 }
 function showWizard(step) {
   wizardStep = step;
@@ -506,7 +540,7 @@ function showWizard(step) {
   openDrawer(
     "首次配置 API",
     "第 " + (step + 1) + " 步，共 3 步",
-    `<section class="drawer-section wizard-body"><h3>${caption}</h3><p>${step === 0 ? "TypeSafe 和 JevModel 二选一。每一步都可以稍后配置。" : step === 1 ? "配置其中一家即可。YouTube 和 Google Forms 等后续阶段再接入。" : "你现在可以打开配置页，继续检查连接或运行正式验收。"}</p>${cards}<div class="actions wizard-actions">${next}${step ? act("wizard-back", "上一步") : ""}${act("wizard-skip", "稍后配置", "quiet")}</div></section>`,
+    `<section class="drawer-section wizard-body"><h3>${caption}</h3><p>${step === 0 ? "请选择一个 Jev 通道。每一步都可以稍后配置。" : step === 1 ? "配置其中一家即可。YouTube 和 Google Forms 等后续阶段再接入。" : "打开 API 接入页查看当前验收准备情况。"}</p>${cards}<div class="actions wizard-actions">${next}${step ? act("wizard-back", "上一步") : ""}${act("wizard-skip", "稍后配置", "quiet")}</div></section>`,
   );
 }
 function setupRequest(path, method, data) {
@@ -570,6 +604,7 @@ function save(name, content) {
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
 function runDialog(resume = false) {
+  if (!resume && jevAwaitingLiveAuthorization()) return;
   wizardStep = null;
   const action = resume ? "commit-resume" : "commit-run";
   openDrawer(
@@ -596,7 +631,7 @@ function batchInfo() {
   );
 }
 async function execute(resume) {
-  if (busy) return;
+  if (busy || (!resume && jevAwaitingLiveAuthorization())) return;
   busy = true;
   el("drawer").close();
   current = "checks";

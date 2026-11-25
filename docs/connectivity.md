@@ -40,7 +40,7 @@ python -m src.outputs.recover_source_batch
 ## 从工作台配置 API
 
 1. 在本机打开工作台。首次启动会提示选择 Jev 通道和搜索引擎。「稍后配置」可直接进入工作台，从「设置 → API 接入」能再次打开向导。
-2. 在 TypeSafe 和 JevModel 之间选择一个当前通道。通过供应商卡片的「官方控制台」取钥，粘贴到密码框并点「保存密钥」。同样配置 Tavily 或 Brave 中的至少一个。保存、更换和删除立即生效。两种 Jev 通道的凭证和审核材料各自保留。
+2. 通过供应商卡片的控制台取得当前通道的密钥，在本机卡片保存。TypeSafe、JevModel 和 PackyCode 各自保存凭证与审查记录。PackyCode 为候选通道，真实调用见[独立审核与预检要求](packycode.md)。正式 C0-3 另配置 Tavily 或 Brave 中的至少一个。
 3. 在所选 Jev 通道点「导入留存审核」。选择已有的审查 JSON 和对应证明附件。JSON 上限 32 KB，附件上限 1 MB。工作台核对供应商、审批字段、日期和附件摘要，将材料保存在本机。审查由实际管理人员根据供应商账户和条款完成。[审查材料格式](#变量与审核凭证)
 4. 在对应卡片点「检查连接」，展开「最近测试证据」。实际请求可能消耗供应商额度。Jev 只发送程序内置的合成句子，按 8 + 3 题检查固定模型、三类字段、逐档概率、用量和分片键。遇到留存审核未完成时，检查保存阻塞证据。搜索检查先查看命中，再向允许的原帖接口核对出处、许可和原句。
 5. 点击「运行正式验收」并确认。只有正式批次的六项检查和留存审核全部满足，G-1 才通过。诊断记录的正式研究分母为零。
@@ -55,6 +55,7 @@ YouTube 和 Google Forms 卡片可查看官方入口。公开视频采集安排�
 |---|---|---|
 | TypeSafe · `TYPESAFE_API_KEY` | 在官方控制台注册或登录，选择实际使用的组织并创建 API key。通过支持页选择 **Privacy & data → Enable zero data retention**。收到确认后在 **Settings → Organization** 核对启用，并留存审查附件。设置 `JEV_PROVIDER=typesafe`。[官方控制台](https://console.typesafe.ai/login) · [ZDR 官方说明](https://help.typesafe.ai/articles/9520184411) | 账户可调用 `jev-1.14.0`。真实的 8 + 3 分片须返回固定模型、Choice、Score 的逐档完整概率及 Noul。[账户模型接口](https://docs.typesafe.ai/api/list-models) · [Score](https://docs.typesafe.ai/primitives/score) |
 | JevModel · `JEVMODEL_API_KEY` | 在 JevModel 控制台登录或新建账户，从 **API keys** 创建密钥并记录该供应商的留存及分处理商审查。设置 `JEV_PROVIDER=jevmodel`。[控制台](https://jevmodel.org/zh/dashboard/) · [接口文档](https://jevmodel.org/zh/docs/) | 实测固定 `jev-1.14.0` 和完整 Score 分布。若出现别名、缺字段或模型不可用，按真实响应记录阻塞并人工决定是否切换供应商。 |
+| PackyCode · `PACKYCODE_API_KEY` | 在控制台登记 `typesafe-officially` 分组的独立密钥，优先从本机配置卡保存。[接入说明](packycode.md) | 固定 `jev-1.14.0` 和 SystemOne 端点。实际账户审查及真实契约待核验。 |
 | Tavily · `TAVILY_API_KEY` | 从官方文档的 **Get API key** 进入平台，注册或登录并创建 API key。[控制台](https://app.tavily.com/home) · [Search 文档](https://docs.tavily.com/documentation/api-reference/endpoint/search) | 账户允许 Search 请求。需通过 Tavily 实际发现允许回源的 URL 并核对原文许可。 |
 | Brave · `BRAVE_API_KEY` | 在 Brave Search API 注册，按控制台的套餐和 API Keys 指引创建密钥。[注册链接](https://api-dashboard.search.brave.com/register) · [API 快速入门](https://api-dashboard.search.brave.com/documentation/quickstart) | 账户启用 Web Search API，支持 `X-Subscription-Token`，实际发现的 URL 可用于许可回源。 |
 
@@ -82,8 +83,8 @@ YouTube 和 Google Forms 卡片可查看官方入口。公开视频采集安排�
 
 | 变量 | 用途 |
 |---|---|
-| JEV_PROVIDER | jevmodel 为默认第三方通道，typesafe 为官方通道。选择哪个就只调用哪个。固定模型写入程序。 |
-| JEVMODEL_API_KEY / TYPESAFE_API_KEY | 可选部署方式，提供账户凭证。服务启动时读取，工作台可覆盖或停用。 |
+| JEV_PROVIDER | jevmodel 为默认第三方通道，typesafe 为官方通道，packycode 为候选通道。固定模型和端点由程序登记。 |
+| JEVMODEL_API_KEY / TYPESAFE_API_KEY / PACKYCODE_API_KEY | 可选部署方式，提供独立账户凭证。服务启动时读取，工作台可覆盖或停用。 |
 | TAVILY_API_KEY / BRAVE_API_KEY | C0-3 综合验收至少一个指定引擎须实际发现允许回源的链接。两个引擎各自留证。 |
 | JEV_REVIEW_FILE | 本机 JSON 审查记录的路径。凭证文件保留在仓库之外。 |
 | JEV_TOKEN_CAPACITY | 可选的、已核对的第三方账户额度上限，用于进度百分比和 20% / 5% 预警。余额未知时保留空值。官方货币账户单独展示。 |

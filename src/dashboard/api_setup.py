@@ -10,7 +10,10 @@ from uuid import UUID
 from fastapi import Depends, HTTPException, Request
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, ValidationError
 
-from src.config import CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, PROVIDERS, validate_review
+from src.config import (
+    CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, PACKYCODE_CONTRACT, PACKYCODE_LIVE_BLOCK,
+    PROVIDERS, validate_review,
+)
 from src.execution.provider_diagnostics import SUMMARY, diagnostic_report, run_probe
 from src.raw_store.credentials import VaultError
 from src.raw_store.store import Busy, Conflict
@@ -28,6 +31,13 @@ CONNECTORS = {
         "guide": "登录控制台，在 API keys 新建密钥。随后核对数据留存和转发链的审查记录。",
         "purpose": "用 Jev 对用户原话做结构化判断。",
         "unit": "输入 tokens",
+    },
+    "packycode": {
+        "docs": "https://docs.packyapi.com/docs/token/2-group.html",
+        "guide": "在 PackyCode 控制台创建绑定 typesafe-officially 分组的独立密钥，在本页保存。",
+        "purpose": "Jev SystemOne 候选通道。",
+        "unit": "供应商货币账户",
+        "review_docs": "https://docs.packyapi.com/docs/tos/service-specific-terms.html",
     },
     "tavily": {
         "docs": "https://docs.tavily.com/documentation/api-reference/endpoint/search",
@@ -122,10 +132,12 @@ def register_setup(app):
             raise HTTPException(422, "请输入 1 至 512 个无空格的可打印字符。")
         with edit(app.state):
             config = app.state.vault.read()
-            had_key = bool(app.state.settings.with_local(config).keys.get(provider))
+            previous_key = app.state.settings.with_local(config).keys.get(provider)
             config["keys"][provider] = key
             review = config["reviews"].get(provider)
-            if (not had_key and isinstance(review, dict)
+            if provider == "packycode" and key != previous_key:
+                config["reviews"].pop(provider, None)
+            elif (provider != "packycode" and not previous_key and isinstance(review, dict)
                     and "account_tag" in review and review["account_tag"] is None):
                 review["account_tag"] = app.state.settings.with_local(config).account_tag(provider)
             app.state.vault.write(config)
@@ -140,6 +152,8 @@ def register_setup(app):
                 config["keys"][provider] = None
             else:
                 config["keys"].pop(provider, None)
+            if provider == "packycode":
+                config["reviews"].pop(provider, None)
             app.state.vault.write(config)
         return {"configured": False}
 
@@ -169,6 +183,8 @@ def register_setup(app):
             config = app.state.vault.read()
             settings = app.state.settings.with_local(config)
             account = settings.account_tag(provider) if settings.keys.get(provider) else None
+            if provider == "packycode" and account is None:
+                raise HTTPException(409, "请先保存当前 PackyCode 凭证，再导入此账户的审查材料。")
             config["reviews"][provider] = {**data.model_dump(), "account_tag": account}
             app.state.vault.write(config)
         return {"approved": True, "checked_at": review["checked_at"]}
@@ -184,6 +200,8 @@ def register_setup(app):
     @app.post("/api/setup/{provider}/diagnostics")
     def diagnose(provider: str, data: DiagnosticInput = Depends(body(DiagnosticInput, 1024))):
         known(provider)
+        if provider == "packycode":
+            raise HTTPException(409, PACKYCODE_LIVE_BLOCK)
         with edit(app.state):
             settings = app.state.settings.with_local(app.state.vault.read())
             return run_probe(settings, app.state.diagnostics, provider, str(data.request_key))
@@ -249,6 +267,11 @@ def setup_view(base, cfg, local, diagnostics, jev_quota, error=None):
                 "last_synced_at": quota["last_synced_at"], "local_usage": quota["input_tokens"],
                 "usage_scope": "本机验收与诊断", "warning": quota["warning"],
             }
+            if name == "packycode":
+                usage.update(
+                    candidate_contract=PACKYCODE_CONTRACT, billing=quota["billing"],
+                    live_test_allowed=False, purchase_url=quota["purchase_url"],
+                )
         else:
             usage = search_quota(diagnostics, cfg, name, last)
         entries.append({

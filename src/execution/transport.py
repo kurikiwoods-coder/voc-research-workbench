@@ -9,9 +9,10 @@ from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlsplit
 from urllib.request import Request, HTTPRedirectHandler, build_opener
 
+from src.config import PACKYCODE_LIVE_BLOCK, PROVIDERS
+
 ENDPOINTS = {
-    "typesafe": "https://api.typesafe.ai/v1/systemone",
-    "jevmodel": "https://jevmodel.org/v1/systemone",
+    **{name: config[0] for name, config in PROVIDERS.items()},
     "tavily": "https://api.tavily.com/search",
     "brave": "https://api.search.brave.com/res/v1/web/search",
     "stackexchange": "https://api.stackexchange.com/2.3/questions/",
@@ -151,6 +152,11 @@ def outbound(
         raise Denied("仅可外发已许可的公开输入")
     if channel not in ENDPOINTS:
         raise Denied("来源未登记")
+    if channel == "packycode":
+        if transport is network:
+            raise Denied(PACKYCODE_LIVE_BLOCK)
+        if method != "POST" or path or query:
+            raise Denied("PackyCode 仅接受登记的 SystemOne 请求。")
     if path and (channel != "stackexchange" or not re.fullmatch(r"[0-9]{1,12}", path)):
         raise Denied("原文接口路径不在许可范围")
     url = ENDPOINTS[channel] + path

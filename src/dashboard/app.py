@@ -1,5 +1,6 @@
 from contextlib import asynccontextmanager
 from dataclasses import replace
+from decimal import Decimal
 from ipaddress import ip_address
 import json
 from pathlib import Path
@@ -12,7 +13,9 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
-from src.config import CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, MODEL, PROVIDERS, ROOT, Settings
+from src.config import (
+    CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, MODEL, PACKYCODE_CONTRACT, PROVIDERS, ROOT, Settings,
+)
 from src.dashboard.api_setup import register_setup, setup_view
 from src.dashboard.corpus_api import register_corpus
 from src.dashboard.study_api import register_studies
@@ -20,6 +23,7 @@ from src.dashboard.import_api import register_imports
 from src.dashboard.relations_api import is_relation_path, register_relations, relation_error
 from src.dashboard.registry_api import register_registry
 from src.execution.checks import run_checks
+from src.execution.transport import number
 from src.raw_store.corpus import CorpusStore
 from src.raw_store.credentials import CredentialVault, VaultError
 from src.raw_store.store import Busy, Conflict, Store
@@ -90,6 +94,27 @@ def requirements(db, run=None):
     return rows
 
 
+def packycode_billing(stores, tag, total_input, has_records):
+    query = """SELECT json_extract(s.response_json, '$.usage.output_tokens') AS output,
+                      json_type(s.response_json, '$.usage.output_tokens') AS output_type
+               FROM shards s JOIN runs r ON r.id=s.run_id
+               WHERE r.account_tag=? AND s.state='received'"""
+    rows = [row for store in stores for row in store.rows(query, tag)]
+    outputs = [number(row["output"]) if row["output_type"] == "integer" else None for row in rows]
+    total_output = sum(outputs) if outputs and None not in outputs else None
+    rate = Decimal(PACKYCODE_CONTRACT["input_usd_per_million"])
+    estimated = format(rate * total_input / 1_000_000, "f") if total_input is not None else None
+    return {
+        "input_tokens": total_input,
+        "output_tokens": total_output,
+        "estimated_usd": estimated,
+        "actual_charge_usd": None,
+        "charge_status": "UNKNOWN" if has_records else "NO_REQUESTS",
+        "balance_status": "UNSYNCED",
+        "rate_source": PACKYCODE_CONTRACT["rate_source"],
+    }
+
+
 def balance(db, settings, diagnostics=None):
     tag = (settings.account_tag(),)
     records_query = """SELECT s.shard_no,s.state,s.tokens,s.remaining,s.updated_at,s.run_id,e.status_code FROM shards s
@@ -126,6 +151,7 @@ def balance(db, settings, diagnostics=None):
         warning = "传输结果或计费待核对"
     if not warning and percent is not None and percent < 20:
         warning = "余额告急" if percent < 5 else "低余额预警"
+    total_input = (formal["tokens"] or 0) + (diagnostic["tokens"] or 0) if counts and counts == measured else None
     return {
         "provider": settings.provider,
         "model": MODEL,
@@ -135,13 +161,15 @@ def balance(db, settings, diagnostics=None):
         "percent": percent,
         "sync_method": "header" if remaining is not None else None,
         "last_synced_at": synced or None,
-        "input_tokens": (formal["tokens"] or 0) + (diagnostic["tokens"] or 0) if counts and counts == measured else None,
+        "input_tokens": total_input,
         "diagnostic_input_tokens": diagnostic["tokens"] if diagnostic["n"] == diagnostic["metered"] else None,
         "successful_shards": counts,
         "unit": "input tokens" if token_account else "供应商货币账户",
         "warning": warning,
         "records": records,
         "purchase_url": PROVIDERS[settings.provider][2],
+        **({"billing": packycode_billing(stores, tag, total_input, bool(latest))}
+           if settings.provider == "packycode" else {}),
     }
 
 

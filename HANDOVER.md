@@ -1,5 +1,11 @@
 # 开发交接
 
+## G-1-R-A 接续
+
+本机工作台打开「API 配置」，在 PackyCode 卡片查看端点、分组、固定模型、凭证、审查和计费状态。负责人可在普通 Windows 用户会话通过该卡录入独立短期凭证。账户审核材料先留本机，绑定到当前凭证后再导入。轮换或删除凭证会清除关联审批。[配置、供应商证据和后续预检](docs/packycode.md)
+
+本轮既有传输门禁和正式 G-1 均阻塞。下一授权入口先检查 PackyCode 当前账户及实际上游的证明，准备受控合成预检及预算，然后按同批次六项及原审批标准处理 G-1-R-B。交接以草稿 PR #1 对应 SHA 的三项 CI 为准。[工程证据](docs/evidence/g1-ra/README.md) · [PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)
+
 ## M07 意图注册表接续
 
 开发由 `7c02966eb7e6c54f8e30ff032f921bac6719d1d2` 开始。源码 `5a3bd4189d6f3e3951bdcc0d79ce79db5c8060e8` 已通过 Windows 10 开发工程验收及三项源码 CI。M07 使用 SQLite v8。迁移走 Store 自带的事务和一致性备份，已有 v7 定义、稳定 ID 和历史版本沿用。[M07 工程记录](docs/evidence/m07/README.md)

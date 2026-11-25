@@ -1,5 +1,11 @@
 # VOC Research Workbench 开发状态
 
+## G-1-R-A PackyCode 工程接入
+
+从开发分支 `a7b1de491c85fb879bed4b2ce25f9f3164add6a0` 接续。M02 增加独立 PackyCode 候选通道，固定 `typesafe-officially`、`jev-1.14.0` 和 SystemOne。沿用分片账本和 DPAPI，使用当前账户独立审查。报价估算、真实扣费与余额分别登记。[接入及取证](docs/packycode.md) · [工程证据](docs/evidence/g1-ra/README.md)
+
+`PACKYCODE_CONNECTOR = IMPLEMENTED`。`PACKYCODE_PROVIDER_APPROVAL = PENDING`，`PACKYCODE_LIVE_CONTRACT = NOT_TESTED`。负责人授权的合成预检受本机凭证、独立账户审查及真实传输门禁约束，未执行。研究 API 和 PackyCode 合成探针真实调用均为 0。G-1 = **BLOCKED**，G-1-R-B = **NOT_STARTED**。ROADMAP-V2 为 **35/79**，M06 冻结底座及 SQLite v8 继续适用。
+
 ## M07 隔离注册表工程
 
 2026-11-25 从 `7c02966eb7e6c54f8e30ff032f921bac6719d1d2` 接续。负责人批准 M07-A 至 D 在 G-1 阻塞状态下进行隔离工程，G-1-R-A/B 延期待另行授权。SQLite v8 新增草稿、修订、命令回执及版本化共享示例。M06 封版定义、三层关系、五项政策与 `M06-B-F.1` 继续适用。[数据契约](docs/architecture/m07-registry-contract.md) · [版本接口](docs/architecture/m07-versioning-contract.md) · [M07 验收](docs/evidence/m07/README.md)

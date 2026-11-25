@@ -1,7 +1,7 @@
 import math
 import time
 import json
-from src.config import MODEL, PROVIDERS
+from src.config import MODEL, PACKYCODE_LIVE_BLOCK, PROVIDERS
 from src.raw_store.store import Conflict
 from src.execution.transport import outbound, network, number, failure, redact
 
@@ -61,6 +61,11 @@ def probability(value):
 def input_tokens(body):
     usage = body.get("usage") if isinstance(body, dict) else None
     return number(usage.get("input_tokens")) if isinstance(usage, dict) else None
+
+
+def output_tokens(body):
+    usage = body.get("usage") if isinstance(body, dict) else None
+    return number(usage.get("output_tokens")) if isinstance(usage, dict) else None
 
 
 def distribution(probs, keys):
@@ -130,6 +135,8 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
         )
     )
     reasons = []
+    if settings.provider == "packycode" and not store.fixture:
+        reasons.append(PACKYCODE_LIVE_BLOCK)
     if not admission["key_configured"]:
         reasons.append(PROVIDERS[settings.provider][1] + " 未配置")
     if not review["approved"]:
@@ -149,7 +156,8 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
                     archived = json.loads(evidence["response_json"])
                     body = archived["body"]
                     store.recover_shard(
-                        key, evidence, body, input_tokens(body), number(archived.get("X-Tokens-Remaining"))
+                        key, evidence, body, input_tokens(body),
+                        None if settings.provider == "packycode" else number(archived.get("X-Tokens-Remaining"))
                     )
                     key, prev = store.reserve(run, i, payload)
         except Conflict as exc:
@@ -209,7 +217,7 @@ def call_shards(settings, store, run, attempt, quote, transport=network, sleep=t
                     meta,
                     {
                         "body": obj,
-                        "X-Tokens-Remaining": response.remaining,
+                        "X-Tokens-Remaining": None if settings.provider == "packycode" else response.remaining,
                         "retry_after": redact(response.retry_after, secrets),
                     },
                     response.status,

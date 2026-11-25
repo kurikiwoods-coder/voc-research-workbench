@@ -64,7 +64,7 @@ def api_setup_checks(page, output):
     expect(page.get_by_role("heading", name="API 接入", exact=True)).to_be_visible()
     # The route changes before the wizard finishes refreshing the workspace.
     expect(page.locator("#toast")).to_have_text("配置向导已完成。")
-    for name in ("TypeSafe", "JevModel", "Tavily", "Brave", "YouTube", "Google Forms"):
+    for name in ("TypeSafe", "JevModel", "PackyCode", "Tavily", "Brave", "YouTube", "Google Forms"):
         expect(page.get_by_role("article", name=name)).to_be_visible()
     for name in ("YouTube", "Google Forms"):
         expect(page.get_by_role("article", name=name).get_by_text("待开发", exact=True)).to_be_visible()
@@ -108,6 +108,68 @@ def api_setup_checks(page, output):
     jev.get_by_role("button", name="删除密钥").click()
     expect(jev.get_by_text("凭证 未配置", exact=False)).to_be_visible()
     print("API setup E2E passed: wizard, local key save/rotation/delete, preflight evidence, and 320/390 layouts.")
+
+
+def packycode_checks(page, output, *, restart=False):
+    initial = "packycode-browser-synthetic-first"
+    rotated = "packycode-browser-synthetic-rotated"
+    card = page.get_by_role("article", name="PackyCode", exact=True)
+    if not restart:
+        wizard = page.get_by_role("dialog")
+        expect(wizard.get_by_role("heading", name="首次配置 API")).to_be_visible()
+        wizard.get_by_role("button", name="稍后配置").click()
+        expect(wizard).to_be_hidden()
+        expect(page.locator("#toast")).to_have_text("可随时从 API 接入继续配置。")
+        expect(card.get_by_text("typesafe-officially", exact=True)).to_be_visible()
+        expect(card.get_by_text("jev-1.14.0", exact=True)).to_be_visible()
+        expect(card.get_by_text("https://cf.api.fan/v1/systemone", exact=True)).to_be_visible()
+        expect(card.get_by_text("输入 $0.294 / 百万 Token", exact=False)).to_be_visible()
+        expect(card.get_by_text("最近测试 未实测。", exact=True)).to_be_visible()
+        expect(card.get_by_role("link", name="注册入口", exact=False)).to_have_attribute(
+            "href", "https://www.packyapi.ai/register",
+        )
+        expect(card.get_by_role("link", name="供应商计费页", exact=False)).to_have_attribute(
+            "href", "https://www.packyapi.ai/pricing",
+        )
+        expect(card.get_by_role("button", name="检查连接")).to_be_disabled()
+        card.get_by_role("button", name="选为 Jev 通道").click()
+        expect(card.get_by_text("当前 Jev 通道", exact=True)).to_be_visible()
+        expect(page.locator("#toast")).to_have_text("已切换 Jev 通道。")
+        expect(page.get_by_role("button", name="运行正式验收")).to_be_disabled()
+        card.get_by_label("API Key", exact=True).fill(initial)
+        card.get_by_role("button", name="保存密钥").click()
+        expect(page.locator("#toast")).to_have_text("密钥已保存并生效。")
+        expect(card.get_by_text("凭证 已配置", exact=False)).to_be_visible()
+        expect(card.get_by_text("审核未完成", exact=True)).to_be_visible()
+        card.get_by_text("更换密钥", exact=True).click()
+        card.get_by_label("API Key", exact=True).fill(rotated)
+        card.get_by_role("button", name="保存密钥").click()
+        expect(card.get_by_label("API Key", exact=True)).to_be_hidden()
+        page.reload()
+        expect(card.get_by_text("凭证 已配置", exact=False)).to_be_visible()
+        expect(card.get_by_role("button", name="检查连接")).to_be_disabled()
+        for width in (320, 390):
+            page.set_viewport_size({"width": width, "height": 844})
+            assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth"), width
+        page.set_viewport_size({"width": 1440, "height": 960})
+        card.screenshot(path=str(output / "packycode-candidate.png"))
+        page.get_by_role("button", name="查看 Jev Token Center").click()
+        expect(page.get_by_role("heading", name="用量及计费")).to_be_visible()
+        expect(page.get_by_text("按候选报价估算", exact=True)).to_be_visible()
+        expect(page.get_by_text("无请求记录", exact=True)).to_be_visible()
+        expect(page.get_by_text("未同步", exact=True)).to_be_visible()
+        return
+
+    expect(card.get_by_text("凭证 已配置", exact=False)).to_be_visible()
+    expect(card.get_by_role("button", name="检查连接")).to_be_disabled()
+    response = page.request.get(urljoin(page.url, "/api/workspace"))
+    expect(response).to_be_ok()
+    public = response.text() + page.content() + page.evaluate("JSON.stringify([localStorage, sessionStorage])")
+    assert initial not in public and rotated not in public
+    page.once("dialog", lambda dialog: dialog.accept())
+    card.get_by_role("button", name="删除密钥").click()
+    expect(card.get_by_text("凭证 未配置", exact=False)).to_be_visible()
+    print("PackyCode Chromium E2E passed: contract, credential lifecycle/restart, disabled live actions, billing, and 320/390 layouts.")
 
 
 def browser_checks(base, output, directory, studies_only=False, relations_only=False):
@@ -264,18 +326,46 @@ def run_registry_browser(output):
             browser.close()
 
 
+def run_packycode_browser(output):
+    output.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="voc-packycode-browser-") as directory, sync_playwright() as pw:
+        browser = pw.chromium.launch(executable_path=os.getenv("VOC_CHROMIUM") or None)
+        with socket.socket() as port_probe:
+            port_probe.bind(("127.0.0.1", 0))
+            port = port_probe.getsockname()[1]
+        for restart in (False, True):
+            with server(directory, port) as base:
+                page = browser.new_page(viewport={"width": 1440, "height": 960}, locale="zh-CN")
+                errors, outbound = [], []
+                page.on("pageerror", lambda error: errors.append(str(error)))
+                page.on("request", lambda request: outbound.append(request.url)
+                        if not request.url.startswith(base) else None)
+                page.route("**/*", lambda route: route.continue_()
+                           if route.request.url.startswith(base) else route.abort())
+                page.goto(base + "#setup")
+                packycode_checks(page, output, restart=restart)
+                assert not errors, errors
+                assert not outbound, outbound
+                page.close()
+        browser.close()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--serve", nargs=2, metavar=("DIR", "PORT"))
     parser.add_argument("--studies-only", action="store_true")
     parser.add_argument("--relations-only", action="store_true")
     parser.add_argument("--registry-only", action="store_true")
+    parser.add_argument("--packycode-only", action="store_true")
     parser.add_argument("--output", type=Path, default=ROOT / "test-results/browser")
     args = parser.parse_args()
     if args.serve:
         return serve(args.serve[0], int(args.serve[1]))
     if args.registry_only:
         run_registry_browser(args.output)
+        return
+    if args.packycode_only:
+        run_packycode_browser(args.output)
         return
     with tempfile.TemporaryDirectory(prefix="voc-browser-") as directory:
         with socket.socket() as port_probe:
@@ -298,6 +388,7 @@ def main():
             browser.close()
     if not args.studies_only:
         run_registry_browser(args.output)
+        run_packycode_browser(args.output)
     print("Chromium E2E passed. Screenshots:", args.output)
 
 

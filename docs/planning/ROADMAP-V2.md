@@ -7,7 +7,7 @@
 | 工程验收 | M01–M07 为 `ENGINEERING_PASS`，M06-R 为 `PASS`，M06 工程基线为 `FROZEN`，未关闭 P0/P1 为 0。 |
 | 平台部署 | 原生 Windows 11 实机及部署门禁 PASS，证据归属于源码 `9c27231376fcc32aae39a9b63df6fa9b9b98c4c6`。Python 277/277、Node 2/2、Chromium 11/11 组。 |
 | 正式业务 | 当前 P0-0，`G-1 = BLOCKED`。C0-3、C0-5、C0-6 有既有通过证据。C0-1、C0-2、C0-4 和通道审核待正式复验。 |
-| 后续授权 | M07-A 至 D 已单独授权隔离工程。G-1-R-A/B 延期待另行授权。M08–M15 为 `NOT_STARTED`。 |
+| 后续授权 | M07-A 至 D 已完成隔离工程。G-1-R-A 候选通道已实现，真实预检待账户审查。G-1-R-B、M08–M15 为 `NOT_STARTED`。 |
 | 十万级查询 | 100K 合成规模热读样本 P95 为 39.073 秒，探索目标 15 秒。资格核验和投影是主要耗时，移交 M13-A。M06-R 复审已关闭。 |
 
 [M06-R 审计](../audits/m06-final-engineering-audit.md) · [实机与回归](../evidence/m06-r/README.md) · [1K/10K/100K 对照](../evidence/m06-r/performance-comparison.md) · [最新开发状态](../../DEVELOPMENT_STATUS.md)
@@ -178,7 +178,7 @@ M13-A 接手 100K 查询技术债。先以同一证据过滤条件复测常见�
 | 节点 | 阶段及前置 | 交付物与出场条件 | 当前状态 |
 |---|---|---|---|
 | M06-R | 基础及设计，M01–M06-C5 | 跨模块审计、修复、回归、规模恢复、实机部署与冻结记录 | PASS |
-| G-1-R | P0-0，M06-R 已完成且负责人另行授权 | 同一正式批次的 C0-1～C0-6 和所选供应商及通道审核，脱敏请求、响应与账本证据供 G-1 核对，固定版本供 J-9 接续 | 待授权，G-1 BLOCKED |
+| G-1-R | P0-0，M06-R 已完成且负责人另行授权 | 同一正式批次的 C0-1～C0-6 和所选供应商及通道审核，脱敏请求、响应与账本证据供 G-1 核对，固定版本供 J-9 接续 | [A 阶段工程证据](../evidence/g1-ra/README.md)，B 阶段待启动，G-1 BLOCKED |
 | P0-R | P0，G-1 与 M01–M14 的 P0 交付 | G0–G5、G7、CAT-1～CAT-10、J-1～J-14 及原矩阵的正式验收，含 P0 问卷试填。M12 独立专项复审归 M12 模块 | NOT_STARTED |
 | P1-R | P1，P0-R 与六个 P1 单元 | P1-ANALYSIS/TREND/SOURCES/GOLD/REFLOW、完整 G6，真实趋势和实际答卷回写 | NOT_STARTED |
 | P2-R | P2，P1-R 与 M15 六单元 | P2-RADAR/AMAZON/GITHUB/SCHEDULE/HISTORY，全平台工程复审及正式业务记录 | NOT_STARTED |

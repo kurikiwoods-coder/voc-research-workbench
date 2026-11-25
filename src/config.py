@@ -11,6 +11,18 @@ from src.raw_store.credentials import CredentialVault
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = "jev-1.14.0"
+PACKYCODE_CONTRACT = {
+    "group": "typesafe-officially",
+    "model": MODEL,
+    "base_url": "https://cf.api.fan",
+    "endpoint": "https://cf.api.fan/v1/systemone",
+    "endpoint_evidence": "DOCUMENTED",
+    "live_status": "NOT_TESTED",
+    "input_usd_per_million": "0.294",
+    "output_usd_per_million": "0",
+    "rate_source": "PackyAPI 公开价目倍率与负责人配置截图，实际账户扣费待核验",
+}
+PACKYCODE_LIVE_BLOCK = "PackyCode 真实调用尚未放行，请先完成本账户供应商审查及预检准备。"
 PROVIDERS = {
     "typesafe": (
         "https://api.typesafe.ai/v1/systemone",
@@ -22,11 +34,17 @@ PROVIDERS = {
         "JEVMODEL_API_KEY",
         "https://jevmodel.org/zh/pricing/",
     ),
+    "packycode": (
+        PACKYCODE_CONTRACT["endpoint"],
+        "PACKYCODE_API_KEY",
+        "https://www.packyapi.ai/pricing",
+    ),
 }
 SEARCH_KEYS = {"tavily": "TAVILY_API_KEY", "brave": "BRAVE_API_KEY"}
 CONNECTOR_ACCOUNTS = {
     "typesafe": ("TypeSafe", "https://console.typesafe.ai/login"),
     "jevmodel": ("JevModel", "https://jevmodel.org/zh/dashboard/"),
+    "packycode": ("PackyCode", "https://www.packyapi.ai/register"),
     "tavily": ("Tavily", "https://app.tavily.com/home"),
     "brave": ("Brave", "https://api-dashboard.search.brave.com/register"),
 }
@@ -53,7 +71,7 @@ class Settings:
         load_dotenv(ROOT / ".env", override=False)
         provider = os.getenv("JEV_PROVIDER", "jevmodel").strip().lower()
         if provider not in PROVIDERS:
-            raise ValueError("JEV_PROVIDER 仅接受 typesafe 或 jevmodel")
+            raise ValueError("JEV_PROVIDER 仅接受 " + "、".join(PROVIDERS))
         capacity = os.getenv("JEV_TOKEN_CAPACITY", "").strip()
         if capacity and (not capacity.isdecimal() or int(capacity) <= 0):
             raise ValueError("JEV_TOKEN_CAPACITY 应填写账户已知的正整数额度")
@@ -85,7 +103,7 @@ class Settings:
                 raw = b64decode(pair["record"], validate=True)
                 proof = b64decode(pair["attachment"], validate=True)
                 return validate_review(self.provider, raw, proof)
-            if self.provider in self.local_key_overrides:
+            if self.provider == "packycode" or self.provider in self.local_key_overrides:
                 return unapproved_review()
             path = Path(self.review)
             raw = path.read_bytes()
@@ -113,6 +131,15 @@ def validate_review(provider, raw, proof):
         required = ("zdr_enabled",) if provider == "typesafe" else (
             "subprocessors_reviewed", "retention_reviewed",
         )
+        if provider == "packycode":
+            required += (
+                "training_use_reviewed", "deletion_reviewed", "upstream_reviewed", "zdr_terms_reviewed",
+            )
+            if (
+                any(doc.get(key) != PACKYCODE_CONTRACT[key] for key in ("group", "model", "endpoint"))
+                or not isinstance(doc.get("upstream_reference"), str) or not doc["upstream_reference"].strip()
+            ):
+                return unapproved_review()
         if (
             checked.tzinfo is not None and checked <= datetime.now(timezone.utc)
             and doc.get("provider") == provider and doc.get("public_text_approved") is True

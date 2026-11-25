@@ -521,12 +521,14 @@ class LocalTests(unittest.TestCase):
         self.assertNotIn(local_value, reply.text)
         config = reply.json()["config"]
         providers = {entry["id"]: entry for entry in config["connections"]}
-        self.assertEqual(set(providers), {"typesafe", "jevmodel", "tavily", "brave"})
+        self.assertEqual(set(providers), {"typesafe", "jevmodel", "packycode", "tavily", "brave"})
         self.assertTrue(providers["typesafe"]["configured"])
         self.assertEqual(providers["typesafe"]["review"], "PENDING")
         self.assertEqual(providers["typesafe"]["connection"], "NOT_TESTED")
         self.assertIsNone(providers["typesafe"]["http_status"])
         self.assertFalse(providers["jevmodel"]["configured"])
+        self.assertFalse(providers["packycode"]["configured"])
+        self.assertEqual(providers["packycode"]["connection"], "NOT_TESTED")
         self.assertEqual(config["acceptance"], "NOT_TESTED")
 
     def test_offline_history_survives_restart(self):

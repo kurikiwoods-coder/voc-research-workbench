@@ -1,12 +1,12 @@
 import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from src.config import MODEL, Settings
+from src.config import MODEL, PACKYCODE_LIVE_BLOCK, Settings
 from src.discovery.recall import test_cross_category_recall
 from src.execution.jev import call_shards, questions, split
 from src.execution.transport import ENDPOINTS, Denied, Response, failure, network, outbound
 from src.ingestion.public_source import discover
-from src.raw_store.store import Store
+from src.raw_store.store import Conflict, Store
 
 CODES = [f"C0-{n}" for n in range(1, 7)]
 
@@ -138,6 +138,8 @@ def run_checks(settings, store, request_key, resume_id=None, transport=network):
     with store.writer():
         if callable(settings):
             settings = settings()
+        if settings.provider == "packycode":
+            raise Conflict(PACKYCODE_LIVE_BLOCK)
         run, attempt = store.begin(request_key, settings, resume_id)
         if attempt is None:
             return run

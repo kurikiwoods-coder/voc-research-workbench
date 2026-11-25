@@ -5,8 +5,8 @@ from hashlib import sha256
 import json
 import re
 
-from src.config import MODEL, PROVIDERS
-from src.execution.jev import call_shards
+from src.config import MODEL, PACKYCODE_LIVE_BLOCK, PROVIDERS
+from src.execution.jev import call_shards, output_tokens
 from src.execution.transport import failure, network
 from src.ingestion.public_source import DOMAIN, discover
 from src.raw_store.store import Conflict
@@ -65,6 +65,7 @@ def probe_jev(cfg, store, run, attempt, transport):
             "response_model": model,
             "evidence_id": row["evidence_id"],
             "input_tokens": row["tokens"],
+            **({"output_tokens": output_tokens(response)} if cfg.provider == "packycode" else {}),
             "remaining_tokens": row["remaining"] if cfg.provider == "jevmodel" else None,
             "idempotency_key": row["request_key"],
             "ledger_state": row["state"],
@@ -85,9 +86,13 @@ def probe_jev(cfg, store, run, attempt, transport):
             gaps = ["model_or_question_ids", *gaps]
         if len(shards) != 2 or any(shard["input_tokens"] is None for shard in shards):
             gaps.append("usage.input_tokens")
+        if cfg.provider == "packycode" and (
+            len(shards) != 2 or any(shard["output_tokens"] is None for shard in shards)
+        ):
+            gaps.append("usage.output_tokens")
         result = (
             outcome("CAPABILITY_BLOCKED", "固定模型、问题键或响应字段未通过，请查看 Schema 缺口。")
-            if gaps else outcome("READY", "合成文本的两片真实响应及本机账本已核验。")
+            if gaps else outcome("READY", "合成文本的两片响应及本机账本已核验。")
         )
     return {
         **result,
@@ -154,6 +159,12 @@ def diagnostic_report(row):
 def run_probe(settings, store, provider, request_key, transport=network):
     if not store.diagnostic or (transport is network) == store.fixture:
         raise ValueError("诊断与正式验收必须使用独立的记录库")
+    if provider == "packycode" and not store.fixture:
+        return outcome(
+            "LIVE_TEST_BLOCKED", PACKYCODE_LIVE_BLOCK, provider=provider, model=MODEL,
+            http_status=None, schema_status="NOT_TESTED", schema_gap=[], evidence_refs=[],
+            research_denominator=0,
+        )
     cfg = replace(settings, provider=provider)
     run, attempt = store.begin(request_key, cfg)
     if attempt is None:
