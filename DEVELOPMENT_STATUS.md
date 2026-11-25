@@ -1,5 +1,11 @@
 # VOC Research Workbench 开发状态
 
+## ROADMAP-V2 正式规划
+
+2026-11-25 采用 `3bd705befb98ee108b77603763c5571ceb7fdc44` 为 M06-R 冻结基线，草稿 PR #1 的 Ubuntu、Windows Server 2022、Chromium 检查均通过。M01–M06 为 **ENGINEERING_PASS**，M06-R 为 **PASS**，M06 工程基线 **FROZEN**。实机及部署证据见下文。核心计划含 79 个工作单元，工程或复审完成范围 31 项，待推进 48 项。P2 后另列 15 个可选单元。[完整规划](docs/planning/ROADMAP-V2.md) · [基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45585265229)
+
+`ROADMAP_V2 = APPROVED_AND_DOCUMENTED`，`MULTI_MODEL_DIRECTION = APPROVED`，`MODEL_ADAPTER_CONTRACT = PLANNED`，`MODEL_ADAPTER_IMPLEMENTATION = NOT_STARTED`。G-1 为 **BLOCKED**，M07–M15 为 **NOT_STARTED**。下一项为待授权的 G-1-R。M13-A 接手十万级查询性能债务。规划变更只涉及文档，研究 API 调用 0 次。[负责人批准](docs/decisions/roadmap-v2-owner-approval.md) · [模型接口](docs/architecture/ai-model-adapter-contract.md)
+
 ## M06-R 独立工程复审
 
 2026-11-25 从 `7b26d8da89db636c7e3f4ad73490b53dcc555155` 接续。复审覆盖 M01–M06，独立核对 25 项反例，修复 P1 三项及 P2 三项，未关闭 P0/P1 为 0。SQLite 保持 v7，沿用五项冻结政策及 `M06-B-F.1`。

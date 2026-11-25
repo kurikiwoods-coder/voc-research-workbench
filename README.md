@@ -2,7 +2,7 @@
 
 > **当前处于 P0-0，G-1 为 BLOCKED。** Tavily 认证搜索及原帖回源已通过 C0-3。Jev 固定模型、返回契约和真实用量等待供应商留存审查。[Tavily 实测](docs/evidence/p0-0/tavily-live/README.md) · [API 接入实测](docs/evidence/p0-0/api-setup/README.md)
 
-[模块路线图](MODULE_ROADMAP.md) · [开发与验收状态](DEVELOPMENT_STATUS.md) · [开发交接](HANDOVER.md)
+[完整路线图](docs/planning/ROADMAP-V2.md) · [主模块](MODULE_ROADMAP.md) · [开发与验收状态](DEVELOPMENT_STATUS.md) · [开发交接](HANDOVER.md)
 
 ## 目的
 
@@ -106,6 +106,12 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-
 - **P0** 实现发现、编码、基础仪表盘与问卷草稿，逐项验收 J、CAT、G 系列。G6 的真实回流按矩阵归入 P1。
 - **P1**：仪表盘四模块 + 声量基线 + 问卷回流。
 - **P2**：竞品 Radar + Amazon 窄路常态化 + GitHub 信号三角验证。
+
+## 开发路线与模型规划
+
+M01–M06 已完成工程验收，M06-R 工程基线已冻结。核心路线图共 79 项，工程或复审完成范围为 31 项。G-1-R 等待单独授权，其后按依赖接续 M07–M15。P2 后另列 15 项可选产品化。[实施顺序及版本目标](docs/planning/development-sequence.md) · [产品化路线](docs/planning/productization-roadmap.md)
+
+模型治理规划分别接入决策、生成和向量能力。M12 以锁定的 `jev-1.14.0` 作为首个正式决策模型，后续候选须有自己的审批、真实接口证据及校准。通用适配接口处于规划状态。[多模型接口图](docs/architecture/ai-model-adapter-contract.md#接口树)
 
 ## 红线
 

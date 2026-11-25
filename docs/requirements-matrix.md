@@ -195,6 +195,21 @@ M06-C2 = **ENGINEERING_PASS**。实现提交 `965a4b8` 的[三平台 CI](https:/
 | RESEARCH-REPORT | P0 | 结论记录来源差异、偏差、置信度与样本局限，报告可复现 | src/outputs/ | 抽样回放与建议引用 |
 
 
+## ROADMAP-V2 规划扩展映射
+
+以下为新增的规划跟踪编号。正式业务继续执行上面的原验收标准，包含 G-1、G4、J-4、J-9、J-10、J-14。模型切换和扩展按实际阶段及用途授权。PDT 与专案的差异继续采用本文件已有裁定。2026-11-25 已对本机 27 页专案 v2.2 原件复核页数和登记指纹，仓库保留摘要。[负责人批准](decisions/roadmap-v2-owner-approval.md) · [完整路线图](planning/ROADMAP-V2.md)
+
+| 编号 | 规划归属 | 交付及验收映射 | 状态 |
+|---|---|---|---|
+| MODEL-ADAPTER-01 | P0 接口预留及所属阶段实施，M09-A、M10-A、M12-A/B | Decision、LLM、Embedding 分型。现有 Jev 请求及历史回执兼容，使用隔离适配器证明扩展边界。正式 Jev 依 J-1/4/9、G4。[接口](architecture/ai-model-adapter-contract.md) | PLANNED |
+| MODEL-CAPABILITY-01 | P0 首套真实验证，M12-A/B/E | 记录固定模型、逐题字段、完整概率、限额、实际用量及供应商重放能力证据。缺项保持未知或 schema_gap。继承 C0-1/2/4、J-4/11/12 | PLANNED |
+| MODEL-VERSION-01 | P0 版本追溯，M07、M09-A、M12-A/C/D | 按精确配置、题组、注册表、索引、回执和校准版回查，升级独立审批，旧版本受控保留。对应 J-9/14 和 M06-B-F.1。[生命周期](architecture/model-lifecycle-and-calibration.md) | PLANNED |
+| MODEL-CALIBRATION-01 | P0 首套及 P1 滚动，M12-D/F | 100–200 条金标准、中文子集、独立盲测、升级后重新校准。继承 J-2/3/14、G4 和 P1-GOLD。[评估](architecture/model-evaluation-protocol.md) | PLANNED |
+| MODEL-SECURITY-01 | P0 单模型和各阶段新增通道 | 输入最小化、当前证据资格、逐通道审查、M02 凭证、受控端点与历史重验。继承 C0-5、G7、PRIVACY、TC-08 | PLANNED |
+| MODEL-USAGE-01 | P0 复用 Jev 账本，M02-D、M12-E；扩展单位后续接入 | 用量归属、分片预算、同键防重及未知余额和扣费。继承 C0-4、J-7/8/11、G5、TC-01～TC-08 | PLANNED |
+| MODEL-COMPARE-01 | 可选，P1 或后续专项 | 获准模型同样本独立运行，报告 F1、未知拒绝、校准、使用成本与人审负担。保留独立评估域。 | OPTIONAL |
+| MODEL-ROUTING-01 | P0 单模型，MODE-2 至 4 后续授权 | 单次执行锁定模型。可选对照、主辅复核和备用模式使用独立运行及授权，继承 J-9 和 G-1。 | PLANNED / OPTIONAL |
+
 ## M03 独立预开发工程映射
 
 PDT §6.9 的 StudyScope 框定研究边界。项目、当前及历史范围、冻结与复合引用已落地，[工程测试](evidence/m03/README.md)涵盖产品和非产品课题。BIZ-SCOPE 的许可来源、第二品类和正式范围确认继续按 D1–D5 执行。CAT-6 正式跨品类全流程和 CAT-7 注册表验证仍在各自模块验收。G-1 保持 BLOCKED。

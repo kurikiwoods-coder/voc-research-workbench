@@ -8,7 +8,9 @@
 
 ## 当前模块
 
-M01–M05 与 M06-C1–C5 已完成阶段工程验收。M06-B-F 五项政策与架构保持冻结。M06-R 当前版本的工程冻结及部署门禁见 [复审证据](docs/evidence/m06-r/README.md)。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M07 为 **NOT_STARTED**，接续前由负责人单独授权。[M07–M15 接入契约](docs/architecture/m06-consumer-handover.md) · [开发状态](DEVELOPMENT_STATUS.md)
+M01–M06 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，Windows 11 实机及部署门禁通过。当前 P0-0，G-1 为 **BLOCKED**。下一项为待单独授权的 G-1-R，M07–M15 均为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [开发状态](DEVELOPMENT_STATUS.md)
+
+[ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成范围 31 项，待推进 48 项。P2 后另列 15 项可选产品化。下文保留主模块的工程档案与验收证据。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
@@ -113,7 +115,7 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | 验收标准 | 已确认意图只有一个主任务。产品关系由当前合格原话证据决定。先在同一证据上相交，再按唯一 `mention_id` 分别核对合格发生与六桶、已发布归类与主任务大类两条恒等式。 |
 | 最近相关提交 | C5 验收源码 `a9eebee`，C4 验收源码 `fce76a0`，C3 验收源码 `43c7202`，C2 实现 `965a4b8`。[C5 工程证据](docs/evidence/m06-c5/README.md) · [负责人批准记录](docs/architecture/m06-owner-approval.md) |
 | 测试结果与证据 | C0-6 合成冒烟为 2 个产品品类、3 个任务大类、30 个意图、两次跨品类命中。C1 在 Windows 10 实机通过 Python 173/173（新增 33 项）及既有回归，见[迁移与工程验收证据](docs/evidence/m06-c1/README.md)。 |
-| 剩余问题 | C5 对账及规模见本轮工程证据。完整身份及审核入口、真实编码、正式统计和发布仍待所属阶段验收。专案 v2.2 原 PDF 待补。[分阶段计划](docs/architecture/m06-implementation-plan.md) · [专项矩阵](docs/architecture/m06-test-plan.md) |
+| 剩余问题 | C5 对账及规模见工程证据。完整身份及审核入口、真实编码、正式统计和发布待所属阶段验收。100K 查询优化归 M13-A。[分阶段计划](docs/architecture/m06-implementation-plan.md) · [专项矩阵](docs/architecture/m06-test-plan.md) |
 
 ## M07 意图注册表及版本管理
 
@@ -200,12 +202,12 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | 测试结果与证据 | CAT-4/5/9 和 J-5 的测试口径已登记。 |
 | 剩余问题 | 队列、审计、并发事务和人工实际试用。 |
 
-## M12 Jev 编码与金标准校准
+## M12 Universal Decision Engine — 通用 AI 决策编码引擎与金标准校准
 
 | 项目 | 记录 |
 |---|---|
 | PDT 与矩阵编号 | §7、§13；J-1～J-14、G4/G5、D2/D3/D5、P1-GOLD；C0-1/2/4（前置） |
-| 模块职责 | 把 Choice、Score、Noul、8+3 分片、None 守门与人工金标准接到正式语料。 |
+| 模块职责 | 提供通用决策接口和模型版本记录。首套正式实施锁定 `jev-1.14.0`，继承 Choice、Score、Noul、8+3 分片、None 守门及全部原 Jev 验收。[模型接口](docs/architecture/ai-model-adapter-contract.md) |
 | 前置依赖 | M01 G-1、M02 凭证审查、M05 语料、M06/M07 已确认注册表、M11 复核流程。 |
 | 工程开发 | P0-0 真实请求路径和固定字段校验已有，P0 编码与金标准未实现。 |
 | 工程测试 | 分片、防重和缺概率有工程夹具，正式金标准未测试。 |
@@ -227,12 +229,12 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | 工程开发 | 已有诊断统计和 Token Center，正式研究仪表盘未实现。 |
 | 工程测试 | 诊断 UI E2E 通过，正式统计未测试。 |
 | 正式业务验收 | 基础和 P1 仪表盘待验。 |
-| 数据库及 API | 现有 `/api/workspace` 提供诊断状态。待研究指标、筛选分母和逐指标证据 API。 |
+| 数据库及 API | 现有 `/api/workspace` 提供诊断状态，M06-C5 已提供分母及工程对账。M13 消费冻结契约并接续正式指标、历史复核和发布。 |
 | 前端页面 | 现有连通性及额度页面。VOC 指标页未实现。 |
 | 验收标准 | 按实际口径互斥计数、维度切换时重算分母，所有指标可追溯。P1 小分母保护和四周周期遵从矩阵。 |
 | 最近相关提交 | `452e16f` |
 | 测试结果与证据 | [Chromium 记录](docs/evidence/p0-0/api-setup/README.md)覆盖诊断页，正式数据分母未验证。 |
-| 剩余问题 | 聚合与证据逻辑、视觉页面、统计校验及真实数据积累。 |
+| 剩余问题 | 聚合、证据界面和真实业务数据验收待完成。100K 批量热读样本 P95 39.073 秒，15 秒为探索目标，随 M13-A 复测。[M06-R 性能证据](docs/evidence/m06-r/performance-comparison.md) |
 
 ## M14 问卷生成、验证及数据回流
 

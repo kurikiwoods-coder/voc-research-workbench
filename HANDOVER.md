@@ -1,12 +1,18 @@
 # 开发交接
 
+## ROADMAP-V2 后续开发入口
+
+以 `3bd705b` 的 M06-R 冻结及当前远端 HEAD 为接续基线。G-1 = **BLOCKED**，M07–M15 = **NOT_STARTED**。下一项为 G-1-R，等待负责人单独授权。查询 100K 的已知性能债务交 M13-A。在获准的后续模块开发前读取 [完整工作单元](docs/planning/ROADMAP-V2.md)、[关键路径与 G-1-R](docs/planning/development-sequence.md#下一授权入口)、[M06 消费接口](docs/architecture/m06-consumer-handover.md)和[验收矩阵](docs/requirements-matrix.md)。
+
+AI 模块同时读取[适配器协议](docs/architecture/ai-model-adapter-contract.md)、[生命周期与版本](docs/architecture/model-lifecycle-and-calibration.md)及[金标准与对照](docs/architecture/model-evaluation-protocol.md)。M09 承接向量边界，M10 承接最小生成式接口，M12 承接通用决策接口及 Jev 首套正式实现。按各阶段授权实施，保留固定版本、实际通道身份、原有 G-1 和正式验收。ROADMAP-V2 已核验本机专案 v2.2 的 27 页原件及原登记指纹，仓库提供摘要供接续阅读。[负责人批准](docs/decisions/roadmap-v2-owner-approval.md)
+
 ## M06-R 复审与接续
 
 开发分支为 `codex/p0-0-connectivity`。Windows 11 验收归档源码为 `9c27231376fcc32aae39a9b63df6fa9b9b98c4c6`。接续时核对远端 HEAD、草稿 PR #1 和同一 SHA 的三项 CI，按复审记录确认冻结状态。[复审与实机证据](docs/evidence/m06-r/README.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 
 - 片段读、组合事务及统计各自校验当前项目授权和精确片段版。读取和写入必须使用实际证据依赖和当前资格。M04 保留同文但规范来源独立的候选，由 M05 逐项审核。
 - M07 从已发布定义、目录版和任务关系接续注册表治理。绑定稳定 ID 和明确版本，保留旧定义，继续限制共享投影和项目原话。M07 仍待负责人单独授权。
-- G-1 保持 BLOCKED。正式准入、逐源许可、删除审计、真实数据与正式发布留在原验收矩阵。专案 v2.2 的 27 页原 PDF 待补。
+- G-1 保持 BLOCKED。正式准入、逐源许可、删除审计、真实数据与正式发布留在原验收矩阵。M06-R 复审所用材料见当轮证据。
 
 ## M06-C5 统计接口
 
