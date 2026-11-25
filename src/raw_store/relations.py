@@ -158,7 +158,7 @@ class RelationStore:
 
                 selection["can_audit"] = can_audit
             return query(db, self.mentions, study, **versions, **selection, filters={**(filters or {}), "mode": mode},
-                         can_read=can_read, today=access.at.date().isoformat())
+                         access=access, can_read=can_read, today=access.at.date().isoformat())
 
     def product_intent_edges(self, study_id, *, registry_version=None, segment_revision=None,
                              product_id=None, intent_id=None, filters=None, mode="engineering"):
@@ -211,8 +211,10 @@ class RelationStore:
             }
 
     @staticmethod
-    def _expect_versions(db, study, version, revision):
-        if (registry_head(db), _head(db, study)) != (version, revision):
+    def _expect_versions(db, access, study, version, revision):
+        current_revision = _head(db, study)
+        access.require_revision(study, current_revision)
+        if (registry_head(db), current_revision) != (version, revision):
             raise Conflict("注册表或片段版本已变化。")
 
     @staticmethod
@@ -277,7 +279,8 @@ class RelationStore:
             check_registry_version(expected_registry_version)
         refs = _references(representative_refs, expected_segment_revision)
         with self._transaction(study_id, operation="validate") as (db, access):
-            self._expect_versions(db, study_id, expected_registry_version, expected_segment_revision)
+            access.require_revision(study_id, expected_segment_revision)
+            self._expect_versions(db, access, study_id, expected_registry_version, expected_segment_revision)
             confirm = operation == "confirm"
             violations = parent_violations(
                 db, expected_registry_version, primary_category_id, tuple(secondary_ids or ()), confirm=confirm,
@@ -304,10 +307,11 @@ class RelationStore:
         if not references:
             raise ValueError("工程关系需要直接证据。")
         with self._transaction(study_id, operation="attribute", write=True) as (db, access):
+            access.require_revision(study_id, expected_segment_revision)
             payload = [expected_registry_version, intent_id, references]
             signature, prior = _command(db, study_id, key, ENGINEERING_ATTRIBUTION, access.actor, payload)
             if prior is None:
-                self._expect_versions(db, study_id, expected_registry_version, expected_segment_revision)
+                self._expect_versions(db, access, study_id, expected_registry_version, expected_segment_revision)
             row = db.execute(
                 """SELECT lifecycle_status FROM m06_intent JOIN m06_registry USING(registry_version)
                    WHERE registry_version=? AND intent_id=? AND sealed=1""",
@@ -359,11 +363,12 @@ class RelationStore:
         payload = [expected_registry_version, expected_segment_revision, version, asdict(intent),
                    [asdict(task) for task in tasks], primary_category_id, secondaries, refs, approval_ref, attribution]
         with self._transaction(study_id, operation="validate", write=True, publish=True) as (db, access):
+            access.require_revision(study_id, expected_segment_revision)
             for reference in attribution:
                 access.require("attribute", study_id, reference)
             signature, prior = _command(db, study_id, key, COMBINATION, access.actor, payload)
             if prior is None:
-                self._expect_versions(db, study_id, expected_registry_version, expected_segment_revision)
+                self._expect_versions(db, access, study_id, expected_registry_version, expected_segment_revision)
             inherited = inherited_representatives(db, expected_registry_version, study_id, intent.intent_id)
             inherited_keys = [(row["segment_revision"], row["mention_id"], row["evidence_id"]) for row in inherited]
             dependencies, states = self._collect(

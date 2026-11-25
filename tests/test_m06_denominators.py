@@ -212,6 +212,59 @@ class DenominatorTests(TestCase):
         self.assertEqual([(row["category_id"], row["count"], row["ratio"]) for row in result["by_primary_category"]],
                          [(relation_fixture.PRIMARY, 1, 1.0)])
 
+    def test_two_project_ledgers_reconcile_independently_across_history_and_withdrawal(self):
+        quotes, members = self.seed()
+        first_batch, first = quotes[0]
+        first_member = members[0]
+        self.decision(first_member, publication_status="published", disposition="human_confirmed")
+
+        other_study, other_scope = self.corpus.project()
+        shared_text = "Synthetic need need-0."
+        _, [other_record] = self.corpus.import_rows(
+            [[shared_text, "forum", "https://synthetic.invalid/need-0", "2026-11-11", "Synthetic license", "public"]],
+            study=other_study, scope=other_scope,
+        )
+        other_corpus = corpus_fixture.CorpusTests()
+        other_corpus.client = self.corpus.client
+        other_corpus.root = f"/api/corpus/{other_study}"
+        other_corpus.retain = self.corpus.retain
+        other_corpus.verify(other_record)
+        for operation in ("read", "segment", "identity"):
+            self.mentions.permissions[other_study, operation] = f"synthetic-{operation}"
+        other_interval = replace(first, record_id=other_record)
+        [other_member] = self.mentions.publish(
+            [self.mentions.member("other-study", other_interval)], study=other_study,
+        )["members"]
+        self.mentions.publish([
+            self.mentions.member(f"next-{index}", interval, mention_id=member["mention_id"])
+            for index, ((_, interval), member) in enumerate(zip(quotes, members, strict=True))
+        ], expected=1, key="review-next")
+
+        def tally(result):
+            counts = result["counts"]
+            return (counts["N_extracted_mentions"], counts["N_eligible_dedup"], counts["N_published_classified"],
+                    tuple(counts["buckets"][bucket] for bucket in BUCKETS),
+                    tuple((row["category_id"], row["count"]) for row in result["by_primary_category"]),
+                    result["reconciliation"]["eligible_difference"],
+                    result["reconciliation"]["primary_difference"])
+
+        first_version = self.stats(segment_revision=1)
+        self.assertEqual(tally(first_version), (3, 3, 1, (1, 0, 0, 0, 0, 2),
+                                               ((relation_fixture.PRIMARY, 1),), 0, 0))
+        self.assertEqual(tally(self.stats(segment_revision=2)), (3, 3, 0, (0, 0, 0, 0, 0, 3), (), 0, 0))
+        self.assertNotIn(other_member["mention_id"], repr(first_version))
+        with self.assertRaises(KeyError):
+            self.relations.denominators(other_study, mode="synthetic", synthetic=self.scenario)
+
+        self.mentions.revoke_batch(first_batch)
+        first_version = self.stats(segment_revision=1)
+        self.assertEqual(tally(first_version), (3, 2, 0, (0, 0, 0, 0, 0, 2), (), 0, 0))
+        self.assertEqual(first_version["excluded_by_reason"]["primary"], {"LICENSE_RESTRICTED": 1})
+        self.grants.append(replace(self.grants[0], study_id=other_study))
+        other_result = self.relations.denominators(other_study, mode="synthetic", synthetic=self.scenario)
+        self.assertEqual(tally(other_result), (1, 1, 0, (0, 0, 0, 0, 0, 1), (), 0, 0))
+        self.assertNotIn(first_member["mention_id"], repr(other_result))
+
     def test_h_mixed_six_buckets_and_i_overlapping_reasons(self):
         self.mentions.bind_products(status="non_product")
         quotes = [self.add_quote(f"mix-{number}") for number in range(9)]

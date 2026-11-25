@@ -36,7 +36,7 @@ function withQuery(path, fields) {
 }
 
 export function mountRelations(root, _route, { api, esc }) {
-  const selected = { study: "", scope: "", version: "", revision: "", mode: "engineering",
+  const selected = { study: null, scope: "", version: "", revision: "", mode: "engineering",
     direction: "product-intent", product: "", task: "", intent: "",
     source: "", batch: "", timeField: "published_at", from: "", to: "", confidence: "", index: "" };
   const denominatorSets = { product: [], task: [], intent: [] };
@@ -121,6 +121,12 @@ export function mountRelations(root, _route, { api, esc }) {
           value="${esc(selected[name])}"${hint ? ` placeholder="${hint}"` : ""}></label>`).join(""));
     }
     if (focused) fields.querySelector(`[data-relation-filter="${focused}"]`)?.focus({ preventScroll: true });
+  }
+
+  function resetProjectVersion() {
+    selected.scope = "";
+    mappings = [];
+    selected.revision = "";
   }
 
   function status(text, retry = false) {
@@ -305,7 +311,12 @@ export function mountRelations(root, _route, { api, esc }) {
         if (!root.isConnected || id !== sequence) return;
         definitions = { products: list.items, tasks: taskList.items, intents: intentList.items };
         projects = projectList.items;
-        if (!selected.study) selected.study = projectList.current_study_id || projects[0]?.study_id || "";
+        if (selected.study === null && projects.length) {
+          selected.study = projectList.current_study_id || projects[0].study_id;
+        } else if (selected.study && !projects.some(project => project.study_id === selected.study)) {
+          selected.study = "";
+          resetProjectVersion();
+        }
         const global = currentView === "relations" && ["task-intent", "intent-task"].includes(selected.direction);
         if (global) {
           const taskFirst = selected.direction === "task-intent";
@@ -325,11 +336,10 @@ export function mountRelations(root, _route, { api, esc }) {
             return;
           }
         } else {
-          if (!selected.study || !projects.some(project => project.study_id === selected.study)) {
-            selected.scope = "";
-            mappings = [];
+          if (!selected.study) {
             filters();
-            const missing = currentView === "denominators" ? "暂无获准查询统计的项目。" : "暂无获准查询关系证据的项目。";
+            const target = currentView === "denominators" ? "统计" : "关系证据";
+            const missing = projects.length ? `请选择获准查询${target}的项目。` : `暂无获准查询${target}的项目。`;
             status([preserveNotice, missing].filter(Boolean).join(" "));
             return;
           }
@@ -410,11 +420,11 @@ export function mountRelations(root, _route, { api, esc }) {
     } else {
       selected[key] = event.target.value;
     }
-    if (key === "study" || key === "revision" || key === "version") {
+    if (key === "study" || key === "version") resetProjectVersion();
+    if (key === "revision") {
       selected.scope = "";
       mappings = [];
     }
-    if (key === "study" || key === "version") selected.revision = "";
     if (key === "version") {
       for (const field of Object.keys(denominatorSets)) {
         denominatorSets[field] = [];

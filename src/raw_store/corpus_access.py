@@ -7,8 +7,7 @@ from src.raw_store.corpus_policy import (
 )
 
 
-ROW_SOURCE = """
-    FROM import_rows r
+ROW_JOINS = """
     JOIN import_batches b ON b.batch_id=r.batch_id
     JOIN import_files f ON f.file_id=b.file_id
     JOIN study_scopes s ON s.study_id=b.study_id AND s.scope_id=b.scope_id
@@ -19,6 +18,7 @@ ROW_SOURCE = """
     )
     LEFT JOIN corpus_licenses l ON l.review_id=v.review_id
 """
+ROW_SOURCE = f"FROM import_rows r {ROW_JOINS}"
 CANDIDATE = "(v.review_id IS NOT NULL OR r.status IN ('staged', 'pending_review'))"
 
 

@@ -35,12 +35,13 @@ def _registry_version(db, version):
     return version
 
 
-def _segment(db, study_id, revision):
+def _segment(db, study_id, revision, access):
     if revision is None:
         row = db.execute("SELECT segment_revision FROM m06_segment_head WHERE study_id=?", (study_id,)).fetchone()
-        if row is None:
-            return None
-        revision = row[0]
+        revision = row[0] if row else None
+    access.require_revision(study_id, revision)
+    if revision is None:
+        return None
     row = db.execute(
         """SELECT segment_revision, parent_rev, rule_version, created_at FROM m06_segment_rev
            WHERE study_id=? AND segment_revision=? AND sealed=1""",
@@ -269,9 +270,9 @@ def _product_edges(reviews, evidence, state, grants, filters):
 
 
 def _project_snapshot(db, mentions, study_id, *, registry_version, segment_revision, filters,
-                      can_read, today, require_registry=False):
+                      access, can_read, today, require_registry=False):
     version = _registry_version(db, registry_version)
-    segment = _segment(db, study_id, segment_revision)
+    segment = _segment(db, study_id, segment_revision, access)
     revision = segment["segment_revision"] if segment is not None else None
     resolved = {"registry_version": version, "segment_revision": revision,
                 "catalog_version": filters.get("catalog_version"), "scope_mappings": []}
@@ -463,12 +464,12 @@ def _tombstones(db, mentions, study_id, revision, mention_id, can_audit, today):
 
 
 def project_mentions(db, mentions, study_id, *, registry_version=None, segment_revision=None,
-                     mention_id=None, filters=None, can_read=None, can_audit=None, today):
+                     mention_id=None, filters=None, access, can_read=None, can_audit=None, today):
     """Return project-only mention status and visible eligible evidence references."""
     filters = _project_filters(filters)
     resolved, members, _, reasons = _project_snapshot(
         db, mentions, study_id, registry_version=registry_version, segment_revision=segment_revision,
-        filters=filters, can_read=can_read, today=today,
+        filters=filters, access=access, can_read=can_read, today=today,
     )
     if reasons:
         return _result([], resolved, reasons=reasons)
@@ -493,7 +494,7 @@ def project_mentions(db, mentions, study_id, *, registry_version=None, segment_r
 
 
 def product_intent_edges(db, mentions, study_id, *, registry_version=None, segment_revision=None,
-                         product_id=None, intent_id=None, filters=None, can_read=None, today):
+                         product_id=None, intent_id=None, filters=None, access, can_read=None, today):
     """Group both orientations from the same qualifying (S, V, R, M, E, P, A) witness."""
     filters = _project_filters(filters)
     if product_id is not None:
@@ -502,7 +503,7 @@ def product_intent_edges(db, mentions, study_id, *, registry_version=None, segme
         filters["intent_id"] = (intent_id,)
     resolved, _, relations, reasons = _project_snapshot(
         db, mentions, study_id, registry_version=registry_version, segment_revision=segment_revision,
-        filters=filters, can_read=can_read, today=today, require_registry=True,
+        filters=filters, access=access, can_read=can_read, today=today, require_registry=True,
     )
     if reasons:
         return _result([], resolved, reasons=reasons)

@@ -122,6 +122,57 @@ class RelationTests(unittest.TestCase):
         self.fixture.grants[:] = [exact]
         self.assertEqual(self.store.read_evidence(self.study, 1, mention, evidence), same)
 
+    def test_project_relationship_views_require_read_access_to_the_resolved_revision(self):
+        self.fixture.publish()
+        self.fixture.case.publish([
+            replace(draft, mention_id=mention)
+            for draft, (mention, _) in zip(self.fixture.drafts, self.refs, strict=True)
+        ], key="revision-two", expected=1)
+        mention, evidence = self.refs[0]
+        self.fixture.grants[:] = [replace(
+            self.fixture.grants[1], evidence_refs=frozenset({(1, mention, evidence)}),
+        )]
+        for mode in ("engineering", "formal"):
+            for query in (self.store.project_mentions, self.store.product_intent_edges):
+                with self.subTest(mode=mode, query=query.__name__):
+                    permitted = query(self.study, segment_revision=1, mode=mode)
+                    self.assertEqual(permitted["resolved_versions"]["segment_revision"], 1)
+                    for revision in (2, None, 999):
+                        with self.assertRaises(KeyError):
+                            query(self.study, segment_revision=revision, mode=mode)
+
+    def test_commands_do_not_disclose_a_revision_outside_the_read_grant(self):
+        self.fixture.publish()
+        self.fixture.case.publish([
+            replace(draft, mention_id=mention)
+            for draft, (mention, _) in zip(self.fixture.drafts, self.refs, strict=True)
+        ], key="preflight-revision-two", expected=1)
+        mention, evidence = self.refs[0]
+        grant = self.fixture.grants[1]
+        project_grant = replace(grant, evidence_refs=frozenset({(1, mention, evidence)}))
+        self.fixture.grants[1] = project_grant
+        self.fixture.grants.append(replace(
+            project_grant, role="project_reviewer", operations=frozenset({"attribute"}),
+        ))
+        before = self.fixture.snapshot()
+        for revision in (1, 2, 999):
+            with self.subTest(revision=revision), self.assertRaises(KeyError):
+                self.preflight("candidate", expected_segment_revision=revision, representative_refs=())
+            with self.subTest(revision=revision), self.assertRaises(KeyError):
+                self.fixture.publish(key="hidden-revision", expected_segment_revision=revision,
+                                     representative_refs=())
+            with self.subTest(revision=revision), self.assertRaises(KeyError):
+                self.store.attribute(self.study, key="hidden-attribution", expected_registry_version=fixtures.REGISTRY,
+                                     expected_segment_revision=revision, intent_id="intent", supports=[(mention, evidence)])
+        self.assertEqual(self.fixture.snapshot(), before)
+        self.fixture.grants[1] = replace(project_grant, evidence_refs=frozenset({(1, mention, evidence), (2, mention, evidence)}))
+        with self.assertRaises(Conflict):
+            self.preflight("candidate", expected_segment_revision=1, representative_refs=())
+        self.fixture.grants[1] = replace(project_grant, evidence_refs=frozenset({(2, mention, evidence)}))
+        result = self.preflight("candidate", expected_segment_revision=2, representative_refs=())
+        self.assertEqual(result["segment_revision"], 2)
+        self.assertTrue(result["candidate_allowed"])
+
     def test_http_source_filter_accepts_exact_english_and_chinese_source_labels(self):
         self.fixture.publish()
         corpus = self.fixture.case.case

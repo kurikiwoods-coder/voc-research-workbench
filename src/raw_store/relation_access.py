@@ -68,6 +68,17 @@ class RelationAccess:
                 raise KeyError(study_id)
             raise PermissionError("当前授权不允许执行该操作。")
 
+    def require_revision(self, study_id, revision):
+        if self.permits("read", study_id, entire_project=True):
+            return
+        if self.actor is not None:
+            for grant in self.grants:
+                if (grant.study_id == study_id and grant.evidence_refs and "read" in grant.operations
+                        and "read" in ROLE_OPERATIONS.get(grant.role, ())
+                        and any(reference[0] == revision for reference in grant.evidence_refs)):
+                    return
+        raise KeyError(study_id)
+
     def same_as(self, other, study_id):
         if self.actor != other.actor:
             return False

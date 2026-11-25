@@ -331,7 +331,29 @@ def check_denominators_http(page, base, study, other, scope, quotes):
     print("C5 localhost HTTP E2E passed: filters, complete unpaginated counts, blocked formal mode, and access.")
 
 
-def check_denominators_browser(page, base, output, grant_file, study):
+def check_denominator_project_withdrawal(page, grant_file, study, other):
+    query = page.get_by_role("button", name="重新查询", exact=True)
+    select = page.get_by_label("研究项目", exact=True)
+    chain = page.get_by_role("heading", name="分母链")
+    grant_file.write_text(other, encoding="ascii")
+    try:
+        query.click()
+        expect(page.get_by_text("请选择获准查询统计的项目。", exact=True)).to_be_visible()
+        expect(select).to_have_value("")
+        expect(page.get_by_label("冻结研究范围", exact=True).locator("option")).to_have_count(1)
+        expect(page.get_by_label("片段版本", exact=True)).to_have_value("")
+        expect(chain).to_have_count(0)
+        query.click()
+        expect(page.get_by_text("请选择获准查询统计的项目。", exact=True)).to_be_visible()
+        select.select_option(other)
+        expect(chain).to_be_visible()
+        expect(page.locator(".relation-results")).not_to_contain_text(study)
+        expect(page.locator(".relation-results")).not_to_contain_text(FIXTURES[PRODUCT_A][1])
+    finally:
+        grant_file.write_text(study, encoding="ascii")
+
+
+def check_denominators_browser(page, base, output, grant_file, study, other):
     page.goto(base + "/#relations")
     button = page.get_by_role("button", name="分母对账")
     button.click()
@@ -376,6 +398,10 @@ def check_denominators_browser(page, base, output, grant_file, study):
     page.get_by_label("来源", exact=True).fill("")
     page.get_by_label("来源", exact=True).press("Tab")
     expect(eligible).to_contain_text("1")
+    check_denominator_project_withdrawal(page, grant_file, study, other)
+    page.reload()
+    button.click()
+    expect(eligible).to_contain_text("3")
     grant_file.write_text("", encoding="ascii")
     try:
         evidence.click()
@@ -426,7 +452,7 @@ def relations_browser_checks(browser, base, output, directory):
     finally:
         grant_file.write_text(study, encoding="ascii")
     assert page.request.get(f"{base}/api{drill}", params={"segment_revision": 2}).ok
-    check_denominators_browser(page, base, output, grant_file, study)
+    check_denominators_browser(page, base, output, grant_file, study, other["study_id"])
     page.goto(base + "/#relations")
     expect(page.get_by_role("heading", name="三层关系", exact=True)).to_be_visible()
     product = page.get_by_label("产品品类", exact=True)

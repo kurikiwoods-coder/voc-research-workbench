@@ -7,7 +7,7 @@ import json
 from unicodedata import normalize
 
 from src.raw_store.corpus_access import (
-    CANDIDATE, ROW_COLUMNS, ROW_SOURCE, qualification, record_summary, withdrawal_match,
+    CANDIDATE, ROW_COLUMNS, ROW_JOINS, ROW_SOURCE, qualification, record_summary, withdrawal_match,
 )
 from src.raw_store.corpus_policy import (
     CONTROL, LICENSE_STATES, SENSITIVE, evidence_identity, legacy_evidence_identities, license_note_state,
@@ -19,12 +19,19 @@ from src.raw_store.studies import StudyStore
 
 PAGE_SIZE = 20
 ROLES = {"user_quote", "background", "internal", "synthetic"}
-SOURCE_ROWS = f"""
+SOURCE_COLUMNS = f"""
     SELECT {ROW_COLUMNS}, r.originals_json, r.issues_json, r.status AS import_status,
            b.batch_id, b.study_id, b.scope_id, 'v' || s.version_no AS scope_version,
            b.file_id, f.filename, f.kind, f.sha256 AS file_sha256, b.sheet_name,
            b.created_at AS collected_at, snap.raw_sha256, v.dedupe_group
-    {ROW_SOURCE} WHERE b.study_id=:study_id
+"""
+SOURCE_ROWS = f"{SOURCE_COLUMNS} {ROW_SOURCE} WHERE b.study_id=:study_id"
+STATISTICS_SINGLE_ROW = f"{SOURCE_ROWS} AND r.record_id=:record_id AND {CANDIDATE}"
+STATISTICS_BATCH_ROWS = f"""
+    {SOURCE_COLUMNS}
+    FROM json_each(:record_ids) requested
+    CROSS JOIN import_rows r ON r.record_id=requested.value
+    {ROW_JOINS} WHERE b.study_id=:study_id AND {CANDIDATE}
 """
 
 
@@ -109,7 +116,7 @@ class CorpusStore:
     @staticmethod
     def source_row(db, study_id, record_id, today):
         row = db.execute(
-            f"{SOURCE_ROWS} AND r.record_id=:record_id AND {CANDIDATE}",
+            STATISTICS_SINGLE_ROW,
             {"study_id": study_id, "record_id": record_id, "today": today},
         ).fetchone()
         if row is None:
@@ -201,11 +208,10 @@ class CorpusStore:
         params = {"study_id": study_id, "today": today}
         ids = sorted(set(record_ids))
         size = 500 if batch else 1
+        statement = STATISTICS_BATCH_ROWS if batch else STATISTICS_SINGLE_ROW
         for offset in range(0, len(ids), size):
-            chunk = {f"record_{index}": key for index, key in enumerate(ids[offset:offset + size])}
-            markers = ", ".join(f":{key}" for key in chunk)
-            for row in db.execute(f"{SOURCE_ROWS} AND r.record_id IN ({markers}) AND {CANDIDATE}",
-                                  {**params, **chunk}):
+            records = {"record_ids": json.dumps(ids[offset:offset + size])} if batch else {"record_id": ids[offset]}
+            for row in db.execute(statement, params | records):
                 if row["privacy"] != "public":
                     continue
                 access = qualification(row, today)

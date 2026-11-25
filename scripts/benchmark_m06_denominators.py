@@ -4,6 +4,7 @@ Run as `python -m scripts.benchmark_m06_denominators` from the repository root.
 """
 
 import argparse
+from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 import csv
@@ -30,7 +31,9 @@ from fastapi.testclient import TestClient
 from src.config import Settings
 from src.dashboard.app import create_app
 from src.ingestion.import_files import MAX_ROWS
-from src.raw_store.corpus import CANDIDATE, SOURCE_ROWS, CorpusStore
+from src.raw_store.corpus import (
+    CANDIDATE, SOURCE_ROWS, STATISTICS_BATCH_ROWS, STATISTICS_SINGLE_ROW, CorpusStore,
+)
 from src.raw_store.denominators import SyntheticDecision, synthetic_database
 from src.raw_store.mentions import (
     EvidenceInterval, MentionDraft, MentionStore, ProductProposal, ReviewDecision, SupportDraft,
@@ -414,16 +417,41 @@ def verify_qualification(store, study, records):
     return {"batched_seconds": batch_s, "individual_seconds": individual_s, "matches": len(batched)}
 
 
-def explain_plans(store, study, record_id):
-    individual_sql = f"{SOURCE_ROWS} AND r.record_id IN (:record) AND {CANDIDATE}"
-    batch_sql = individual_sql.replace(":record)", ":record, :peer)")
-    params = {"study_id": study, "today": now()[:10], "record": record_id, "peer": "nonexistent"}
+def explain_plans(store, study, records):
+    keys = sorted(set(records))[:500]
+    legacy_keys = {f"record_{index}": key for index, key in enumerate(keys)}
+    placeholders = ", ".join(f":{name}" for name in legacy_keys)
+    legacy_sql = f"{SOURCE_ROWS} AND r.record_id IN ({placeholders}) AND {CANDIDATE}"
+    params = {"study_id": study, "today": now()[:10]}
     with store.db() as db:
-        sql = """SELECT s.mention_id, e.record_id FROM m06_support s JOIN m06_evidence e USING(study_id,evidence_id)
-                 WHERE s.study_id=:study_id AND s.segment_revision=2 ORDER BY s.mention_id, s.evidence_id"""
-        return {kind: [row[3] for row in db.execute(f"EXPLAIN QUERY PLAN {query}", params)]
-                for kind, query in (("single_qualification", individual_sql), ("batch_qualification", batch_sql),
-                                    ("segment_supports", sql))}
+        supports_sql = """SELECT s.mention_id, e.record_id
+            FROM m06_support s JOIN m06_evidence e USING(study_id,evidence_id)
+            WHERE s.study_id=:study_id AND s.segment_revision=2 ORDER BY s.mention_id, s.evidence_id"""
+        statements = {
+            "single_qualification": (STATISTICS_SINGLE_ROW, {"record_id": keys[0]}),
+            "legacy_batch_qualification": (legacy_sql, legacy_keys),
+            "batch_qualification": (STATISTICS_BATCH_ROWS, {"record_ids": json.dumps(keys)}),
+            "segment_supports": (supports_sql, {}),
+        }
+        return {kind: [row[3] for row in db.execute(f"EXPLAIN QUERY PLAN {query}", params | bindings)]
+                for kind, (query, bindings) in statements.items()}
+
+
+def count_query_statements(relations, study, scenario, batch, expected):
+    counts = Counter()
+    connect = scenario.store.connect
+
+    def observe(statement):
+        counts[statement.split(maxsplit=1)[0].strip(";").upper()] += 1
+
+    def observed_connection():
+        connection = connect()
+        connection.set_trace_callback(observe)
+        return connection
+
+    with patch.object(scenario.store, "connect", observed_connection):
+        assert timed_query(relations, study, scenario, batch=batch)[0] == expected
+    return dict(counts)
 
 
 def measure_reads(relations, study, scenario, groups, repeats):
@@ -441,6 +469,9 @@ def measure_reads(relations, study, scenario, groups, repeats):
         modes["batched" if batch else "individual"] = {
             "first_connection_seconds": times[0], "hot_seconds": times[1:],
             "hot_median_seconds": statistics.median(times[1:]), "hot_max_seconds": max(times[1:]),
+            "hot_sample_p95_seconds": statistics.quantiles(times[1:], n=100, method="inclusive")[94]
+            if repeats > 1 else times[1],
+            "statements": count_query_statements(relations, study, scenario, batch, canonical),
         }
     return canonical, modes
 
@@ -635,7 +666,7 @@ def measure_fixture(scenario, fixture, raw_rows, repeats, working_directory):
     groups = raw_rows // 10
     result, queries = measure_reads(relations, study, scenario, groups, repeats)
     filtered = check_filtered(relations, study, scenario, groups)
-    plans = explain_plans(scenario.store, study, records[(0, 0)])
+    plans = explain_plans(scenario.store, study, records.values())
     print(f"Testing committed WAL, writer failure and independent recovery at {raw_rows}", file=sys.stderr, flush=True)
     recovery = recover_snapshot(study, scenario, records, raw_rows, working_directory)
     return {"raw_records": raw_rows, "frozen_scopes": len(scopes), "import_batches": batches,
@@ -648,7 +679,7 @@ def measure_fixture(scenario, fixture, raw_rows, repeats, working_directory):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--sizes", type=int, nargs="+", default=[1000, 10000, 100000])
-    parser.add_argument("--repeats", type=int, default=3)
+    parser.add_argument("--repeats", type=int, default=5)
     parser.add_argument("--work-directory", type=Path)
     parser.add_argument("--report", type=Path, help="Write a JSON Lines copy to this file.")
     args = parser.parse_args()

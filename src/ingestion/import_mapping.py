@@ -128,6 +128,20 @@ def url_valid(value):
         return False
 
 
+def source_locator(value):
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    if not value.casefold().startswith(("https://", "http://")) or not url_valid(value):
+        return None
+    parts = urlsplit(value)
+    host = parts.hostname.rstrip(".")
+    if not host:
+        return None
+    port = parts.port or (443 if parts.scheme == "https" else 80)
+    return parts.scheme, host, port, parts.path or "/", parts.query
+
+
 def overlaps(value, ids):
     return bool({item.strip() for item in re.split(r"[;,；，\n]+", value)}.intersection(ids))
 
@@ -199,7 +213,9 @@ def evaluate_row(row, mapping, scope, privacy):
 
 def evaluate(sheet, mapping, scope, privacy):
     validate_mapping(mapping, len(sheet.columns))
-    seen = {}
+    seen_text = {}
+    seen_external = {}
+    distinct_sources_kept = False
     totals = Counter({status: 0 for status in STATUSES})
     issue_counts = Counter()
     levels = Counter()
@@ -211,21 +227,31 @@ def evaluate(sheet, mapping, scope, privacy):
         digest = hashlib.sha256(normalized.encode()).hexdigest() if normalized else None
         declared_role = key(values.get("content_role", ""))
         role = "user_quote" if declared_role in {"", "userquote", "用户原话", "原话"} else declared_role
-        identity = [(level, role, "text", digest)] if digest else []
-        if values.get("external_id") and values.get("source_type"):
-            identity.append((level, role, "external", key(values["source_type"]), values["external_id"]))
+        text_key = (level, role, digest)
+        locator = source_locator(values.get("source_url"))
+        external_id = values.get("external_id")
+        source_type = values.get("source_type")
+        external_key = (level, role, key(source_type), external_id) if external_id and source_type else None
         first_duplicate = None
         if any(ISSUES[flag][0] == "error" for flag in flags):
             status = "rejected"
         else:
-            first_duplicate = next((seen[item] for item in identity if item in seen), None)
+            previous = seen_text.setdefault(text_key, {})
+            if locator is None:
+                first_duplicate = next(iter(previous.values()), None)
+            else:
+                first_duplicate = previous.get(None) or previous.get(locator)
+            if first_duplicate is None and external_key:
+                first_duplicate = seen_external.get(external_key)
             if first_duplicate is not None:
                 flags.append("duplicate")
                 status = "duplicate"
             else:
                 status = "pending_review" if flags else "staged"
-                for item in identity:
-                    seen[item] = row.line
+                distinct_sources_kept |= bool(previous)
+                previous[locator] = row.line
+                if external_key:
+                    seen_external[external_key] = row.line
         issues = [{"code": flag, "severity": ISSUES[flag][0], "message": ISSUES[flag][1]} for flag in flags]
         totals[status] += 1
         issue_counts.update(flags)
@@ -240,4 +266,4 @@ def evaluate(sheet, mapping, scope, privacy):
         "total": len(rows), **totals, "privacy_levels": dict(levels), "source_types": dict(source_types),
         "issues": [{"code": flag, "severity": ISSUES[flag][0], "message": ISSUES[flag][1], "count": n}
                    for flag, n in issue_counts.items()],
-    }
+    }, distinct_sources_kept

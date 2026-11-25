@@ -287,7 +287,7 @@ def _rows_without_support(db, study, revision, filters):
 
 def _snapshot(db, relations, access, study, mode, version, revision, filters, synthetic, batch):
     version = queries._registry_version(db, version)
-    segment = queries._segment(db, study, revision)
+    segment = queries._segment(db, study, revision, access)
     revision = segment["segment_revision"] if segment else None
     versions = {"study_id": study, "registry_version": version, "segment_revision": revision,
                 "scope_id": filters.get("scope_id"), "scope_version": filters.get("scope_version"),
@@ -295,12 +295,6 @@ def _snapshot(db, relations, access, study, mode, version, revision, filters, sy
                 "scope_mappings": [], "counting_policy_version": POLICY, "index_version": filters.get("index_version")}
     at = access.at.isoformat()
     result = _empty(mode, filters, versions, at)
-    if revision is not None and not access.permits("read", study, entire_project=True):
-        if not any(grant.study_id == study and grant.evidence_refs
-                   and any(ref[0] == revision and access.permits("read", study, ref)
-                           for ref in grant.evidence_refs)
-                   for grant in access.grants):
-            raise KeyError(revision)
     if mode == "formal":
         result["reasons"] = ["G1_BLOCKED", "RESEARCH_NOT_ADMITTED", "M12_RECEIPTS_MISSING"]
         return result

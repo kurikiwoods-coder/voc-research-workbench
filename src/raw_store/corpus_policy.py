@@ -5,7 +5,7 @@ import re
 from unicodedata import normalize
 from urllib.parse import parse_qsl, unquote, urlsplit
 
-from src.ingestion.import_mapping import date_value, key, scope_issues, url_valid
+from src.ingestion.import_mapping import date_value, key, scope_issues, source_locator, url_valid
 
 
 QUOTE_SOURCES = {
@@ -65,18 +65,9 @@ def safe_source_url(value):
 
 
 def source_identity(value):
-    if not isinstance(value, str):
-        return None
-    value = value.strip()
-    if not value.casefold().startswith(("https://", "http://")) or not url_valid(value):
-        return None
-    parts = urlsplit(value)
-    host = parts.hostname.rstrip(".")
-    if not host:
-        return None
-    port = parts.port or (443 if parts.scheme == "https" else 80)
     # A fragment locates a place in the same document; it cannot supply a separate license.
-    return json.dumps((parts.scheme, host, port, parts.path or "/", parts.query))
+    locator = source_locator(value)
+    return json.dumps(locator) if locator else None
 
 
 def safe_metadata(raw_fields):

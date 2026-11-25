@@ -25,6 +25,7 @@ from src.raw_store.store import Conflict, dump
 
 MAX_PARSE_JOBS = 2
 CHECK_VERSION = 1
+DISTINCT_SOURCE_CHECK_VERSION = 2
 Privacy = Literal["unknown", "public", "private", "internal"]
 RowFilter = Literal["all", "staged", "pending_review", "duplicate", "rejected"]
 SheetIndex = Annotated[int, Field(strict=True, ge=0, lt=40)]
@@ -65,9 +66,10 @@ def errors():
         raise HTTPException(503, "无法读取或保存本机导入。请检查数据库权限和剩余空间后重试。") from None
 
 
-def preview_signature(file, plan):
+def preview_signature(file, plan, distinct_sources_kept):
     # File digest and frozen context anchor retries. Server recomputes all row outcomes.
-    content = [CHECK_VERSION, file["study_id"], file["scope_id"], file["sha256"],
+    version = DISTINCT_SOURCE_CHECK_VERSION if distinct_sources_kept else CHECK_VERSION
+    content = [version, file["study_id"], file["scope_id"], file["sha256"],
                plan.sheet_index, plan.mapping, plan.privacy]
     return hashlib.sha256(dump(content).encode()).hexdigest()
 
@@ -183,10 +185,11 @@ def register_imports(app):
                 return receipt
             sheet = read_sheet(file.pop("source_bytes"), file["kind"], plan.sheet_index)
             db.check_preview_sources(str(study_id), sheet)
-            rows, summary = evaluate(sheet, plan.mapping, scope, plan.privacy)
+            rows, summary, distinct_sources_kept = evaluate(sheet, plan.mapping, scope, plan.privacy)
             flagged = [row for row in rows if row["issues"]]
             return {
-                "preview_token": preview_signature(file, plan), "summary": {**summary, "source_types": {}},
+                "preview_token": preview_signature(file, plan, distinct_sources_kept),
+                "summary": {**summary, "source_types": {}},
                 "sample_rows": [{"line_number": row["line_number"], "status": row["status"],
                                  "content_restricted": True, "privacy": row["privacy"]} for row in rows[:5]],
                 "issue_rows": [{key: row[key] for key in ("line_number", "status", "issues", "duplicate_of_line")}
@@ -205,11 +208,11 @@ def register_imports(app):
                 return receipt
         with errors(), parse_slot():
             file, scope = db.get_file(study, upload_id, plan.sheet_index)
-            signature = preview_signature(file, plan)
+            sheet = read_sheet(file.pop("source_bytes"), file["kind"], plan.sheet_index)
+            rows, summary, distinct_sources_kept = evaluate(sheet, plan.mapping, scope, plan.privacy)
+            signature = preview_signature(file, plan, distinct_sources_kept)
             if plan.preview_token != signature:
                 raise Conflict("导入配置已变化，请重新运行质量检查。")
-            sheet = read_sheet(file.pop("source_bytes"), file["kind"], plan.sheet_index)
-            rows, summary = evaluate(sheet, plan.mapping, scope, plan.privacy)
             if not (summary["staged"] or summary["pending_review"]):
                 raise ImportProblem("没有可暂存的记录。请修正文件中的错误后重新上传。")
             return db.commit(file, sheet, plan.sheet_index, plan.mapping, plan.privacy, signature, rows, summary)

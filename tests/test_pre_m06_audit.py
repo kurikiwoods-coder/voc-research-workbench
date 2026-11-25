@@ -165,6 +165,100 @@ class CrossModuleAudit(unittest.TestCase):
             ["pending_review", "pending_review", "staged", "duplicate"],
         )
 
+    def test_same_sheet_preserves_distinct_sources_for_m05_review(self):
+        _, project = self.new_project()
+        headers = [*BASE, "external_id"]
+        rows = [
+            [*row(), "entry-18"],
+            [*row(source="https://community.example.test/feedback/19"), "entry-19"],
+            [*row(source="HTTPS://COMMUNITY.EXAMPLE.TEST.:443/feedback/18#copy"), "different-id"],
+            [*row(source="https://community.example.test/feedback/20"), "entry-18"],
+            [*row(source=""), "no-location"],
+        ]
+        url, plan = self.staged(project, make_csv(headers, rows), "同文来源.csv")
+        batch = self.client.post(url + "/confirm", json=plan).raise_for_status().json()
+        study_id, batch_id = project["study_id"], batch["batch_id"]
+        detail = self.client.get(f"/api/imports/{study_id}/batches/{batch_id}").raise_for_status().json()
+        self.assertEqual(
+            [(record["status"], record["duplicate_of_line"]) for record in detail["rows"]],
+            [("staged", None), ("staged", None), ("duplicate", 2), ("duplicate", 2), ("duplicate", 2)],
+        )
+        candidates = self.client.get(f"/api/corpus/{study_id}/batches/{batch_id}").raise_for_status().json()
+        self.assertEqual([record["record_id"] for record in candidates["records"]], [f"{batch_id}:2", f"{batch_id}:3"])
+        first, second = (self.record(project, batch, line) for line in (2, 3))
+        for path in (first, second):
+            self.assertIsNone(self.client.get(path).raise_for_status().json()["raw_text"])
+            self.review(path).raise_for_status()
+        self.assertEqual(self.client.get(second).json()["duplicate"]["record_count"], 2)
+        self.withdraw(first)
+        self.assertEqual(self.client.get(first + "/eligible").status_code, 409)
+        remaining = self.client.get(second + "/eligible").raise_for_status().json()
+        self.assertEqual(remaining["raw_text"], TEXT)
+        self.assertEqual(remaining["duplicate"]["record_count"], 1)
+        self.assertFalse(remaining["research_eligible"])
+        self.assertFalse(remaining["outbound_allowed"])
+
+    def test_legacy_same_sheet_batch_can_be_rechecked_without_changing_old_receipt(self):
+        _, project = self.new_project()
+        data = make_csv([*BASE, "external_id"], [
+            [*row(), "entry-18"], [*row(source=SOURCE + "/independent"), "entry-19"],
+        ])
+        with patch("src.ingestion.import_mapping.source_locator", return_value=None):
+            url, old_plan = self.staged(project, data, "旧同文批次.csv")
+            previous = self.client.post(url + "/confirm", json=old_plan).raise_for_status().json()
+        self.assertEqual(previous["summary"]["duplicate"], 1)
+        self.assertEqual(self.client.get(self.record(project, previous, 3)).status_code, 404)
+        self.assertEqual(
+            self.client.post(url + "/confirm", json=old_plan).raise_for_status().json(), previous,
+        )
+
+        reopened_url, new_plan = self.staged(project, data, "同一个旧文件.csv")
+        self.assertEqual(reopened_url, url)
+        self.assertNotEqual(new_plan["preview_token"], old_plan["preview_token"])
+        revised = self.client.post(url + "/confirm", json=new_plan).raise_for_status().json()
+        self.assertNotEqual(revised["batch_id"], previous["batch_id"])
+        self.assertEqual(revised["summary"]["staged"], 2)
+        self.assertEqual(self.client.post(url + "/confirm", json=new_plan).raise_for_status().json(), revised)
+        self.assertEqual(self.client.post(url + "/confirm", json=old_plan).raise_for_status().json(), previous)
+        self.assertEqual(self.client.get(self.record(project, previous, 3)).status_code, 404)
+
+        old_first, new_first, new_second = (
+            self.record(project, batch, line) for batch, line in ((previous, 2), (revised, 2), (revised, 3))
+        )
+        self.review(old_first).raise_for_status()
+        self.review(new_first).raise_for_status()
+        self.review(new_second).raise_for_status()
+        self.withdraw(old_first)
+        self.assertEqual(self.client.get(new_first + "/eligible").status_code, 409)
+        self.assertEqual(self.client.get(new_second + "/eligible").status_code, 200)
+        self.assertEqual(self.client.get(url).status_code, 409)
+        preview_plan = {field: value for field, value in new_plan.items() if field != "preview_token"}
+        self.assertEqual(self.client.post(url + "/preview", json=preview_plan).status_code, 409)
+        self.assertEqual(self.client.post(url + "/confirm", json=old_plan).raise_for_status().json(), previous)
+
+    def test_revoked_previews_prefer_latest_governed_staging_receipt(self):
+        _, project = self.new_project()
+        data = make_csv([*BASE, "external_id"], [
+            [*row(), "entry-18"], [*row(source=SOURCE + "/independent"), "entry-19"],
+        ])
+        with patch("src.ingestion.import_mapping.source_locator", return_value=None):
+            url, old_plan = self.staged(project, data, "旧同文批次.csv")
+            previous = self.client.post(url + "/confirm", json=old_plan).raise_for_status().json()
+        _, new_plan = self.staged(project, data, "旧同文批次.csv")
+        revised = self.client.post(url + "/confirm", json=new_plan).raise_for_status().json()
+        for batch in (previous, revised):
+            revoke_url = f"/api/imports/{project['study_id']}/batches/{batch['batch_id']}/revoke"
+            self.client.post(revoke_url).raise_for_status()
+        preview_plan = {field: value for field, value in new_plan.items() if field != "preview_token"}
+        masked = self.client.post(url + "/preview", json=preview_plan).raise_for_status().json()
+        self.assertEqual(masked["status"], "revoked")
+        self.assertEqual(masked["sample_rows"], [])
+        self.assertEqual(masked["preview_token"], new_plan["preview_token"])
+        for plan, batch in ((old_plan, previous), (new_plan, revised)):
+            replay = self.client.post(url + "/confirm", json=plan).raise_for_status().json()
+            self.assertEqual(replay["batch_id"], batch["batch_id"])
+            self.assertEqual(replay["status"], "revoked")
+
     def test_r2_known_cases_and_independent_license_variants(self):
         _, project = self.new_project()
         variants = (

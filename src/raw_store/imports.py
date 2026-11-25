@@ -164,7 +164,8 @@ class ImportStore:
                      AND b.privacy=? AND b.revoked_at IS NOT NULL AND NOT EXISTS (
                          SELECT 1 FROM import_rows r JOIN corpus_reviews v USING(record_id)
                          WHERE r.batch_id=b.batch_id
-                     )""",
+                     )
+                   ORDER BY b.created_at DESC, b.rowid DESC LIMIT 1""",
                 (study_id, file_id, index, dump(mapping), privacy),
             ).fetchone()
             if row is None:
