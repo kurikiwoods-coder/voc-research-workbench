@@ -147,24 +147,50 @@ def record_review(corpus, study, record, retention, *, licensed=True):
                          retention, "authorized", BASIS + "-license")
 
 
-def qualify_fixture(store, study, records, group_count):
+def qualify_fixture(store, study, records):
     corpus = CorpusStore(store)
     current_day = datetime.now(UTC).date()
     retention = (current_day + timedelta(days=30)).isoformat()
     expired_day = (current_day - timedelta(days=1)).isoformat()
-    for index, ((group, slot), record) in enumerate(records.items()):
-        if slot == 8:
-            continue
-        if slot == 9:
-            historical = expired_day + "T00:00:00Z"
-            with patch("src.raw_store.corpus.now", return_value=historical):
-                result = record_review(corpus, study, record, expired_day)
-        else:
-            result = record_review(corpus, study, record, retention)
-        assert result["engineering_eligible"] and not result["research_eligible"]
-        if index % 10000 == 0:
-            print(f"M05 processed {index}/{group_count * 10} raw rows", file=sys.stderr, flush=True)
+    def review_chunk(items, at, deadline):
+        with store.db() as db:
+            db.execute("BEGIN IMMEDIATE")
+            for record in items:
+                review_id = corpus._review_in_transaction(
+                    db, at, study, record, "verified", "user_quote", "合成审核", "本机核对合成原文与许可",
+                    deadline, "authorized", BASIS + "-license",
+                )
+                assert type(review_id) is int
+
+    historical = [record for (_, slot), record in records.items() if slot == 9]
+    current = [record for (_, slot), record in records.items() if slot < 8]
+    for items, at, deadline in ((historical, expired_day + "T00:00:00Z", expired_day), (current, now(), retention)):
+        for offset in range(0, len(items), 500):
+            if offset % 10000 == 0:
+                print(f"M05 processed {offset}/{len(items)} reviews through {deadline}", file=sys.stderr, flush=True)
+            review_chunk(items[offset:offset + 500], at, deadline)
     return retention
+
+
+def check_review_rollback(store, study, record, retention):
+    corpus = CorpusStore(store)
+    with store.db() as db:
+        db.execute("BEGIN IMMEDIATE")
+        at = now()
+        review_id = corpus._review_in_transaction(
+            db, at, study, record, "verified", "user_quote", "合成审核", "本机核对合成原文与许可",
+            retention, "authorized", BASIS + "-license",
+        )
+        try:
+            corpus._review_in_transaction(db, at, study, record, "invalid", "user_quote", "合成审核")
+        except ValueError:
+            db.rollback()
+        else:
+            raise AssertionError("M05 accepted an invalid decision")
+        assert db.execute("SELECT 1 FROM corpus_snapshots WHERE record_id=?", (record,)).fetchone() is None
+        assert db.execute("SELECT 1 FROM corpus_reviews WHERE review_id=?", (review_id,)).fetchone() is None
+        assert db.execute("SELECT 1 FROM corpus_licenses WHERE review_id=?", (review_id,)).fetchone() is None
+    assert not corpus.detail(study, record)["engineering_eligible"]
 
 
 def install_registry(store, study, scopes, representatives):
@@ -302,8 +328,9 @@ def build_fixture(store, raw_rows):
     assert len(records) == raw_rows
     print(f"Reviewing {raw_rows} synthetic raw rows through M05", file=sys.stderr, flush=True)
     started = perf_counter()
-    qualify_fixture(store, study, records, group_count)
+    retention = qualify_fixture(store, study, records)
     timings["m05_review_seconds"] = perf_counter() - started
+    check_review_rollback(store, study, records[(0, 8)], retention)
     with store.db() as db:
         assert db.execute("SELECT COUNT(*) FROM import_rows").fetchone()[0] == raw_rows
         assert db.execute("SELECT COUNT(*) FROM corpus_reviews").fetchone()[0] == 9 * group_count
@@ -571,7 +598,14 @@ def migration_check(working_directory):
         store = Store(directory)
         elapsed = perf_counter() - started
         validate_database(store, 0)
-        return elapsed
+        with store.db() as db:
+            db.execute("DROP INDEX corpus_review_excluded")
+        started = perf_counter()
+        reopened = Store(directory)
+        v7_reopen_s = perf_counter() - started
+        assert reopened.one("SELECT name FROM sqlite_schema WHERE name='corpus_review_excluded'")
+        validate_database(reopened, 0)
+        return {"empty_v6_to_v7_seconds": elapsed, "old_v7_index_reopen_seconds": v7_reopen_s}
 
 
 def peak_working_set():
@@ -625,8 +659,7 @@ def main():
         working_directory.mkdir(parents=True, exist_ok=True)
     environment = {"platform": platform.platform(), "python": platform.python_version(),
                    "sqlite": sqlite3.sqlite_version, "schema": 7, "research_api_calls": 0,
-                   "empty_v6_to_v7_seconds": migration_check(working_directory),
-                   "query_first_connection": "Fresh SQLite connection; OS file cache was not cleared"}
+                   "query_first_connection": "Fresh SQLite connection; OS file cache was not cleared"} | migration_check(working_directory)
     def emit(value):
         line = json.dumps(value, ensure_ascii=False)
         if args.report:

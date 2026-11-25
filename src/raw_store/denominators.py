@@ -271,8 +271,12 @@ def _rows_without_support(db, study, revision, filters):
     return [row[0] for row in db.execute(
         """SELECT r.record_id FROM import_rows r
            JOIN import_batches b USING(batch_id)
-           JOIN corpus_snapshots snap ON snap.record_id=r.record_id AND snap.study_id=b.study_id
+           LEFT JOIN corpus_snapshots snap ON snap.record_id=r.record_id AND snap.study_id=b.study_id
+           LEFT JOIN corpus_reviews review ON review.review_id=(
+             SELECT MAX(h.review_id) FROM corpus_reviews h WHERE h.record_id=r.record_id
+           )
            WHERE b.study_id=? AND r.privacy='public' AND
+             (snap.record_id IS NOT NULL OR review.decision='excluded') AND
              (? IS NULL OR b.scope_id=?) AND NOT EXISTS (
                SELECT 1 FROM m06_evidence e JOIN m06_support s USING(study_id, evidence_id)
                WHERE e.study_id=b.study_id AND e.scope_id=b.scope_id AND e.record_id=r.record_id

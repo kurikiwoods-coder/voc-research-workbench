@@ -291,6 +291,20 @@ class CorpusStore:
 
     def review(self, study_id, record_id, decision, role, reason, basis="", retention_until=None,
                license_status=None, license_evidence_ref=None, license_issued_on=None, reauthorize=False):
+        with self.store.db() as db:
+            db.execute("BEGIN IMMEDIATE")
+            at = now()
+            self._review_in_transaction(db, at, study_id, record_id, decision, role, reason, basis,
+                                        retention_until, license_status, license_evidence_ref, license_issued_on,
+                                        reauthorize)
+            today = at[:10]
+            return self.describe(db, self.source_row(db, study_id, record_id, today), today)
+
+    def _review_in_transaction(self, db, at, study_id, record_id, decision, role, reason, basis="",
+                               retention_until=None, license_status=None, license_evidence_ref=None,
+                               license_issued_on=None, reauthorize=False):
+        if not db.in_transaction:
+            raise ValueError("原话审核需要活动写事务。")
         if decision not in {"verified", "excluded"} or role not in ROLES:
             raise ValueError("核验处理和内容角色无效。")
         verified = decision == "verified"
@@ -306,68 +320,65 @@ class CorpusStore:
         if not verified and (license_evidence_ref is not None or license_issued_on is not None or reauthorize):
             raise ValueError("新授权证据只能与核验通过一同登记。")
 
-        with self.store.db() as db:
-            db.execute("BEGIN IMMEDIATE")
-            at = now()
-            today = at[:10]
-            retention_until = review_retention(retention_until, today, required=verified)
-            row = self.source_row(db, study_id, record_id, today)
-            access = qualification(row, today)
-            previous = db.execute(
-                """SELECT r.decision, r.role, r.reason, r.basis, r.retention_until,
-                          l.state, l.evidence_ref, l.issued_on, l.restored_withdrawal_id
-                   FROM corpus_reviews r LEFT JOIN corpus_licenses l USING(review_id)
-                   WHERE r.record_id=? ORDER BY r.review_id DESC LIMIT 1""",
-                (record_id,),
-            ).fetchone()
-            payload = (decision, role, reason, basis, retention_until)
-            if verified and not reauthorize and row["restored_withdrawal_id"] and not access["source_permission_revoked"]:
-                if evidence_identity(license_evidence_ref) != evidence_identity(row["evidence_ref"]):
-                    raise ValueError("更换已恢复的授权证据时，请重新执行新授权复核。")
-                if license_issued_on not in (None, row["issued_on"]):
-                    raise ValueError("新授权证据签发日期须与既有材料一致。")
-                license_issued_on = row["issued_on"]
-            grant = (license_status, license_evidence_ref, license_issued_on)
-            if previous and tuple(previous)[:8] == payload + grant and (
-                (not verified and license_status == "revoked") or (
-                    access["can_review"] and (not reauthorize or previous["restored_withdrawal_id"] is not None)
-                )
-            ):
-                return self.describe(db, row, today)
-            if not access["can_review"] and not (access["can_reauthorize"] and verified and reauthorize):
-                raise Conflict("项目或原文当前受归档、批次撤销、审核结论或保留期限限制。")
+        today = at[:10]
+        retention_until = review_retention(retention_until, today, required=verified)
+        row = self.source_row(db, study_id, record_id, today)
+        access = qualification(row, today)
+        previous = db.execute(
+            """SELECT r.decision, r.role, r.reason, r.basis, r.retention_until,
+                      l.state, l.evidence_ref, l.issued_on, l.restored_withdrawal_id
+               FROM corpus_reviews r LEFT JOIN corpus_licenses l USING(review_id)
+               WHERE r.record_id=? ORDER BY r.review_id DESC LIMIT 1""",
+            (record_id,),
+        ).fetchone()
+        payload = (decision, role, reason, basis, retention_until)
+        if verified and not reauthorize and row["restored_withdrawal_id"] and not access["source_permission_revoked"]:
+            if evidence_identity(license_evidence_ref) != evidence_identity(row["evidence_ref"]):
+                raise ValueError("更换已恢复的授权证据时，请重新执行新授权复核。")
+            if license_issued_on not in (None, row["issued_on"]):
+                raise ValueError("新授权证据签发日期须与既有材料一致。")
+            license_issued_on = row["issued_on"]
+        grant = (license_status, license_evidence_ref, license_issued_on)
+        if previous and tuple(previous)[:8] == payload + grant and (
+            (not verified and license_status == "revoked") or (
+                access["can_review"] and (not reauthorize or previous["restored_withdrawal_id"] is not None)
+            )
+        ):
+            return row["review_id"]
+        if not access["can_review"] and not (access["can_reauthorize"] and verified and reauthorize):
+            raise Conflict("项目或原文当前受归档、批次撤销、审核结论或保留期限限制。")
 
-            group_id = None
-            restored = row["restored_withdrawal_id"] if verified else None
-            if verified:
-                metadata = safe_metadata(row["fields_json"])
-                evidence_key = evidence_identity(license_evidence_ref)
-                if license_status != "authorized" or evidence_key is None:
-                    raise ValueError("请确认许可已授权，并填写可追溯的授权材料链接或本机材料编号。")
-                if evidence_key == source_identity(metadata.get("source_url")):
-                    raise ValueError("原文地址只能证明来源，请另行登记许可依据。")
-                if license_issued_on and license_issued_on > today:
-                    raise ValueError("授权证据签发日期不能晚于当前 UTC 日期。")
-                declared = license_note_state(json.loads(row["fields_json"]).get("access_policy", ""))
-                if reauthorize:
-                    restored = self.restoration_proof(db, row, license_evidence_ref, license_issued_on, today)
-                elif not restored and declared != "unknown":
-                    raise ValueError("来源记录或核验说明包含未确认、无授权、过期或撤销信息，请先核对许可。")
-                if any(license_note_state(note) != "unknown" for note in (reason, basis)):
-                    raise ValueError("核验原因和依据须说明当前有效的授权。")
-                if (not reauthorize and row["license_state"] == "authorized" and row["retention_until"]
-                        and retention_until > row["retention_until"] and evidence_key == evidence_identity(row["evidence_ref"])):
-                    raise ValueError("延长保留期限须登记新的授权依据。")
-                validate_snapshot(row, role, metadata, json.loads(row["content_json"]))
-                group_id = dedupe_key(study_id, row["raw_text"], metadata) if role == "user_quote" else None
-                db.execute(
-                    """INSERT INTO corpus_snapshots (record_id, study_id, scope_id, raw_sha256, created_at)
-                       VALUES (?, ?, ?, ?, ?) ON CONFLICT(record_id) DO NOTHING""",
-                    (record_id, study_id, row["scope_id"], checksum(row["raw_text"]), at),
-                )
-            review_id = db.execute(
-                """INSERT INTO corpus_reviews (record_id, decision, role, reason, basis, retention_until, dedupe_group, reviewed_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", (record_id, *payload, group_id, at),
-            ).lastrowid
-            db.execute("INSERT INTO corpus_licenses VALUES (?, ?, ?, ?, ?)", (review_id, *grant, restored))
-            return self.describe(db, self.source_row(db, study_id, record_id, today), today)
+        group_id = None
+        restored = row["restored_withdrawal_id"] if verified else None
+        if verified:
+            metadata = safe_metadata(row["fields_json"])
+            evidence_key = evidence_identity(license_evidence_ref)
+            if license_status != "authorized" or evidence_key is None:
+                raise ValueError("请确认许可已授权，并填写可追溯的授权材料链接或本机材料编号。")
+            if evidence_key == source_identity(metadata.get("source_url")):
+                raise ValueError("原文地址只能证明来源，请另行登记许可依据。")
+            if license_issued_on and license_issued_on > today:
+                raise ValueError("授权证据签发日期不能晚于当前 UTC 日期。")
+            declared = license_note_state(json.loads(row["fields_json"]).get("access_policy", ""))
+            if reauthorize:
+                restored = self.restoration_proof(db, row, license_evidence_ref, license_issued_on, today)
+            elif not restored and declared != "unknown":
+                raise ValueError("来源记录或核验说明包含未确认、无授权、过期或撤销信息，请先核对许可。")
+            if any(license_note_state(note) != "unknown" for note in (reason, basis)):
+                raise ValueError("核验原因和依据须说明当前有效的授权。")
+            if (not reauthorize and row["license_state"] == "authorized" and row["retention_until"]
+                    and retention_until > row["retention_until"] and evidence_key == evidence_identity(row["evidence_ref"])):
+                raise ValueError("延长保留期限须登记新的授权依据。")
+            validate_snapshot(row, role, metadata, json.loads(row["content_json"]))
+            group_id = dedupe_key(study_id, row["raw_text"], metadata) if role == "user_quote" else None
+            db.execute(
+                """INSERT INTO corpus_snapshots (record_id, study_id, scope_id, raw_sha256, created_at)
+                   VALUES (?, ?, ?, ?, ?) ON CONFLICT(record_id) DO NOTHING""",
+                (record_id, study_id, row["scope_id"], checksum(row["raw_text"]), at),
+            )
+        review_id = db.execute(
+            """INSERT INTO corpus_reviews (record_id, decision, role, reason, basis, retention_until, dedupe_group, reviewed_at)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""", (record_id, *payload, group_id, at),
+        ).lastrowid
+        db.execute("INSERT INTO corpus_licenses VALUES (?, ?, ?, ?, ?)", (review_id, *grant, restored))
+        return review_id

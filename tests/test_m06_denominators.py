@@ -430,6 +430,21 @@ class DenominatorTests(TestCase):
         self.assertEqual(result["counts"]["N_excluded"], 1)
         self.assertEqual(result["excluded_by_reason"]["excluded_unsegmented_records"]["count"], 1)
 
+    def test_unverified_denial_counts_as_whole_row_while_unreviewed_stage_does_not(self):
+        self.seed()
+        _, denied = self.add_quote("denied-before-verification", reviewed=False)
+        _, staged = self.add_quote("unreviewed-staging", reviewed=False)
+        self.corpus.verify(denied.record_id, decision="excluded", license_status="denied", retention_until=None)
+        self.assertEqual(self.mentions.rows(
+            "SELECT 1 FROM corpus_snapshots WHERE record_id IN (?, ?)", (denied.record_id, staged.record_id),
+        ), [])
+        result = self.stats(mode="engineering")
+        self.assert_totals(result, eligible=3)
+        self.assertEqual(result["counts"]["N_extracted_mentions"], 3)
+        self.assertEqual(result["counts"]["N_excluded"], 0)
+        self.assertEqual(result["excluded_by_reason"]["excluded_unsegmented_records"],
+                         {"count": 1, "by_reason": {"LICENSE_RESTRICTED": 1}})
+
     def test_s_accounting_difference_blocks_publication(self):
         _, members = self.seed()
         self.decision(members[0], publication_status="published", disposition="auto")
