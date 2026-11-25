@@ -19,6 +19,7 @@ MIGRATIONS = (
     "005_corpus_licenses.sql",
     "006_corpus_withdrawal_compat.sql",
     "007_m06_core.sql",
+    "008_m07_registry_drafts.sql",
 )
 MIGRATION_DIRECTORY = Path(__file__).parent / "migrations"
 SQLITE_TIMEOUT = 12

@@ -13,7 +13,7 @@ from fastapi.testclient import TestClient
 
 from src.dashboard.app import create_app
 import test_corpus as fixtures
-from test_imports import HEADERS, ORIGIN, discard_empty_m06_fixture_schema
+from test_imports import HEADERS, ORIGIN, discard_empty_registry_fixture_schema
 
 
 class CorpusLicenseTests(unittest.TestCase):
@@ -245,7 +245,7 @@ class CorpusLicenseTests(unittest.TestCase):
         self.case.verify(old_record)
         # Simulate the v4 schema in this synthetic temporary database only.
         with closing(sqlite3.connect(self.db.path)) as db, db:
-            discard_empty_m06_fixture_schema(db)
+            discard_empty_registry_fixture_schema(db)
             db.executescript("""
                 DROP VIEW corpus_withdrawals;
                 DROP TABLE corpus_licenses;
@@ -264,7 +264,7 @@ class CorpusLicenseTests(unittest.TestCase):
             self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0], 4)
             self.assertEqual(db.execute("SELECT count(*) FROM corpus_reviews").fetchone()[0], 1)
         with TestClient(create_app(self.case.settings), base_url=ORIGIN, client=("127.0.0.1", 29206), headers=HEADERS) as fresh:
-            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 7)
+            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 8)
             record = fresh.get(f"{self.case.root}/records/{old_record}").json()
             self.assertEqual((record["status"], record["license_status"]), ("pending_review", "pending"))
             self.assertIsNone(record["raw_text"])

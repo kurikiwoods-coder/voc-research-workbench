@@ -1625,3 +1625,17 @@ dialog::backdrop {
   .relation-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .relation-control:nth-child(-n+2) { grid-column: 1 / -1; }
 }
+.registry-actions { margin-top: 12px; }
+.registry-root summary { cursor: pointer; font-weight: 700; }
+.registry-root textarea { resize: vertical; }
+.registry-root [hidden] { display: none; }
+.registry-subsection { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 14px; }
+.registry-definition dt, .registry-pairs dt { font-weight: 650; margin-top: 6px; }
+.registry-definition dd, .registry-pairs dd { margin: 4px 0 0; white-space: pre-wrap; }
+.registry-editor { border: 0; padding: 0; margin: 0; min-width: 0; }
+.registry-root .registry-wide { grid-column: 1 / -1; }
+.registry-root .registry-check { grid-template-columns: auto 1fr; align-items: center; justify-self: start; }
+.registry-evidence blockquote { white-space: pre-wrap; margin-inline: 0; }
+@media (max-width: 520px) {
+  .registry-root .relation-filters { grid-template-columns: minmax(0, 1fr); }
+}

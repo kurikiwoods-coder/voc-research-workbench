@@ -7,10 +7,10 @@ from src.raw_store.mentions import _reference
 
 
 ROLE_OPERATIONS = {
-    "owner": frozenset({"read", "evidence", "validate", "attribute"}),
+    "owner": frozenset({"read", "evidence", "validate", "attribute", "registry_draft"}),
     "researcher": frozenset({"read", "evidence"}),
-    "project_reviewer": frozenset({"read", "evidence", "validate", "attribute"}),
-    "registry_reviewer": frozenset({"read", "evidence", "validate", "publish_registry"}),
+    "project_reviewer": frozenset({"read", "evidence", "validate", "attribute", "registry_draft"}),
+    "registry_reviewer": frozenset({"read", "evidence", "validate", "publish_registry", "registry_draft"}),
     "governance_reviewer": frozenset({"read", "evidence", "audit"}),
     "report_reader": frozenset(),
 }

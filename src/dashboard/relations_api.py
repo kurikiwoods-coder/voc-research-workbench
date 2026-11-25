@@ -19,7 +19,7 @@ from src.dashboard.api_setup import body
 from src.raw_store.store import Busy, Conflict, now
 
 
-PATH_ROOTS = ("/api/product-categories", "/api/categories", "/api/intents")
+PATH_ROOTS = ("/api/product-categories", "/api/categories", "/api/intents", "/api/registry")
 PUBLIC_ERRORS = {
     400: ("FILTER_CONFLICT", "筛选条件或分页参数不一致。"),
     403: ("FORBIDDEN", "当前操作需要有效的本机权限。"),

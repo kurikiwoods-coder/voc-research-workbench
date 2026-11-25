@@ -1,6 +1,6 @@
 # 开发顺序、关键路径与版本目标
 
-基线为 `3bd705befb98ee108b77603763c5571ceb7fdc44`。M01–M06 工程验收通过，M06-R 复审通过并冻结。G-1 保持 BLOCKED，M07–M15 待启动。以下箭头表示依赖。灰色为尚未开始，绿色为工程已完成，红色为正式准入阻塞。联合验收另列为里程碑。[工作单元](ROADMAP-V2.md) · [基线审计](../audits/m06-final-engineering-audit.md)
+冻结基线为 `3bd705befb98ee108b77603763c5571ceb7fdc44`。M01–M06 工程验收通过，M06-R 复审通过并冻结。G-1 保持 BLOCKED。负责人批准 M07 隔离工程，G-1-R-A/B 延期，M08–M15 待启动。箭头表示依赖。联合验收另列为里程碑。[工作单元](ROADMAP-V2.md) · [M07 工程证据](../evidence/m07/README.md) · [基线审计](../audits/m06-final-engineering-audit.md)
 
 ## M01–M15 模块依赖图
 
@@ -46,11 +46,12 @@ M07 先交稳定 ID、版本结构、候选态、共享定义及查询契约。M
 flowchart TD
     Freeze["M06-R 已复审冻结"] --> Recheck["G-1-R 待单独授权"]
     Recheck --> G1["同批六项与通道审批"]
-    G1 -->|通过后按授权实施| Register["M07 版本与候选契约"]
+    Freeze -->|已单独授权隔离工程| Register["M07 版本与候选契约"]
     G1 -->|通过后按授权实施| Collect["M08 采样与回源"]
     Register --> Discover["M09 和 M10 双轨盲测"]
     Collect --> Discover
     Discover --> Joint["M07 与 M11 联审发行"]
+    G1 -->|正式验收前提| Joint
     Joint --> Decide["M12 锁版编码与校准"]
     Decide --> Insight["M13 洞察与可追溯报告"]
     Insight --> Survey["M14 草稿和真人试填"]

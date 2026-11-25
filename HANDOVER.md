@@ -1,8 +1,16 @@
 # 开发交接
 
+## M07 意图注册表接续
+
+开发由 `7c02966eb7e6c54f8e30ff032f921bac6719d1d2` 开始，交付状态与平台证据见 [M07 工程记录](docs/evidence/m07/README.md)。M07 使用 SQLite v8。迁移应走 Store 自带的事务和一致性备份，已有 v7 定义、稳定 ID 和历史版本沿用。
+
+- 本机工作台选择「意图注册表」可查询封版版本、主次任务、独立问卷验证状态及历史差异。项目候选提案由可信服务端授权。原话及其引用经项目、精确证据和当前资格复核。
+- 下游先读 [注册表契约](docs/architecture/m07-registry-contract.md)、[版本及 M11/M09–M12 接续](docs/architecture/m07-versioning-contract.md) 与 [M06 冻结契约](docs/architecture/m06-consumer-handover.md)。正式联合确认、模型接入、校准和问卷回写按所属模块另行授权。
+- G-1 保持 **BLOCKED**，G-1-R-A/B 已延期。正式研究、编码和发布仍关闭。待负责人另行授权后才可执行 G-1-R 或 M08。M07 同源码 Windows 11 实机结果仍待补。
+
 ## ROADMAP-V2 后续开发入口
 
-以 `3bd705b` 的 M06-R 冻结及当前远端 HEAD 为接续基线。G-1 = **BLOCKED**，M07–M15 = **NOT_STARTED**。下一项为 G-1-R，等待负责人单独授权。查询 100K 的已知性能债务交 M13-A。在获准的后续模块开发前读取 [完整工作单元](docs/planning/ROADMAP-V2.md)、[关键路径与 G-1-R](docs/planning/development-sequence.md#下一授权入口)、[M06 消费接口](docs/architecture/m06-consumer-handover.md)和[验收矩阵](docs/requirements-matrix.md)。
+以 `3bd705b` 的 M06-R 冻结政策及当前远端 HEAD 为接续基线。G-1 = **BLOCKED**。查询 100K 的已知性能债务交 M13-A。在获准的后续模块开发前读取 [完整工作单元](docs/planning/ROADMAP-V2.md)、[关键路径与 G-1-R](docs/planning/development-sequence.md#下一授权入口)、[M06 消费接口](docs/architecture/m06-consumer-handover.md)和[验收矩阵](docs/requirements-matrix.md)。
 
 AI 模块同时读取[适配器协议](docs/architecture/ai-model-adapter-contract.md)、[生命周期与版本](docs/architecture/model-lifecycle-and-calibration.md)及[金标准与对照](docs/architecture/model-evaluation-protocol.md)。M09 承接向量边界，M10 承接最小生成式接口，M12 承接通用决策接口及 Jev 首套正式实现。按各阶段授权实施，保留固定版本、实际通道身份、原有 G-1 和正式验收。ROADMAP-V2 已核验本机专案 v2.2 的 27 页原件及原登记指纹，仓库提供摘要供接续阅读。[负责人批准](docs/decisions/roadmap-v2-owner-approval.md)
 

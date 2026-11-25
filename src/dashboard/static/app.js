@@ -13,6 +13,7 @@ const pages = {
   imports: ["数据导入中心", "download"],
   corpus: ["原始语料库", "file"],
   relations: ["三层关系", "branch"],
+  registry: ["意图注册表", "branch"],
   checks: ["连通性检查", "pulse"],
   matrix: ["验收矩阵", "grid"],
   history: ["运行记录", "clock"],
@@ -24,6 +25,7 @@ const researchViews = {
   imports: () => import("./imports.js").then(module => module.mountImports),
   corpus: () => import("./corpus.js").then(module => module.mountCorpus),
   relations: () => import("./relations.js").then(module => module.mountRelations),
+  registry: () => import("./registry.js").then(module => module.mountRegistry),
 };
 function pageFromLocation() {
   const page = location.hash.slice(1);
@@ -397,7 +399,8 @@ function render() {
   if (main.firstElementChild?.dataset.workspaceRoute === hash) return;
   const view = document.createElement("div");
   const title = pages[current][0];
-  view.className = { studies: "study-root", imports: "import-root", corpus: "corpus-root", relations: "relation-root" }[current];
+  view.className = { studies: "study-root", imports: "import-root", corpus: "corpus-root",
+    relations: "relation-root", registry: "relation-root registry-root" }[current];
   view.dataset.workspaceRoute = hash;
   view.innerHTML = '<p class="panel state-box" role="status">正在读取' + title + '…</p>';
   main.replaceChildren(view);

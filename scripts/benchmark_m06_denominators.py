@@ -39,7 +39,7 @@ from src.raw_store.mentions import (
     EvidenceInterval, MentionDraft, MentionStore, ProductProposal, ReviewDecision, SupportDraft,
 )
 from src.raw_store.relations import RelationGrant, RelationStore
-from src.raw_store.store import Store, now
+from src.raw_store.store import MIGRATIONS, Store, now
 
 
 ORIGIN = "http://127.0.0.1:8765"
@@ -567,10 +567,10 @@ def kill_writer(store):
     return exit_status
 
 
-def validate_database(store, raw_rows):
+def validate_database(store, raw_rows, *, schema_version=len(MIGRATIONS)):
     started = perf_counter()
     with store.db() as db:
-        assert db.execute("PRAGMA user_version").fetchone()[0] == 7
+        assert db.execute("PRAGMA user_version").fetchone()[0] == schema_version
         assert db.execute("PRAGMA foreign_keys").fetchone()[0] == 1
         assert db.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
         assert [row[0] for row in db.execute("PRAGMA integrity_check")] == ["ok"]
@@ -619,7 +619,8 @@ def recover_snapshot(study, scenario, records, raw_rows, working_directory):
 
 
 def migration_check(working_directory):
-    with TemporaryDirectory(prefix="m06-c5-v6-", dir=working_directory) as directory:
+    with (TemporaryDirectory(prefix="m06-c5-v6-", dir=working_directory) as directory,
+          patch("src.raw_store.store.MIGRATIONS", MIGRATIONS[:7])):
         path = Path(directory) / "connectivity.sqlite3"
         with closing(sqlite3.connect(path)) as db:
             db.execute("PRAGMA foreign_keys=ON")
@@ -628,14 +629,14 @@ def migration_check(working_directory):
         started = perf_counter()
         store = Store(directory)
         elapsed = perf_counter() - started
-        validate_database(store, 0)
+        validate_database(store, 0, schema_version=7)
         with store.db() as db:
             db.execute("DROP INDEX corpus_review_excluded")
         started = perf_counter()
         reopened = Store(directory)
         v7_reopen_s = perf_counter() - started
         assert reopened.one("SELECT name FROM sqlite_schema WHERE name='corpus_review_excluded'")
-        validate_database(reopened, 0)
+        validate_database(reopened, 0, schema_version=7)
         return {"empty_v6_to_v7_seconds": elapsed, "old_v7_index_reopen_seconds": v7_reopen_s}
 
 
@@ -689,7 +690,7 @@ def main():
     if working_directory:
         working_directory.mkdir(parents=True, exist_ok=True)
     environment = {"platform": platform.platform(), "python": platform.python_version(),
-                   "sqlite": sqlite3.sqlite_version, "schema": 7, "research_api_calls": 0,
+                   "sqlite": sqlite3.sqlite_version, "schema": len(MIGRATIONS), "research_api_calls": 0,
                    "query_first_connection": "Fresh SQLite connection; OS file cache was not cleared"} | migration_check(working_directory)
     def emit(value):
         line = json.dumps(value, ensure_ascii=False)

@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M01–M06 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，Windows 11 实机及部署门禁通过。当前 P0-0，G-1 为 **BLOCKED**。下一项为待单独授权的 G-1-R，M07–M15 均为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [开发状态](DEVELOPMENT_STATUS.md)
+M01–M06 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A/B 延期至另行授权，M07 按隔离工程验收，M08–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [开发状态](DEVELOPMENT_STATUS.md)
 
 [ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成范围 31 项，待推进 48 项。P2 后另列 15 项可选产品化。下文保留主模块的工程档案与验收证据。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 
@@ -124,15 +124,14 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | PDT 与矩阵编号 | §8.2；CAT-1/2/5/9、J-2、J-9、J-14、P1-REFLOW |
 | 模块职责 | 维护意图定义、示例、生命周期、历史快照和验证状态。 |
 | 前置依赖 | M06 三层关系及 M05 证据。发布依赖 M11。 |
-| 工程开发 | 注册表 Schema 与合成样例已存在，正式版本服务未实现。 |
-| 工程测试 | 未测试正式注册表。 |
-| 正式业务验收 | 待验收。 |
-| 数据库及 API | `schemas/intent-registry.schema.json` 与 `examples/sample-intent-registry.json`。待注册表版本、差异、历史和发布 API。 |
-| 前端页面 | 正式注册表和版本对比页未实现。 |
+| 工程开发 | 已具备旧样例兼容、项目草稿、历史、差异、谱系、预检及下游消费接口。 |
+| 工程测试 | 见 [M07 专项及实机记录](docs/evidence/m07/README.md)。 |
+| 正式业务验收 | PENDING。正式联合确认与发布依赖 G-1 和 M11 联验。 |
+| 数据库及 API | SQLite v8，保留 M06 权威表。新增注册表共享读和受权项目提案接口。 |
+| 前端页面 | 「意图注册表」提供搜索、过滤、历史、差异、候选编辑与预检。 |
 | 验收标准 | 生命周期与问卷验证状态独立。确认意图有唯一主任务大类；金标准、索引、正式结果绑定具体版本。 |
-| 最近相关提交 | `8e8a74e` |
-| 测试结果与证据 | C0-6 只验证样例数据，未覆盖版本发布、回滚和历史查询。 |
-| 剩余问题 | 注册表事务、版本追踪、审计和发布。 |
+| 测试结果与证据 | [M07 工程证据](docs/evidence/m07/README.md) · [合成发行及版本接口](docs/architecture/m07-versioning-contract.md)。 |
+| 剩余问题 | M07 Windows 11 实机复测、M11 可信联审发布、M12 正式模型与 J-14、M14-E 问卷回写。 |
 
 ## M08 多来源数据采集
 

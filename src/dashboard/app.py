@@ -18,6 +18,7 @@ from src.dashboard.corpus_api import register_corpus
 from src.dashboard.study_api import register_studies
 from src.dashboard.import_api import register_imports
 from src.dashboard.relations_api import is_relation_path, register_relations, relation_error
+from src.dashboard.registry_api import register_registry
 from src.execution.checks import run_checks
 from src.raw_store.corpus import CorpusStore
 from src.raw_store.credentials import CredentialVault, VaultError
@@ -339,6 +340,7 @@ def create_app(settings=None, *, relation_grants=None):
     register_imports(app)
     register_corpus(app)
     register_relations(app)
+    register_registry(app)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
 
