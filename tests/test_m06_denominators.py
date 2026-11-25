@@ -445,6 +445,28 @@ class DenominatorTests(TestCase):
         self.assert_totals(result, eligible=0)
         self.assertEqual(result["excluded_by_reason"]["primary"], {"LICENSE_RESTRICTED": 3})
 
+    def test_batch_query_rechecks_source_revocation_and_exact_read_grant(self):
+        quotes, members = self.seed()
+        calculate = denominators._calculate
+        remaining = (1, members[2]["mention_id"], members[2]["evidence_ids"][0])
+        snapshots = []
+
+        def change_scope(*args, **kwargs):
+            result = calculate(*args, **kwargs)
+            snapshots.append(result["counts"]["N_eligible_dedup"])
+            if len(snapshots) == 1:
+                self.mentions.revoke_batch(quotes[0][0])
+            elif len(snapshots) == 2:
+                self.grants[:] = [replace(self.grants[0], evidence_refs=frozenset({remaining}))]
+            return result
+
+        with patch.object(denominators, "_calculate", side_effect=change_scope):
+            result = self.stats()
+        self.assertEqual(snapshots, [3, 2, 1])
+        self.assert_totals(result, eligible=1)
+        self.assertNotIn(members[0]["evidence_ids"][0], repr(result))
+        self.assertNotIn(members[1]["evidence_ids"][0], repr(result))
+
     def test_p_old_version_rechecks_qualification(self):
         quotes, members = self.seed()
         self.decision(members[0], publication_status="published", disposition="auto")
@@ -520,6 +542,23 @@ class DenominatorTests(TestCase):
         self.scenario.decisions[members[0]["mention_id"]] = (decision, replace(decision, receipt_id="competing-receipt"))
         result = self.stats()
         self.assertEqual((result["availability"], result["counts"]), ("unavailable", None))
+
+    def test_s_missing_bucket_entry_blocks_publication(self):
+        _, members = self.seed()
+        self.decision(members[0], publication_status="published", disposition="auto")
+        reconcile = denominators.reconcile
+
+        def omit_one_pending(eligible, buckets, published, primary_counts):
+            incorrect_buckets = buckets.copy()
+            incorrect_buckets["other_pending"] -= 1
+            return reconcile(eligible, incorrect_buckets, published, primary_counts)
+
+        with patch.object(denominators, "reconcile", side_effect=omit_one_pending):
+            result = self.stats()
+        self.assertEqual((result["availability"], result["reasons"]), ("unavailable", ["RECONCILIATION_MISMATCH"]))
+        self.assertEqual(result["reconciliation"], {
+            "eligible_difference": 1, "primary_difference": 0, "balanced": False, "publication_allowed": False,
+        })
 
     def test_api_rechecks_grants_and_never_exposes_synthetic_receipts(self):
         _, members = self.seed()
