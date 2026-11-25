@@ -1,6 +1,6 @@
 # PackyCode 通道与准入准备
 
-PackyCode 是 M02 中独立的 Jev 候选供应商。当前记录为 `PACKYCODE_LIVE_CONTRACT = PARTIAL`（首片通过）、`PACKYCODE_PROVIDER_APPROVAL = PENDING`、`G1_RB = BLOCKED`、`G-1 = BLOCKED`。负责人授权的独立合成预检见[安全决定](decisions/packycode-synthetic-preflight.md)和[工程证据](evidence/g1-rb-p/README.md)。
+PackyCode 是 M02 中独立的 Jev 候选供应商。独立合成预检 `PACKYCODE_LIVE_CONTRACT = PASS`，两片共 11 题通过契约校验。第二片单笔实扣未核实。`PACKYCODE_PROVIDER_APPROVAL = PENDING`、`G1_RB = BLOCKED`、`G-1 = BLOCKED`。[安全决定](decisions/packycode-synthetic-preflight.md) · [工程证据](evidence/g1-rb-p/README.md)
 
 ## 契约及证据
 
@@ -9,7 +9,7 @@ PackyCode 是 M02 中独立的 Jev 候选供应商。当前记录为 `PACKYCODE_
 | 项目 | 公开证据及实测范围 |
 | --- | --- |
 | 地址、分组、模型 | 通用生产网关为 `https://cf.api.fan`。分组说明和公开模型目录列出 `typesafe-officially`、`jev-1.14.0` 和 `POST /v1/systemone`。本地固定完整端点 `https://cf.api.fan/v1/systemone`。[网关说明](https://docs.packyapi.com/docs/register/6-cli.html) · [分组说明](https://docs.packyapi.com/docs/token/2-group.html) · [公开模型元数据](https://www.packyapi.ai/api/pricing) |
-| 认证及请求 | 连接器采用 `Authorization: Bearer`，发送固定 `model`、`state` 和 `questions`，沿用 Choice、Score、Noul 和 8+3 分片。该账户首片 HTTP 200，实报模型为 `jev-1.14.0`，三类字段完整。客户端每片只预约并发送一次，网关如何处理幂等键仍未核实。[TypeSafe OpenAPI](https://api.typesafe.ai/openapi.json) |
+| 认证及请求 | 连接器采用 `Authorization: Bearer`，发送固定 `model`、`state` 和 `questions`。该账户 8+3 分片均返回 HTTP 200 和 `jev-1.14.0`，Choice、Score、Noul 字段完整。客户端每片只预约并发送一次，网关如何处理幂等键仍未核实。[TypeSafe OpenAPI](https://api.typesafe.ai/openapi.json) |
 | 公开计费参数 | PackyCode 元数据列出模型倍率 `0.021`、输出倍率 `0`、分组倍率 `7` 和每计价单位配额 `500000`。按 New API 公开公式可复算负责人提供的候选报价，每百万输入 token **USD 0.294**，输出 **USD 0**。账户实际计价、折算、舍入、扣费和余额需单独核验。[公开模型元数据](https://www.packyapi.ai/api/pricing) · [公开平台元数据](https://www.packyapi.ai/api/status) · [计量公式](https://docs.newapi.pro/zh/docs/guide/console/settings/rate-settings#额度计算公式) |
 | 独立账户审核 | PackyCode 有公开服务条款及数据处理协议入口。需取得适用于当前账户、分组和实际上游的书面材料。TypeSafe 的组织级 ZDR 审批由 TypeSafe 单独确认，分组文字不作为账户审核依据。[服务条款](https://www.packyapi.ai/service-specific-terms) · [数据处理协议](https://www.packyapi.ai/dpa) · [TypeSafe ZDR 说明](https://help.typesafe.ai/articles/9520184411-do-you-offer-zdr) |
 

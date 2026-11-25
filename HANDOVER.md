@@ -2,7 +2,7 @@
 
 ## G-1-R-B-P 接续
 
-在个人电脑普通 Windows 用户会话运行 `python -m src.execution.packycode_preflight` 查询合成回执。首片已通过，账本仅有首片预约。取得首片单笔实扣及原限额令牌当前余额后，按[本机操作说明](docs/packycode.md#一次性合成接口预检)用 `--resume-second` 接续原批次的 3 题。保留原账本、原账户证据文件和已消费的一次性授权。正式 G-1 的供应商审核及 C0-1 至 C0-6 同批验收仍适用。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
+在个人电脑普通 Windows 用户会话运行 `python -m src.execution.packycode_preflight` 查询合成回执。同一账本已有两次预约和两份成功响应，11 题合并回执为 **PASS**，此次发送授权已耗尽。保留原账本和账户证据。供应商的第二片单笔实扣可凭控制台明细补证。正式 G-1 的供应商审核及 C0-1 至 C0-6 同批验收仍适用。M08 等待负责人授权。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
 
 ## G-1-R-A 接续
 
