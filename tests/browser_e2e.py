@@ -17,6 +17,7 @@ from urllib.parse import urljoin
 from unittest.mock import patch
 
 from playwright.sync_api import expect, sync_playwright
+from acquisition_browser import acquisition_browser_checks
 from corpus_browser import corpus_browser_checks, corpus_restart_checks
 from imports_browser import imports_browser_checks, imports_restart_checks
 from studies_browser import study_browser_checks, study_restart_checks
@@ -350,6 +351,18 @@ def run_packycode_browser(output):
         browser.close()
 
 
+def run_acquisition_browser(output):
+    output.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="voc-acquisition-browser-") as directory:
+        with socket.socket() as port_probe:
+            port_probe.bind(("127.0.0.1", 0))
+            port = port_probe.getsockname()[1]
+        with server(directory, port) as base, sync_playwright() as pw:
+            browser = pw.chromium.launch(executable_path=os.getenv("VOC_CHROMIUM") or None)
+            acquisition_browser_checks(browser, base, output)
+            browser.close()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--serve", nargs=2, metavar=("DIR", "PORT"))
@@ -357,6 +370,7 @@ def main():
     parser.add_argument("--relations-only", action="store_true")
     parser.add_argument("--registry-only", action="store_true")
     parser.add_argument("--packycode-only", action="store_true")
+    parser.add_argument("--acquisition-only", action="store_true")
     parser.add_argument("--output", type=Path, default=ROOT / "test-results/browser")
     args = parser.parse_args()
     if args.serve:
@@ -366,6 +380,9 @@ def main():
         return
     if args.packycode_only:
         run_packycode_browser(args.output)
+        return
+    if args.acquisition_only:
+        run_acquisition_browser(args.output)
         return
     with tempfile.TemporaryDirectory(prefix="voc-browser-") as directory:
         with socket.socket() as port_probe:
@@ -389,6 +406,7 @@ def main():
     if not args.studies_only:
         run_registry_browser(args.output)
         run_packycode_browser(args.output)
+        run_acquisition_browser(args.output)
     print("Chromium E2E passed. Screenshots:", args.output)
 
 

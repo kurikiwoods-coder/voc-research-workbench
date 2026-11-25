@@ -1,6 +1,6 @@
 # 开发顺序、关键路径与版本目标
 
-冻结基线为 `3bd705befb98ee108b77603763c5571ceb7fdc44`。M01–M06 工程验收通过，M06-R 复审通过并冻结。G-1 保持 BLOCKED。M07 隔离工程验收通过，G-1-R-A 候选通道已实现，G-1-R-B 与 M08–M15 待启动。箭头表示依赖。联合验收另列为里程碑。[工作单元](ROADMAP-V2.md) · [M07 工程证据](../evidence/m07/README.md) · [G-1-R-A 接续](../packycode.md) · [基线审计](../audits/m06-final-engineering-audit.md)
+冻结基线为 `3bd705befb98ee108b77603763c5571ceb7fdc44`。M01–M06 工程验收通过，M06-R 复审通过并冻结。G-1 保持 BLOCKED。M07 及 M08-A/B 隔离工程验收通过，M08-C/D/E 及 M09–M15 待启动。G-1-R-A 已实现，PackyCode 合成契约通过，正式 G-1-R-B 待补供应商审核和同批验收。箭头表示依赖。联合验收另列为里程碑。[工作单元](ROADMAP-V2.md) · [M07 工程证据](../evidence/m07/README.md) · [M08-A/B 工程证据](../evidence/m08-ab/README.md) · [G-1-R-A 接续](../packycode.md) · [基线审计](../audits/m06-final-engineering-audit.md)
 
 ## M01–M15 模块依赖图
 

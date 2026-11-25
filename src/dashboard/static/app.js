@@ -10,6 +10,7 @@ const esc = (value) =>
   );
 const pages = {
   studies: ["研究项目", "folder"],
+  acquisition: ["来源采集", "search"],
   imports: ["数据导入中心", "download"],
   corpus: ["原始语料库", "file"],
   relations: ["三层关系", "branch"],
@@ -22,6 +23,7 @@ const pages = {
 };
 const researchViews = {
   studies: () => import("./studies.js").then(module => module.mountStudies),
+  acquisition: () => import("./acquisition.js").then(module => module.mountAcquisition),
   imports: () => import("./imports.js").then(module => module.mountImports),
   corpus: () => import("./corpus.js").then(module => module.mountCorpus),
   relations: () => import("./relations.js").then(module => module.mountRelations),
@@ -85,6 +87,7 @@ const detailLabels = [
 ];
 const paths = {
   folder: "M3 6h7l2 3h9v10H3z M7 13h10 M7 16h7",
+  search: "M15 10a5 5 0 1 0-10 0 5 5 0 0 0 10 0z M14 14l5 5",
   pulse: "M3 13h4l3-8 5 15 3-9h3",
   grid: "M3 3h7v7H3z M14 3h7v7h-7z M3 14h7v7H3z M14 14h7v7h-7z",
   clock: "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 7v5l3 2",
@@ -399,7 +402,7 @@ function render() {
   if (main.firstElementChild?.dataset.workspaceRoute === hash) return;
   const view = document.createElement("div");
   const title = pages[current][0];
-  view.className = { studies: "study-root", imports: "import-root", corpus: "corpus-root",
+  view.className = { studies: "study-root", acquisition: "acquisition-root", imports: "import-root", corpus: "corpus-root",
     relations: "relation-root", registry: "relation-root registry-root" }[current];
   view.dataset.workspaceRoute = hash;
   view.innerHTML = '<p class="panel state-box" role="status">正在读取' + title + '…</p>';

@@ -1639,3 +1639,54 @@ dialog::backdrop {
 @media (max-width: 520px) {
   .registry-root .relation-filters { grid-template-columns: minmax(0, 1fr); }
 }
+
+.acquisition-root [hidden] { display: none; }
+.acquisition-root :is(dd, h3, h4, summary, .acquisition-hint) { overflow-wrap: anywhere; }
+.acquisition-head { align-items: center; }
+.acquisition-gate {
+  border-inline-start: 3px solid var(--amber);
+  color: var(--amber);
+  margin: 0 0 14px;
+}
+.acquisition-panel { padding: clamp(14px, 2.5vw, 24px); margin-bottom: 14px; }
+.acquisition-panel > h2 { margin-bottom: 14px; }
+.acquisition-sources, .acquisition-grid, .acquisition-pairs { display: grid; gap: 12px; }
+.acquisition-sources { grid-template-columns: repeat(auto-fit, minmax(min(100%, 225px), 1fr)); }
+.acquisition-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 205px), 1fr)); }
+.acquisition-pairs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 175px), 1fr)); margin: 0; }
+.acquisition-source { border: 1px solid var(--line); border-radius: 8px; padding: 12px; min-width: 0; }
+.acquisition-source :is(h3, h4) { margin: 0 0 6px; }
+.acquisition-source .acquisition-pairs { grid-template-columns: repeat(auto-fit, minmax(min(100%, 125px), 1fr)); }
+.acquisition-pairs dt, .acquisition-hint { color: var(--sub); font-size: 13px; }
+.acquisition-pairs dd { margin: 3px 0 0; white-space: pre-wrap; }
+.acquisition-hint { margin: 8px 0; line-height: 1.6; }
+.acquisition-grid > label { display: grid; gap: 6px; min-width: 0; font-weight: 650; }
+.acquisition-root :is(.field, button) { min-height: 40px; }
+.acquisition-root .field { width: 100%; min-width: 0; color: var(--ink); font-weight: 400; }
+#acquisition-fields { border: 0; margin: 0; min-width: 0; padding: 0; }
+.acquisition-domains {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 12px 0;
+  min-width: 0;
+  padding: 6px 12px 10px;
+}
+.acquisition-domains > div { display: flex; flex-wrap: wrap; gap: 7px 14px; }
+.acquisition-domains label { overflow-wrap: anywhere; }
+.acquisition-root summary { cursor: pointer; color: var(--teal); font-weight: 650; }
+.acquisition-source details { border-top: 1px solid var(--line); margin-top: 11px; padding-top: 8px; }
+.acquisition-filters .acquisition-grid, .acquisition-source details .acquisition-pairs { margin-top: 10px; }
+.acquisition-actions { margin-top: 14px; }
+.acquisition-section { border-top: 1px solid var(--line); margin-top: 17px; padding-top: 14px; }
+.acquisition-section > h3 { margin: 0 0 10px; }
+.acquisition-receipts details { border-top: 1px solid var(--line); padding: 10px 0; }
+.acquisition-receipts details > summary span { display: inline-block; margin-bottom: 4px; }
+.acquisition-url { font-family: var(--mono); font-size: 13px; }
+.acquisition-receipts details > summary span:last-child { color: var(--sub); font-size: 13px; margin-inline-start: 8px; }
+.acquisition-records { margin: 8px 0 0; padding-inline-start: 1.3em; }
+.acquisition-records li { padding: 7px 0; }
+.acquisition-records h4 { margin: 0 0 5px; }
+@media (max-width: 520px) {
+  .acquisition-head { display: block; }
+  .acquisition-head > button { margin-top: 9px; }
+}

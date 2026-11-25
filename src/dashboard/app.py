@@ -17,6 +17,7 @@ from src.config import (
     CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, MODEL, PACKYCODE_CONTRACT, PROVIDERS, ROOT, Settings,
 )
 from src.dashboard.api_setup import register_setup, setup_view
+from src.dashboard.acquisition_api import register_acquisition
 from src.dashboard.corpus_api import register_corpus
 from src.dashboard.study_api import register_studies
 from src.dashboard.import_api import register_imports
@@ -262,9 +263,16 @@ def create_app(settings=None, *, relation_grants=None):
     async def local_controls(request: Request, call_next):
         path = request.url.path
         relation_api = is_relation_path(path)
+        acquisition_api = path.startswith("/api/acquisition/")
         private_api = (relation_api or path == "/api/studies"
+                       or acquisition_api
                        or path.startswith(("/api/setup/", "/api/studies/", "/api/imports/", "/api/corpus/")))
         local_data = private_api or path in {"/api/workspace", "/api/runs"} or path.startswith("/api/runs/")
+        denial_headers = {"Cache-Control": "no-store"} if acquisition_api else None
+        origin = request.headers.get("origin")
+        expected = f"{request.url.scheme}://{request.headers.get('host')}"
+        if acquisition_api and origin is not None and origin != expected:
+            return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403, headers=denial_headers)
         if local_data:
             try:
                 loopback = request.client is not None and ip_address(request.client.host).is_loopback
@@ -273,14 +281,12 @@ def create_app(settings=None, *, relation_grants=None):
             if not loopback:
                 if relation_api:
                     return relation_error(403)
-                return JSONResponse({"detail": "请从本机 localhost 打开工作台。"}, status_code=403)
+                return JSONResponse({"detail": "请从本机 localhost 打开工作台。"}, status_code=403, headers=denial_headers)
         if request.method not in ("GET", "HEAD", "OPTIONS"):
-            origin = request.headers.get("origin")
-            expected = f"{request.url.scheme}://{request.headers.get('host')}"
             if request.headers.get("X-VOC-Action") != "connectivity" or ((origin or private_api) and origin != expected):
                 if relation_api:
                     return relation_error(403)
-                return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403)
+                return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403, headers=denial_headers)
         reply = await call_next(request)
         reply.headers["Referrer-Policy"] = "no-referrer"
         reply.headers["X-Content-Type-Options"] = "nosniff"
@@ -366,6 +372,7 @@ def create_app(settings=None, *, relation_grants=None):
     register_setup(app)
     register_studies(app)
     register_imports(app)
+    register_acquisition(app)
     register_corpus(app)
     register_relations(app)
     register_registry(app)

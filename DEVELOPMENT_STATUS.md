@@ -1,8 +1,12 @@
 # VOC Research Workbench 开发状态
 
+## M08-A/B 隔离来源采集
+
+从 `81ce8818354f36ed33943d604e8890adde1f4c3f` 接续。M08-A、M08-B 的本机隔离工程验收均为 **ENGINEERING_PASS**，M08 为 **PARTIAL**，路线图已完成 **37/79**。Windows 10 Python 359/359、Node 2/2、Chromium 全量通过、冷启动 3/3、归档 4/4。复审确认的 P1 已关闭。工作库 SQLite v8。G-1 **BLOCKED**，M08 正式业务验收 **PENDING**。M08-C/D/E 及 M09–M15 为 **NOT_STARTED**，真实研究 API 调用 0。[工程证据](docs/evidence/m08-ab/README.md)
+
 ## G-1-R-B-P 独立合成接口预检
 
-负责人批准一次固定 8+3 的 PackyCode 合成契约试验，最多两次 POST，使用独立、不可重置的小额令牌和 100,000 输入 Token 本地预算目标。首片通过后须核对扣费和余额再发第二片。独立 SQLite 保存预约、分片证据及回执。正式 G-1 为 **BLOCKED**，M06 继续冻结，M07 工程通过，M08 及 M12 未启动。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
+负责人批准一次固定 8+3 的 PackyCode 合成契约试验，最多两次 POST，使用独立、不可重置的小额令牌和 100,000 输入 Token 本地预算目标。首片通过后须核对扣费和余额再发第二片。独立 SQLite 保存预约、分片证据及回执。结项时 G-1 为 **BLOCKED**，M06 冻结，M07 工程通过，M08 及 M12 当时未启动。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
 
 原批次完成 8+3 题，两个请求均返回 HTTP 200、`jev-1.14.0`。11 题字段校验通过，接口实报合计 **809 输入 / 220 输出 Token**，合成契约为 **PASS**。首片单笔实扣 **$0.000144**，最终测试令牌余额显示 **$2.00**，第二片单笔和实际总扣费未核实。[验收证据](docs/evidence/g1-rb-p/README.md#实际接口结项)
 
@@ -18,7 +22,7 @@ G-1-R-A 交付时，`PACKYCODE_CONNECTOR = IMPLEMENTED`，`PACKYCODE_PROVIDER_AP
 
 M07-A 至 D 为 **ENGINEERING_PASS**。Windows 10 Python 298/298、Node 2/2、Chromium 12/12 组，源码 `5a3bd4189d6f3e3951bdcc0d79ce79db5c8060e8` 的三项 CI 通过。核心计划工程或复审完成 35/79，待推进 44 项。[源码 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45618421502)
 
-M07 正式业务验收为 **PENDING**。G-1 为 **BLOCKED**，当前阶段 P0-0。M07 同源码 Windows 11 实机为 **NOT_TESTED**，部署证据待补。Windows 11 的 M06-R 历史证据归属原验收源码。M08–M15 尚未开始。
+M07 正式业务验收为 **PENDING**。G-1 为 **BLOCKED**，当前阶段 P0-0。M07 同源码 Windows 11 实机为 **NOT_TESTED**，部署证据待补。Windows 11 的 M06-R 历史证据归属原验收源码。M07 结项时 M08–M15 尚未开始。
 
 ## ROADMAP-V2 正式规划
 

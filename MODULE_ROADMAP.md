@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，第二片实扣待补证。G-1-R-B 为 **BLOCKED**。M08–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md)
+M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，第二片实扣待补证。G-1-R-B 为 **BLOCKED**。M08 为 **PARTIAL**，A/B 工程通过，C/D/E 及 M09–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-A/B 证据](docs/evidence/m08-ab/README.md)
 
 [ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 35 项，待推进 44 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 
@@ -140,11 +140,11 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | PDT 与矩阵编号 | 专案 §3/§5；C0-3、INGEST、G1/G2、SOURCE-POLICY、PRIVACY、P1-SOURCES |
 | 模块职责 | 实现合规搜索发现、来源回源、采样日志及来源故障切换。 |
 | 前置依赖 | M02 接入凭证、M03 范围、M05 原文库与来源授权；CSV 兜底来自 M04。 |
-| 工程开发 | 已有 Tavily、Brave、Stack Exchange P0-0 探针及原帖回源。正式采样任务和第二来源未实现。 |
-| 工程测试 | 指定搜索与官方原帖回源通过，故障切换有夹具。 |
-| 正式业务验收 | C0-3 PASS，正式 G1/G2 与 P1-SOURCES 待验。 |
-| 数据库及 API | P0-0 执行/证据接口；正式 connector、采样批次 API 与日志待建。 |
-| 前端页面 | 连通性证据页已有。正式来源管理与采样任务页未实现。 |
+| 工程开发 | M08-A/B 已实现来源权限契约、冻结范围预览、Tavily/Brave 发现和 Stack Exchange 夹具回源。M08-C/D/E 待授权。 |
+| 工程测试 | 双搜索、故障切换、许可和 URL 边界以合成夹具验证。[实测证据](docs/evidence/m08-ab/README.md) |
+| 正式业务验收 | PENDING。历史 C0-3 有通过证据，正式同批 G-1、G1/G2、INGEST、SOURCE-POLICY 与 P1-SOURCES 待验。 |
+| 数据库及 API | 工作库 v8，离线演示账本 v1。来源、预览和演示 API 可本机访问，正式采集 403。 |
+| 前端页面 | 「来源采集」展示独立权限、查询映射、分母和离线回执。 |
 | 验收标准 | 指定搜索发现的链接必须回到许可原文。3 批≥100 条真实片段、源故障可切换和 CSV 兜底。期刊背景证据独立分母。 |
 | 最近相关提交 | `a650478` |
 | 测试结果与证据 | 一次 Tavily HTTP 200，1 credit，原帖 94603。Brave 未实调。 |

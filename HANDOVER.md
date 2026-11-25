@@ -1,8 +1,14 @@
 # 开发交接
 
+## M08-A/B 接续
+
+本机工作台左栏进入「来源采集」，选择项目及冻结范围。查询计划显示供应商映射和限制，离线演示以固定合成文本产生发现及页面访问回执。运行目录中的 `m08-offline/acquisition.sqlite3` 保存演示证据。正式采集返回 403，正式漏斗缺数据时为 `null`。[来源权限契约](docs/architecture/m08-source-adapter-contract.md) · [双搜索与回源契约](docs/architecture/m08-search-and-retrieval-contract.md) · [验收证据](docs/evidence/m08-ab/README.md)
+
+下一次授权若覆盖 M08-C，按来源核对逐项访问、存储和研究许可及常规删除，沿用固定端点与当前资格。M08-D 再接 M04 批次、M05 授权和 M06 分母，补齐任务、预算、恢复及正式采样证据。G-1 仍为 **BLOCKED**，PackyCode 供应商审批、实际完整对账和同批六项正式验收继续待办。
+
 ## G-1-R-B-P 接续
 
-在个人电脑普通 Windows 用户会话运行 `python -m src.execution.packycode_preflight` 查询合成回执。同一账本已有两次预约和两份成功响应，11 题合并回执为 **PASS**，此次发送授权已耗尽。保留原账本和账户证据。供应商的第二片单笔实扣可凭控制台明细补证。正式 G-1 的供应商审核及 C0-1 至 C0-6 同批验收仍适用。M08 等待负责人授权。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
+在个人电脑普通 Windows 用户会话运行 `python -m src.execution.packycode_preflight` 查询合成回执。同一账本已有两次预约和两份成功响应，11 题合并回执为 **PASS**，此次发送授权已耗尽。保留原账本和账户证据。供应商的第二片单笔实扣可凭控制台明细补证。正式 G-1 的供应商审核及 C0-1 至 C0-6 同批验收仍适用。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
 
 ## G-1-R-A 接续
 
