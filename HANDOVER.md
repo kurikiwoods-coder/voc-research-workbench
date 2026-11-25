@@ -2,11 +2,13 @@
 
 ## M06-C4 交付及 C5 接口
 
-开发分支为 `codex/p0-0-connectivity`，对应草稿 PR #1。C4 从 `71a0668a9c9677c805ffe0f494c070fc6b9645d3` 接续。本轮的实机、独立复审、CI 和门禁记录见 [C4 工程证据](docs/evidence/m06-c4/README.md)。
+开发分支为 `codex/p0-0-connectivity`，对应草稿 PR #1。C4 从 `71a0668a9c9677c805ffe0f494c070fc6b9645d3` 接续，验收源码为 `fce76a06195c7f45638c39b0347301fbb6bfbbae`。C4 为 **ENGINEERING_PASS**，Windows 11 实机与该版本部署门禁为 **PASS**。接续时核对开发分支、草稿 PR 和同一验收提交的检查。[C4 工程证据](docs/evidence/m06-c4/README.md) · [PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)
 
 - `RelationStore` 提供共享定义、项目关系读、候选预检及内部组合事务。读取和写入使用服务端签发的精确授权。部署的 HTTP 默认没有可信项目授权注入，项目原话、预检及特权写入维持关闭。受限证据的授权粒度为 `(study_id, R, M, E)`。
 - C5 输入固定 `study_id`、`registry_version`、`segment_revision`、`scope_id/scope_version`、`mapping_revision`、`catalog_version`，使用当前合格的精确 `M/E`。产品、来源、批次、时间和冻结范围在同一证据相交后再按唯一 `M` 去重。次任务仅作关联解释。撤销后用新快照重算。
+- C5 复用同一证据交集和当前资格，按已冻结的 `M06-B-F.1` 检查六桶、排除账和主类对账。长查询遇撤销、失格或到期时须弃用结果并重算。开始前核对当前批准的 [统计契约](docs/architecture/m06-statistics-contract.md)与[实施计划](docs/architecture/m06-implementation-plan.md)。规模试验和两条守恒等式在 C5 取证。
 - C4 的工程归属回执绑定精确 E 及其依赖核验版本。正式统计仍需 M12 当前完整编码回执、C5 对账及正式准入。缺项返回 `unavailable` 和 `counts:null`。明确非产品范围可返回有效的工程空集。
+- 产品关系中涉及未解析冻结映射时返回不可用。治理审核者的当前精确审计授权只允许看脱敏失格记录。检测、统计、排序、导出及编码依赖应继续使用当前合格证据集合。审计失格记录仅供复核。
 - 组合写保持单主库、`BEGIN IMMEDIATE`、C2 同连接复核及失败整项回滚。跨项目继承代表证据保守拒绝。将来由获准联合流程逐项目核验。保护已发布目录节点和祖先时，调用方提供可信已发布引用，正式报告引用来源由 M13 接入。
 - M06-C5 = **NOT_STARTED**，待负责人另行授权。G-1 = **BLOCKED**。专案 v2.2 的 27 页原 PDF 待补。
 

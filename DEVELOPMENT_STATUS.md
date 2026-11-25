@@ -6,6 +6,8 @@
 
 C4 提供已封版共享定义、三层双向查询、精确证据下钻、可撤回的服务端授权、预检及单连接组合事务。SQLite 保持 v7。实机、复审和 CI 状态见 [C4 工程证据](docs/evidence/m06-c4/README.md)。G-1 = **BLOCKED**，PRE_M06_DEVELOPMENT_GATE = **PASS**，M06-C5 = **NOT_STARTED**。真实研究 API 调用 0 次。
 
+在验收源码 `fce76a06195c7f45638c39b0347301fbb6bfbbae` 上，**M06-C4 = ENGINEERING_PASS**，**WINDOWS_11_REAL_MACHINE = PASS**，**WINDOWS_11_DEPLOYMENT_GATE = PASS**。原生 Windows 11 的 Python 247/247（既有 215、新增 32）、Node 2/2、Chromium 10 组、本机 HTTP 1 组及其余实机检查均通过。独立复审确认的三项 P1 和两项 P2 已修复，另修复一项 Chromium 测试夹具串扰。未解决 P0/P1 为 0。草稿 PR #1 保留验收提交的检查记录。[源码 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45560884986) · [PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)
+
 ## 历史记录 · M06-C3 发生、区间、证据及产品边
 
 2026-11-25 自 `e64141b76f78e17508133de0b91510d80e9daa81` 实施 C3。源码验收基线为 `43c72026e1776f6b78b78beeb3d87b7126016924`。SQLite v7 的 Python 服务可登记稳定发生和证据、封存片段版和拆并谱系、消费冻结范围和精确目录映射，并保存逐边人工审核与撤销。读和写均按当前 M05 资格校验实际直接证据与上下文。G-1 = **BLOCKED**，M06-C4 = **NOT_STARTED**，PRE_M06_DEVELOPMENT_GATE = **PASS**，真实研究 API 调用 0 次。[C3 实机及独立复审证据](docs/evidence/m06-c3/README.md)

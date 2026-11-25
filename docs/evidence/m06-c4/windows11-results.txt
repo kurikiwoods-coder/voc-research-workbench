@@ -1,0 +1,18 @@
+M06-C4 Windows 11 实机脱敏结果
+日期：2026-11-25
+源码：fce76a06195c7f45638c39b0347301fbb6bfbbae
+Git tree：9edcf48197ddfd17ddea18415f4a600d22fcf323
+源码归档 SHA-256：d4416d8595f6979f6d3e1d150c09b6bd4da3f3b9bf2a12f5cd29fb471a4939e3
+
+环境：Windows 11 Enterprise 25H2，构建 26200.8655，AMD64，普通用户，PowerShell 7.6.9。
+工具：Python 3.12.9，SQLite 3.45.3，Node 24.19.0，Playwright 1.65.2，Chromium 159.0.8154.6，Git 2.55.0.windows.5。
+
+退出码：19/19 项为 0。
+Python：247/247，C4 专项 32/32，C3 25/25，C2 17/17，C1 约束 22/22，C1 迁移 11/11，M05 许可 10/10，M05 语料 16/16，Pre-M06 16/16。
+Node：2/2。Chromium：10 组。本机 HTTP：1 组。冷启动：3/3。启动器：普通、中文、空格路径各首启及重启，共 6/6。
+启动器：首页、/api/health、/api/workspace 均为 200，SQLite schema v7，integrity_check=ok，foreign_key_check=0，端口释放。
+历史归档：4 份，记录数 20、10、10、10，均 integrity_check=ok，G-1=BLOCKED。
+DPAPI：CurrentUser 往返、加密落盘、重启读取、删除后重启均通过，未发现合成明文标记。
+敏感扫描：通过。真实研究 API 调用：0。
+
+结果：M06-C4 工程验收、WINDOWS_11_REAL_MACHINE 和 WINDOWS_11_DEPLOYMENT_GATE 均 PASS。G-1 保持 BLOCKED，M06-C5 保持 NOT_STARTED。
