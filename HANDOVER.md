@@ -2,7 +2,7 @@
 
 ## M07 意图注册表接续
 
-开发由 `7c02966eb7e6c54f8e30ff032f921bac6719d1d2` 开始，交付状态与平台证据见 [M07 工程记录](docs/evidence/m07/README.md)。M07 使用 SQLite v8。迁移应走 Store 自带的事务和一致性备份，已有 v7 定义、稳定 ID 和历史版本沿用。
+开发由 `7c02966eb7e6c54f8e30ff032f921bac6719d1d2` 开始。源码 `5a3bd4189d6f3e3951bdcc0d79ce79db5c8060e8` 已通过 Windows 10 开发工程验收及三项源码 CI。M07 使用 SQLite v8。迁移走 Store 自带的事务和一致性备份，已有 v7 定义、稳定 ID 和历史版本沿用。[M07 工程记录](docs/evidence/m07/README.md)
 
 - 本机工作台选择「意图注册表」可查询封版版本、主次任务、独立问卷验证状态及历史差异。项目候选提案由可信服务端授权。原话及其引用经项目、精确证据和当前资格复核。
 - 下游先读 [注册表契约](docs/architecture/m07-registry-contract.md)、[版本及 M11/M09–M12 接续](docs/architecture/m07-versioning-contract.md) 与 [M06 冻结契约](docs/architecture/m06-consumer-handover.md)。正式联合确认、模型接入、校准和问卷回写按所属模块另行授权。

@@ -4,11 +4,13 @@
 
 2026-11-25 从 `7c02966eb7e6c54f8e30ff032f921bac6719d1d2` 接续。负责人批准 M07-A 至 D 在 G-1 阻塞状态下进行隔离工程，G-1-R-A/B 延期待另行授权。SQLite v8 新增草稿、修订、命令回执及版本化共享示例。M06 封版定义、三层关系、五项政策与 `M06-B-F.1` 继续适用。[数据契约](docs/architecture/m07-registry-contract.md) · [版本接口](docs/architecture/m07-versioning-contract.md) · [M07 验收](docs/evidence/m07/README.md)
 
-M07 正式业务验收为 **PENDING**。G-1 为 **BLOCKED**，当前阶段 P0-0。M07 同源码 Windows 11 实机为 **NOT_TESTED**。Windows 11 的 M06-R 历史证据归属原验收源码。M08–M15 尚未开始。
+M07-A 至 D 为 **ENGINEERING_PASS**。Windows 10 Python 298/298、Node 2/2、Chromium 12/12 组，源码 `5a3bd4189d6f3e3951bdcc0d79ce79db5c8060e8` 的三项 CI 通过。核心计划工程或复审完成 35/79，待推进 44 项。[源码 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45618421502)
+
+M07 正式业务验收为 **PENDING**。G-1 为 **BLOCKED**，当前阶段 P0-0。M07 同源码 Windows 11 实机为 **NOT_TESTED**，部署证据待补。Windows 11 的 M06-R 历史证据归属原验收源码。M08–M15 尚未开始。
 
 ## ROADMAP-V2 正式规划
 
-2026-11-25 采用 `3bd705befb98ee108b77603763c5571ceb7fdc44` 为 M06-R 冻结基线，草稿 PR #1 的 Ubuntu、Windows Server 2022、Chromium 检查均通过。M01–M06 为 **ENGINEERING_PASS**，M06-R 为 **PASS**，M06 工程基线 **FROZEN**。实机及部署证据见下文。核心计划含 79 个工作单元，工程或复审完成范围 31 项，待推进 48 项。P2 后另列 15 个可选单元。[完整规划](docs/planning/ROADMAP-V2.md) · [基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45585265229)
+2026-11-25 采用 `3bd705befb98ee108b77603763c5571ceb7fdc44` 为 M06-R 冻结基线，草稿 PR #1 的 Ubuntu、Windows Server 2022、Chromium 检查均通过。M01–M06 为 **ENGINEERING_PASS**，M06-R 为 **PASS**，M06 工程基线 **FROZEN**。路线图批准时核心计划含 79 个工作单元，工程或复审完成范围 31 项。P2 后另列 15 个可选单元。[完整规划](docs/planning/ROADMAP-V2.md) · [基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45585265229)
 
 `ROADMAP_V2 = APPROVED_AND_DOCUMENTED`，`MULTI_MODEL_DIRECTION = APPROVED`，`MODEL_ADAPTER_CONTRACT = PLANNED`，`MODEL_ADAPTER_IMPLEMENTATION = NOT_STARTED`。G-1 仍为 **BLOCKED**。M13-A 接手十万级查询性能债务。路线图批准时的规划变更只涉及文档，研究 API 调用 0 次。[负责人批准](docs/decisions/roadmap-v2-owner-approval.md) · [模型接口](docs/architecture/ai-model-adapter-contract.md)
 

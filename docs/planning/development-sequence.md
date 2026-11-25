@@ -34,7 +34,8 @@ flowchart TD
     classDef pending fill:#F1F3F5,stroke:#637180,color:#28323D
     classDef blocked fill:#FCE5E2,stroke:#A24943,color:#592B29
     class M01,M02,M03,M04,M05,M06 done
-    class M07,M08,M09,M10,M11,Joint,M12,M13,M14,P1R,M15 pending
+    class M07 done
+    class M08,M09,M10,M11,Joint,M12,M13,M14,P1R,M15 pending
     class G1 blocked
 ```
 

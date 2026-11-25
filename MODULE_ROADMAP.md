@@ -10,7 +10,7 @@
 
 M01–M06 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A/B 延期至另行授权，M07 按隔离工程验收，M08–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [开发状态](DEVELOPMENT_STATUS.md)
 
-[ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成范围 31 项，待推进 48 项。P2 后另列 15 项可选产品化。下文保留主模块的工程档案与验收证据。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
+[ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 35 项，待推进 44 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
@@ -125,7 +125,7 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | 模块职责 | 维护意图定义、示例、生命周期、历史快照和验证状态。 |
 | 前置依赖 | M06 三层关系及 M05 证据。发布依赖 M11。 |
 | 工程开发 | 已具备旧样例兼容、项目草稿、历史、差异、谱系、预检及下游消费接口。 |
-| 工程测试 | 见 [M07 专项及实机记录](docs/evidence/m07/README.md)。 |
+| 工程测试 | M07-A 至 D 为 ENGINEERING_PASS。Windows 10 实机及源码 CI 已通过。[M07 专项及实机记录](docs/evidence/m07/README.md) |
 | 正式业务验收 | PENDING。正式联合确认与发布依赖 G-1 和 M11 联验。 |
 | 数据库及 API | SQLite v8，保留 M06 权威表。新增注册表共享读和受权项目提案接口。 |
 | 前端页面 | 「意图注册表」提供搜索、过滤、历史、差异、候选编辑与预检。 |
