@@ -1,13 +1,20 @@
 # 开发交接
 
+## M06-R 复审与接续
+
+开发分支为 `codex/p0-0-connectivity`。Windows 11 验收归档源码为 `9c27231376fcc32aae39a9b63df6fa9b9b98c4c6`。接续时核对远端 HEAD、草稿 PR #1 和同一 SHA 的三项 CI，按复审记录确认冻结状态。[复审与实机证据](docs/evidence/m06-r/README.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
+
+- 片段读、组合事务及统计各自校验当前项目授权和精确片段版。读取和写入必须使用实际证据依赖和当前资格。M04 保留同文但规范来源独立的候选，由 M05 逐项审核。
+- M07 从已发布定义、目录版和任务关系接续注册表治理。绑定稳定 ID 和明确版本，保留旧定义，继续限制共享投影和项目原话。M07 仍待负责人单独授权。
+- G-1 保持 BLOCKED。正式准入、逐源许可、删除审计、真实数据与正式发布留在原验收矩阵。专案 v2.2 的 27 页原 PDF 待补。
+
 ## M06-C5 统计接口
 
 开发分支为 `codex/p0-0-connectivity`，C5 开发基线为 `db0c2c86385950b6630a2691e1263d5dd429aa32`，实测源码为 `a9eebee24616984dda8e72bab1242373555b06db`。交接时确认草稿 PR #1 的 HEAD 和实际交付提交一致，且三项 CI 通过。C5 的独立复审、Windows 11 实机及 1K/10K/100K 恢复证据均已归档。[C5 工程证据](docs/evidence/m06-c5/README.md) · [源码 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45569514279) · [PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1/checks)
 
 - 消费 `RelationStore.denominators` 或本机 `GET /api/studies/{study_id}/denominators`。按同一授权切片使用返回的 `resolved_versions`、`filter_echo`、`as_of_utc`、`coverage` 和 `M06-B-F.1`。跨来源、批次或品类汇总应重新查询并集。
 - M07 复用稳定发生、片段版和精确证据引用，将发现状态及身份待核作为本地流转依据。M12 提供实际输入、资格授权版本及唯一当前回执，绑定题组、模型、索引、校准与回执版。M13 使用同一结果检查两条恒等式、正式批准和报告发放要件，权限、输入变化或过期后重新统计。
-- 正式模式当前 `unavailable`，正式计数和对账均为 `null`。工程和隔离合成结果分别使用。G-1 = **BLOCKED**，M07 = **NOT_STARTED**。专案 v2.2 的 27 页原 PDF 待补。下一阶段 M06-R 需负责人单独授权。
-- 获准启动 M06-R 后，从交付 SHA 的隔离源码归档贯穿 C1–C5 复核迁移及恢复、写锁内当前资格、M/E 及谱系、C4 权限和组合事务、C5 同证据交集与对账。重点复核资格或授权在版本切换及长查询时变化的边界，并复核十万档批量路径的实测慢点。
+- 正式模式当前 `unavailable`，正式计数和对账均为 `null`。工程和隔离合成结果分别使用。G-1 = **BLOCKED**，M07 = **NOT_STARTED**。专案 v2.2 的 27 页原 PDF 待补。
 
 ## M06-C4 交付及 C5 接口
 

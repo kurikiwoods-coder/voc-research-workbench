@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-M01–M05 与 M06-C1–C4 为 **ENGINEERING_PASS**。M06-B-F 五项政策与架构保持冻结。C5 的 Windows 11 实机与版本部署门禁均为 **PASS**，C5 工程通过按本轮三项 CI 的生效条件记录。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M06-R 等待负责人单独授权，M07 为 **NOT_STARTED**。[C5 工程证据](docs/evidence/m06-c5/README.md) · [开发状态](DEVELOPMENT_STATUS.md)
+M01–M05 与 M06-C1–C5 已完成阶段工程验收。M06-B-F 五项政策与架构保持冻结。M06-R 当前版本的工程冻结及部署门禁见 [复审证据](docs/evidence/m06-r/README.md)。当前正式阶段为 P0-0，G-1 为 **BLOCKED**。M07 为 **NOT_STARTED**，接续前由负责人单独授权。[M07–M15 接入契约](docs/architecture/m06-consumer-handover.md) · [开发状态](DEVELOPMENT_STATUS.md)
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 

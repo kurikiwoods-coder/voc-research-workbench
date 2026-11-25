@@ -1,0 +1,212 @@
+{
+  "revision": "9c27231376fcc32aae39a9b63df6fa9b9b98c4c6",
+  "source_zip_sha256": "8a569e871fe9b55e6f5e0402516059a6097219710b74ac9a3d8367fa5cbc8363",
+  "platform": {
+    "os": "Windows 11 Enterprise 25H2",
+    "build": "26200.8655",
+    "machine": "AMD64",
+    "elevated": false,
+    "powershell": "7.6.9",
+    "git": "git version 2.55.0.windows.5",
+    "node": "v24.19.0",
+    "python": "3.12.9",
+    "sqlite": "3.45.3",
+    "playwright": "1.65.2",
+    "chromium": "159.0.8154.6",
+    "official_venv": true
+  },
+  "exits": {
+    "c5": 0,
+    "c4": 0,
+    "browser": 0,
+    "c3": 0,
+    "c2": 0,
+    "c1-constraints": 0,
+    "m05-licenses": 0,
+    "c1-migration": 0,
+    "m05-corpus": 0,
+    "pre-m06": 0,
+    "node": 0,
+    "cold": 0,
+    "python": 0,
+    "archive-1": 0,
+    "dpapi": 0,
+    "archive-2": 0,
+    "archive-3": 0,
+    "archive-4": 0,
+    "scan": 0,
+    "launcher": 0,
+    "sqlite-history": 0
+  },
+  "python_suites": {
+    "python": {
+      "tests": 277,
+      "passed": 277,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 191.155
+    },
+    "c5": {
+      "tests": 25,
+      "passed": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 29.363
+    },
+    "c4": {
+      "tests": 34,
+      "passed": 34,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 41.063
+    },
+    "c3": {
+      "tests": 25,
+      "passed": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 19.702
+    },
+    "c2": {
+      "tests": 17,
+      "passed": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 10.63
+    },
+    "c1-constraints": {
+      "tests": 22,
+      "passed": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.869
+    },
+    "c1-migration": {
+      "tests": 11,
+      "passed": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 17.617
+    },
+    "m05-licenses": {
+      "tests": 10,
+      "passed": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 11.156
+    },
+    "m05-corpus": {
+      "tests": 16,
+      "passed": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 13.124
+    },
+    "pre-m06": {
+      "tests": 19,
+      "passed": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 14.11
+    }
+  },
+  "node": {
+    "tests": 2,
+    "pass": 2,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "cold_starts": 3,
+  "browser_groups": [
+    "API setup",
+    "M01 connectivity",
+    "M03 project",
+    "M04 import",
+    "M05 corpus",
+    "C4 localhost HTTP",
+    "C5 localhost HTTP",
+    "C5 Chromium",
+    "C4 Chromium scope",
+    "C4 Chromium",
+    "M03 restart",
+    "M04 restart",
+    "M05 corpus restart"
+  ],
+  "launcher_cycles": 6,
+  "historical_archives": [
+    {
+      "file": "archive-1",
+      "records": 20,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    },
+    {
+      "file": "archive-2",
+      "records": 10,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    },
+    {
+      "file": "archive-3",
+      "records": 10,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    },
+    {
+      "file": "archive-4",
+      "records": 10,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    }
+  ],
+  "sqlite_history": [
+    "Historical v1->v7 + reopen: integrity_check=ok, foreign_key_check=0, stable history preserved",
+    "Historical v2->v7 + reopen: integrity_check=ok, foreign_key_check=0, stable history preserved",
+    "Historical v3->v7 + reopen: integrity_check=ok, foreign_key_check=0, stable history preserved",
+    "Historical v4->v7 + reopen: integrity_check=ok, foreign_key_check=0, stable history preserved",
+    "Historical v5->v7 + reopen: integrity_check=ok, foreign_key_check=0, stable history preserved",
+    "Historical v6->v7 + reopen: integrity_check=ok, foreign_key_check=0, stable history preserved",
+    "workspace v7: integrity_check=ok, foreign_key_check=0, foreign_keys=ON",
+    "synthetic v1: integrity_check=ok, foreign_key_check=0, foreign_keys=ON",
+    "diagnostic v1: integrity_check=ok, foreign_key_check=0, foreign_keys=ON"
+  ],
+  "browser_counts": {
+    "chromium": 11,
+    "localhost_http": 2
+  },
+  "git_tree": "fca6f51b79f61ed35734cee96430641e144b9a26",
+  "launcher_checks": [
+    "ordinary/1 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "ordinary/2 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "chinese/1 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "chinese/2 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "spaces/1 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "spaces/2 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released"
+  ],
+  "dpapi_checks": [
+    "Win32 DPAPI CurrentUser round-trip PASS",
+    "Credential vault encrypted storage, read after service restart, delete and restart PASS",
+    "Browser DOM, storage, console, HTTP responses and validation error, service logs and runtime files: no plaintext marker"
+  ],
+  "research_api_calls": 0,
+  "screenshots_created": 26,
+  "screenshots": {
+    "screenshots/c4-evidence.png": "59845b38a0e15cee74d8e433f8933abd495af3ad42394d9ed0a1e7f3c80ddc90",
+    "screenshots/c5-denominators.png": "e05d8a17a428f288ec9e7a38ccd6e009765c2ee37bce9357fdda783292df507e",
+    "screenshots/c5-denominators-formal.png": "1a36bb8e7357506758eefaf0cc3e1bc4ef0d97ee4a0b84a103094283f929dafb",
+    "screenshots/c5-denominators-mobile-320.png": "97a1a9511e55d75d72d6365be34adee5568389af2186b6120888a647e7507be8",
+    "screenshots/c5-denominators-mobile-390.png": "f5f99d7ea444acba7e5b3025d2359ee7ea9ffa4c1eaeef7d267347f51f93c876"
+  }
+}
