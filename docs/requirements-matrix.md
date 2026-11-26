@@ -12,9 +12,9 @@
 | G-1-P-B | 服务端版本与部署、可信 Owner、精确项目和冻结范围；商用兼容，个人预准入及正式操作关闭 | ENGINEERING_PASS。[工程与安全回归](evidence/g1-p-b/README.md) · [门禁契约](architecture/g1-personal-gate-contract.md) |
 | G-1-P-B-V | 安全接管，原生 Windows 全量、路径、ACL 和 DPAPI 验收 | PASS。[实机证据](evidence/g1-p-b-v/README.md) |
 | G-1-P-C | 可信 Owner 和精确范围权限、必要材料与风险、审批撤销、个人凭证、追加式证据与 SQLite v9 | 已实现，验收绑定固定源码和对应 CI。[证据](evidence/g1-p-c/README.md) · [实现契约](architecture/g1-personal-approval-contract.md) |
-| G-1-P-D | C0-1 至 C0-6 同批实证，逐次授权、预约、审计及对账 | **BLOCKED**。C0-1 至 C0-6 正式状态均为 BLOCKED，C0-5、C0-6 离线复验通过。待工程验收、最终载荷、许可、凭证和预算。真实请求 0。[六项矩阵与复验证据](evidence/g1-p-d/README.md) |
+| G-1-P-D | C0-1 至 C0-6 同批实证，逐次授权、预约、审计及对账 | **BLOCKED**。C0-1 至 C0-6 正式状态均为 BLOCKED，C0-5、C0-6 保留既有离线结果，待当前批次复核。正式历史证据纳入、真实请求及正式研究分母均为 0。[六项矩阵与复验证据](evidence/g1-p-d/README.md) |
 | G-1-P-D-E | D 的受限执行工程补齐，Personal v10、逐操作授权、多维预算、回执与对账、故障恢复及六项关联 | **ENGINEERING_PASS**。隔离库 Personal v9→v10、账本、合成执行及恢复回放通过，原生 Windows 11 和交付 CI 已验。Business v9、诊断及契约 v1。实际部署库未迁移，真实研究请求 0。[迁移批准](decisions/g1-p-d-e-v10-owner-approval.md) · [工程证据](evidence/g1-p-d/engineering.md) |
-| G-1-P-D-L | 负责人另行批准的个人同批实证 | **READY（工程接续）**。待实际账户、凭证、通道、逐源许可、最终载荷、硬预算及 UTC 窗口的独立授权。实际调用及正式历史纳入均为 0。[申请草案](evidence/g1-p-d/d-l-authorization-draft.md) |
+| G-1-P-D-L | 最多四个唯一真实操作槽位及同批归档、对账、恢复与证据判定 | 隔离 v11 与 Windows 10 工程回归通过。真实执行 **BLOCKED**，待实际部署、模型硬预算和逐操作批准。正式矩阵 0/6，实际请求 0。Windows 11 实机待验。[工程证据](evidence/g1-p-d/d-l-engineering.md) · [授权申请](evidence/g1-p-d/d-l-authorization-draft.md) |
 | G-1-P-R | 全部同批证据完成后的独立准入复审 | **NOT_STARTED**。M09 等个人准入及独立开发授权。商用 G-1 另行验收。[个人最低准入政策](architecture/personal-research-gate.md) |
 
 ## M08-V Windows 11 回归验收

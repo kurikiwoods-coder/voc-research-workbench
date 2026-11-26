@@ -6,9 +6,11 @@
 
 ## G-1-P-D 个人版正式同批验收准备
 
-2026-11-26，从 `37fc746177c8b7e911479f057ed78f6e0c8809ae` 接续。**G-1-P-D-E = ENGINEERING_PASS**。Personal v10、受限执行及恢复修复通过隔离 Windows 11 实机验收，交付提交 `4c7d705b277352af530c59f917f787bcc3a69bfd` 的 Ubuntu、Windows Server 2022、Chromium 均通过。实际部署库未迁移。隔离验证确认 Business 工作库 v9，两版诊断及合成契约库 v1。**G-1-P-D-L = READY（工程接续）**，真实执行待独立授权。[负责人批准](docs/decisions/g1-p-d-e-v10-owner-approval.md) · [工程证据](docs/evidence/g1-p-d/engineering.md) · [交付 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45794168453)
+2026-11-26，**G-1-P-D-E = ENGINEERING_PASS**。D-E 的 Personal v10、受限执行及恢复修复通过隔离 Windows 11 实机验收，交付提交 `4c7d705b277352af530c59f917f787bcc3a69bfd` 的 Ubuntu、Windows Server 2022、Chromium 均通过。隔离验证确认 Business 工作库 v9，两版诊断及合成契约库 v1。[负责人批准](docs/decisions/g1-p-d-e-v10-owner-approval.md) · [D-E 工程证据](docs/evidence/g1-p-d/engineering.md) · [D-E 交付 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45794168453)
 
-**G-1-P-D = BLOCKED**。C0-1 至 C0-6 的个人正式同批状态均为 `BLOCKED`，C0-5 和 C0-6 保留既有离线通过。正式实证还需实际账户和凭证、逐源许可、最终载荷及预算批准。真实研究供应商请求、探针、账户查询、真实研究 Token、新增研究费用及正式历史证据纳入均为 0。[D 六项及证据](docs/evidence/g1-p-d/README.md) · [D-L 申请草案](docs/evidence/g1-p-d/d-l-authorization-draft.md)
+**G-1-P-D-L 真实执行 `BLOCKED`。** 隔离 v11、逐操作授权和同批判定通过 Windows 10 工程回归，Windows 11 实机待验。PackyCode/SystemOne 缺实际通道可执行的逐请求输出硬上限和最坏扣费证明。实际部署库仍待批准，真实请求 0，正式矩阵 0/6。[D-L 工程证据](docs/evidence/g1-p-d/d-l-engineering.md) · [D-L 授权申请](docs/evidence/g1-p-d/d-l-authorization-draft.md)
+
+**G-1-P-D = BLOCKED**。C0-1 至 C0-6 的个人正式同批状态均为 `BLOCKED`，C0-5 和 C0-6 保留既有离线通过。真实研究供应商请求、探针、账户查询、真实研究 Token、新增研究费用、正式研究分母和正式历史证据纳入均为 0。[D 六项及证据](docs/evidence/g1-p-d/README.md)
 
 ## G-1-P-C 个人供应商审批中心
 
