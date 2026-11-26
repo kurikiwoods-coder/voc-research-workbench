@@ -17,6 +17,7 @@
 ## 后续模块与模型接入
 
 - 依据 [ROADMAP-V2](docs/planning/ROADMAP-V2.md) 和 [开发顺序](docs/planning/development-sequence.md) 核对本轮授权、实际依赖和出场验收。可按复杂度合并关联子单元，每个主模块留版本、接口、测试、缺陷及接续范围。
+- M09、M10 获准实施时，遵守 [I18N-PRE 提前约束](docs/decisions/i18n-pre-owner-approval.md)，分别预留研究语言参数，保持原话证据与衍生文本独立、意图 ID 稳定。M10 验收完成后等待 I18N-PRE 的单独授权，专项完成后接续 M11。
 - AI 模块遵循 [Decision、LLM、Embedding 接口](docs/architecture/ai-model-adapter-contract.md)，以精确模型、供应商、通道和版本消费结果。正式 Jev 锁定 `jev-1.14.0`，禁止静默换模。新模型独立审查和验证，正式用途依 [生命周期](docs/architecture/model-lifecycle-and-calibration.md) 及 [金标准协议](docs/architecture/model-evaluation-protocol.md) 重新校准、复核并获批。
 - 规划扩展依 [扩展映射](docs/requirements-matrix.md#roadmap-v2-规划扩展映射) 接续。正式研究按原 G-1、J/CAT 与阶段验收矩阵核定。
 

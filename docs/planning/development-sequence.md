@@ -22,7 +22,8 @@ flowchart TD
     M08 --> M09
     M07 --> M10["M10 双轨发现与残差"]
     M09 --> M10
-    M10 --> M11["M11 候选审核"]
+    M10 -->|验收后另行授权| I18N["I18N-PRE 国际化架构预留"]
+    I18N --> M11["M11 候选审核"]
     M07 --> Joint["注册表与审核联验"]
     M11 --> Joint
     Joint --> M12["M12 决策编码与校准"]
@@ -42,7 +43,7 @@ flowchart TD
     class M01,M02,M03,M04,M05,M06 done
     class M07 done
     class M08 done
-    class Personal,M09,M10,M11,Joint,M12,M13,M14,P1R,M15 pending
+    class Personal,M09,M10,I18N,M11,Joint,M12,M13,M14,P1R,M15 pending
     class G1 blocked
 ```
 
@@ -60,7 +61,8 @@ flowchart TD
     G1 -->|通过后按授权实施| Collect["M08 采样与回源"]
     Register --> Discover["M09 和 M10 双轨盲测"]
     Collect --> Discover
-    Discover --> Joint["M07 与 M11 联审发行"]
+    Discover -->|M10 验收后另行授权| I18N["I18N-PRE 国际化架构预留"]
+    I18N --> Joint["M07 与 M11 联审发行"]
     G1 -->|正式验收前提| Joint
     Joint --> Decide["M12 锁版编码与校准"]
     Decide --> Insight["M13 洞察与可追溯报告"]
@@ -70,7 +72,7 @@ flowchart TD
     classDef pending fill:#F1F3F5,stroke:#637180,color:#28323D
     classDef blocked fill:#FCE5E2,stroke:#A24943,color:#592B29
     class Freeze done
-    class Recheck,Register,Collect,Discover,Joint,Decide,Insight,Survey,P0R pending
+    class Recheck,Register,Collect,Discover,I18N,Joint,Decide,Insight,Survey,P0R pending
     class G1 blocked
 ```
 
@@ -118,8 +120,9 @@ flowchart TD
 |---|---|---|
 | M07 | A–D 可在同一会话交付契约、治理和 UI | 版本差异和权限回归。正式联合发布待 M11 与 M07 联验 |
 | M08 | A/B 基础及双搜索，C/D 来源和任务。E 按 P1 扩展 | 双源故障切换、CSV 全流程及真实采样与回源 |
-| M09 | A–D 合并为完整离线主题试点 | 向量/索引版本、聚类复跑及盲测 |
-| M10 | A–C 生成流程和残差，D/E 双轨及审核交接 | 同样本比较、无新意图和新类盲测 |
+| M09 | A–D 合并为完整离线主题试点 | 向量/索引版本、聚类复跑及盲测。预留语言参数和 Embedding 多语言能力 |
+| M10 | A–C 生成流程和残差，D/E 双轨及审核交接 | 同样本比较、无新意图和新类盲测，离线验证候选交接。预留多语言 Prompt 和输出控制 |
+| I18N-PRE | M10 验收后单独授权，M11 启动前完成 | 双版本共用 Locale 与衍生证据契约，切换语言时统计、权限、稳定 ID 一致。[专项范围](../decisions/i18n-pre-owner-approval.md) |
 | M11 | A–D 合并候选、组合事务和审核 UI | 与 M07 联合发行，与 M12 连通复核入口 |
 | M12 | A 接口与兼容层，B/C 真实编码和召回，D/E 校准、分片及账本按风险分批 | 单独复审版本、概率、幂等和校准。F 延续到 P1 |
 | M13 | A–C 基础洞察和报告，D/E 高级视图和四周基线 | 两条对账、真实数据及历史读取。100K 技术债在 A 登记 |

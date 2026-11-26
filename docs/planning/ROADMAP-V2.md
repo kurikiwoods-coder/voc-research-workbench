@@ -20,6 +20,10 @@ PDT v1.3.1 Word 正文与本机副本的 SHA-256 一致。ROADMAP-V2 已核对�
 
 EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用核心研究引擎，分别适用 G-1-PERSONAL 及原 G-1。产品版本与本机、云端部署分别管理。个人门禁当前 NOT_EVALUATED，按 G-1-P-B、C、D、R 单独授权；通过前 M09 保持 NOT_STARTED。商用准入继续按原同批和审批标准。两项已交付治理规划、四项接续及 PackyCode 历史费用补证均独立登记。下面 79 项及完成数 39 沿用。[双版本政策](../architecture/edition-policy.md) · [治理单元与接续](g1-personal-implementation-plan.md) · [费用补证](../evidence/g1-rb-f/README.md)
 
+## I18N-PRE 国际化架构预留
+
+**I18N-PRE = PLANNED**。M09、M10 按提前约束开发并验收。M10 验收完成后等待负责人单独授权 I18N-PRE，在 M11 启动前完成专项。双方产品版本共用国际化架构，首期规划 `zh-CN` 和 `en-US`。专项独立计入规划记录，核心 79 项和 39 项完成数沿用。[负责人授权及范围](../decisions/i18n-pre-owner-approval.md)
+
 ## 单元计数与分期
 
 | 归属 | 功能和设计单元 | 专项复审和验收 | 合计 | 现有工程或复审完成 | 待推进 |
@@ -55,7 +59,9 @@ flowchart TD
     P00 --> Review["M06-R 工程复审"]
     P00 --> Gate["商用 G-1-R 待正式验收<br/>G-1 阻塞"]
     P0 --> Register["M07 注册表 · M08-A 至 D 采集"]
-    P0 --> Discovery["M09 和 M10 双轨发现 · M11 审核"]
+    P0 --> Discovery["M09 和 M10 双轨发现"]
+    Discovery --> I18N["I18N-PRE 独立专项 · 待单独授权"]
+    I18N --> HumanReview["M11 审核"]
     P0 --> Apply["M12-A 至 E 决策编码"]
     P0 --> Output["M13-A 至 C 洞察 · M14-A 至 C 问卷"]
     P0 --> P0R["P0-R 核心验收"]
@@ -70,7 +76,7 @@ flowchart TD
     classDef blocked fill:#FCE5E2,stroke:#A24943,color:#592B29
     class Base,Review done
     class Gate blocked
-    class P0,P1,P2,Register,Discovery,Apply,Output,P0R,Expand,Trend,Feedback,P1R,Radar,P2R pending
+    class P0,P1,P2,Register,Discovery,I18N,HumanReview,Apply,Output,P0R,Expand,Trend,Feedback,P1R,Radar,P2R pending
 ```
 
 ## 基础工程与设计单元
@@ -126,16 +132,16 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 | M08-B | M08-A、M02 | Tavily 与 Brave 双搜索、URL 发现与许可页面回源 | INGEST、C0-3，区分发现链接、可访问页和真实原话 |
 | M08-C | M08-A/B | 获准论坛、YouTube 适配范围、许可正文通路及备用 Reddit | 依原 INGEST、PDT §4 及 §13.1，至少一条获准论坛、YouTube 或许可页面能回源 |
 | M08-D | M08-B/C、M04/M05 | 采样任务、批次、额度、暂停、重试、跨站去重和 CSV 兜底 | G1/G2/G7、RAW，三批至少 100 条真实语义片段及 30/30 回源抽查 |
-| M09-A | M05-E、M06-C3 | 本地文本预处理、Embedding Adapter 与匿名输入 | DISCOVERY、PRIVACY，向量版本和当前片段资格 |
+| M09-A | M05-E、M06-C3 | 本地文本预处理、Embedding Adapter 与匿名输入，预留研究语言参数及多语言能力 | DISCOVERY、PRIVACY，向量版本和当前片段资格 |
 | M09-B | M09-A | BERTopic 聚类、主题提取和参数记录 | 可回放模型、预处理和参数 |
 | M09-C | M09-B | 主题运行版本、成员、证据、离线复跑与差异 | G3，主题能下钻到合格原话 |
 | M09-D | M09-C | 聚类视图、候选输出与已知/未知盲测 | DISCOVERY、G3，候选进入人审 |
-| M10-A | M06-C3、M09-A、已批准通道 | TopicGPT 四步编排与最小 LLM Adapter | MODEL-ADAPTER-01、DISCOVERY、PRIVACY |
+| M10-A | M06-C3、M09-A、已批准通道 | TopicGPT 四步编排与最小 LLM Adapter，预留多语言 Prompt 和输出语言控制 | MODEL-ADAPTER-01、DISCOVERY、PRIVACY |
 | M10-B | M10-A | 主题生成、精炼、分配、修正及每步留痕 | DISCOVERY，同范围复跑及证据核验 |
 | M10-C | M10-B、M07-A | 未知、低相似和残差候选及证据 | G3、J-10，保留已确认定义与待审输入 |
 | M10-D | M09-D、M10-C | BERTopic 与 TopicGPT 同样本、同版本对照 | DISCOVERY，单轨覆盖与双轨差异可复查 |
-| M10-E | M10-D、M11 联调 | 发现实验室、带证据盲测和人审入口 | G3、CAT-4，允许真实批次无新意图或大类 |
-| M11-A | M06-C4、M07-A、M09/M10 候选 | 候选、未知与低置信队列，后接 M12 | CAT-4/5、J-5/10，输入版本和项目授权明确 |
+| M10-E | M10-D、候选审核交接契约 | 发现实验室、带证据盲测和人审入口。用离线夹具验证候选交接，正式联验在 M11 执行 | G3、CAT-4，允许真实批次无新意图或大类 |
+| M11-A | I18N-PRE、M06-C4、M07-A、M09/M10 候选 | 候选、未知与低置信队列，后接 M12 | CAT-4/5、J-5/10，输入版本和项目授权明确 |
 | M11-B | M11-A | 确认、驳回、合并、拆分及人工理由 | CAT-4/5，保留原模型结果和审计历史 |
 | M11-C | M07-C、M11-B、M06-C4 | 候选意图与任务大类联合审核、组合事务和版本发行 | CAT-9，现行资格、原子性、版本竞争和幂等重放 |
 | M11-D | M11-C、M12 联调 | 审核 UI、查询历史、编码复核接入 | J-5/6、PRIVACY，低置信必经队列 |

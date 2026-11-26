@@ -12,6 +12,8 @@ D 的真实执行需负责人另行授权。在取证前核实当前账户、凭
 
 ## G-1-PERSONAL Phase 1 与后续授权
 
+接续 M09、M10 时先核对适用准入及独立开发授权，并遵守语言参数、Embedding 能力、TopicGPT 多语言 Prompt、原话证据和稳定 ID 的提前约束。M10 验收完成后，等待负责人单独授权 I18N-PRE，在 M11 开始前完成专项。[授权与约束](docs/decisions/i18n-pre-owner-approval.md)
+
 基于已验收的 M08-V `dd89a14`，交付双版产品规划、个人最低准入及两条 PackyCode 费用证据。各阶段按实际授权接续。接续顺序为 G-1-P-B 服务端版本策略、G-1-P-C 个人审批、G-1-P-D 同批实证、G-1-P-R 独立复审。个人版准入及 M09 各自待负责人授权。**G-1-PERSONAL = NOT_EVALUATED**，商用 **G-1 = BLOCKED**，M09 = **NOT_STARTED**。[批准记录](docs/decisions/dual-edition-owner-approval.md) · [下一轮实施与测试](docs/planning/g1-personal-implementation-plan.md)
 
 后续保留旧 `run_checks`、分片和传输的 PackyCode 真实阻断，个人版由可信服务端作用域独立判定。两版共用全部研究引擎，版本和部署方式独立，保留原关系、可信权限、实时资格及统计口径。[个人门禁](docs/architecture/personal-research-gate.md) · [商用门禁](docs/architecture/business-research-gate.md) · [风险审批](docs/architecture/personal-approval-workflow.md)

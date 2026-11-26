@@ -1,5 +1,9 @@
 # VOC Research Workbench 开发状态
 
+## I18N-PRE 规划登记
+
+2026-11-26，**I18N-PRE = PLANNED**。M09、M10 的语言接口和证据提前约束已登记。M10 验收完成后等待负责人单独授权实施，在 M11 启动前完成专项。G-1-PERSONAL 继续原接续顺序，核心进度为 39/79。[负责人批准](docs/decisions/i18n-pre-owner-approval.md)
+
 ## G-1-P-C 个人供应商审批中心
 
 **G1_PERSONAL_APPROVAL_CENTER = IMPLEMENTED**，**G1_PERSONAL_IMPLEMENTATION = PARTIAL**。源码 `912ff28e0a10e3329bc49c6e9fdc97e290229a68` 实现可信本机 Owner 的项目和冻结范围审批、必要材料复核、非强制风险登记、凭证绑定及不可变事件，工作库 SQLite v9。该源码 **WINDOWS_11_REAL_MACHINE = PASS**，**WINDOWS_11_DEPLOYMENT_GATE = PASS**。本交付提交的三项 CI 均通过时，**G-1-P-C = ENGINEERING_PASS** 且 **G-1-P-D = READY**。[本轮证据](docs/evidence/g1-p-c/README.md) · [交付检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2/checks)
