@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 import json
 import re
 import sqlite3
+from threading import RLock
 from uuid import uuid4
 
 from src.edition_policy import Edition, REFERENCE, SCOPE_VERSION, canonical_uuid
@@ -238,15 +239,57 @@ class ValidationLedger:
         self.store = store
         self.engineering_fixture = engineering_fixture is True
         self.clock = clock or (lambda: datetime.now(UTC))
+        self._fixture_batches = set()
+        self._fixture_lock = RLock()
+        self._fixture_file = self._database_identity() if self.engineering_fixture else None
+        self._fixture_checkpoint = {}
 
     def _now(self):
         return self.clock().astimezone(UTC).isoformat(timespec="microseconds")
 
     @contextmanager
     def _transaction(self):
+        if self.engineering_fixture:
+            with self._fixture_lock, self.store.db() as db:
+                db.execute("BEGIN IMMEDIATE")
+                identity = self._database_identity()
+                intact = self._fixture_file == identity and self._checkpoint_is_current(db)
+                if not intact:
+                    self._fixture_batches.clear()
+                yield db
+                checkpoint = self._latest_checkpoint(db) if intact else None
+                db.commit()
+                if checkpoint is not None:
+                    self._fixture_checkpoint = checkpoint
+            return
         with self.store.db() as db:
             db.execute("BEGIN IMMEDIATE")
             yield db
+
+    def _database_identity(self):
+        stat = self.store.path.stat()
+        return stat.st_dev, stat.st_ino
+
+    @staticmethod
+    def _latest_checkpoint(db):
+        tables = ("batch_events", "request_events", "reconciliations", "credentials", "authority")
+        checkpoint = {}
+        for table in tables:
+            row = db.execute(f"SELECT * FROM personal_validation_{table} ORDER BY sequence DESC LIMIT 1").fetchone()
+            if row is not None:
+                checkpoint[table] = dict(row)
+        return checkpoint
+
+    def _checkpoint_is_current(self, db):
+        for table, expected in self._fixture_checkpoint.items():
+            if _one(db, f"SELECT * FROM personal_validation_{table} WHERE sequence=?",
+                    (expected["sequence"],)) != expected:
+                return False
+        return True
+
+    def _require_fixture_continuity(self, batch):
+        if self.engineering_fixture and batch["batch_id"] not in self._fixture_batches:
+            raise Conflict("VALIDATION_RESTORE_CONTINUITY_REQUIRED")
 
     def batch(self, db, batch_id, context):
         result = _one(db, BATCH_QUERY + " WHERE b.batch_id=? AND b.study_id=? AND b.scope_id=? AND b.scope_version=?",
@@ -292,13 +335,18 @@ class ValidationLedger:
             "created_at": self._now(), **_limits(budget), "single_cost": single_cost,
             "currency": currency, "decimals": decimals, "evidence_ref": evidence_ref,
         }
-        with self._transaction() as db:
-            _require(recheck, db)
-            _insert(db, "batches", value)
-            self._batch_event(db, value | {"state": None}, "draft", "batch_created")
-            return self.batch(db, value["batch_id"], context)
+        with self._fixture_lock:
+            with self._transaction() as db:
+                _require(recheck, db)
+                _insert(db, "batches", value)
+                self._batch_event(db, value | {"state": None}, "draft", "batch_created")
+                batch = self.batch(db, value["batch_id"], context)
+            if self.engineering_fixture:
+                self._fixture_batches.add(batch["batch_id"])
+        return batch
 
     def _authorize_operation(self, db, context, batch, grant, recheck, *, settling=False):
+        self._require_fixture_continuity(batch)
         at = self._now()
         if not (batch["starts_at"] <= at < batch["expires_at"] and grant["valid_from"] <= at < grant["expires_at"]):
             raise Conflict("VALIDATION_WINDOW_CLOSED")
@@ -800,32 +848,42 @@ class ValidationLedger:
 
     def rebind_after_restore(self, context, evidence_ref, recheck):
         _ref(evidence_ref)
-        with self._transaction() as db:
-            _require(recheck, db)
-            prior = self.current_authority(db, context, "restore-continuity")
-            if not prior or prior["state"] != "restore_hold":
-                raise Conflict("VALIDATION_RESTORE_HOLD_REQUIRED")
-            for batch in db.execute(
-                BATCH_QUERY + " WHERE b.study_id=? AND b.scope_id=?", (context.study_id, context.scope_id),
-            ).fetchall():
-                self._close_outstanding(db, batch["batch_id"], "restored_unclaimed_reservation",
-                                        "restored_send_outcome_unknown")
-                self._batch_event(db, batch, "revoked", "restored_batch_requires_new_authorization")
-            for operation, provider in OPERATIONS.items():
-                binding = self.current_credential(db, context, operation, provider)
-                if binding is not None and binding["credential_revision"] is not None:
-                    self.bind_credential_in_transaction(
-                        db, context, operation, provider, binding["account_ref"], binding["channel_ref"],
-                        None, evidence_ref,
-                    )
-            for authority in db.execute("""
-                SELECT a.* FROM personal_validation_authority a
-                WHERE a.study_id=? AND a.scope_id=? AND a.subject<>'restore-continuity' AND a.state='current'
-                  AND a.sequence=(SELECT MAX(sequence) FROM personal_validation_authority
-                                  WHERE study_id=a.study_id AND scope_id=a.scope_id AND subject=a.subject)
-            """, (context.study_id, context.scope_id)).fetchall():
-                self._authority_event(db, context, authority["subject"], authority["revision"], "revoked", evidence_ref)
-            return self._authority_event(db, context, "restore-continuity", uuid4().hex, "current", evidence_ref)
+        with self._fixture_lock:
+            with self._transaction() as db:
+                _require(recheck, db)
+                prior = self.current_authority(db, context, "restore-continuity")
+                if not prior or prior["state"] != "restore_hold":
+                    raise Conflict("VALIDATION_RESTORE_HOLD_REQUIRED")
+                for batch in db.execute(
+                    BATCH_QUERY + " WHERE b.study_id=? AND b.scope_id=?", (context.study_id, context.scope_id),
+                ).fetchall():
+                    for request in db.execute(
+                        REQUEST_QUERY + " WHERE q.batch_id=? AND state IN ('reserved', 'claimed')",
+                        (batch["batch_id"],),
+                    ):
+                        self._request_event(db, request["request_id"], "reconciliation", "restored_send_outcome_unknown")
+                    self._batch_event(db, batch, "revoked", "restored_batch_requires_new_authorization")
+                for operation, provider in OPERATIONS.items():
+                    binding = self.current_credential(db, context, operation, provider)
+                    if binding is not None and binding["credential_revision"] is not None:
+                        self.bind_credential_in_transaction(
+                            db, context, operation, provider, binding["account_ref"], binding["channel_ref"],
+                            None, evidence_ref,
+                        )
+                for authority in db.execute("""
+                    SELECT a.* FROM personal_validation_authority a
+                    WHERE a.study_id=? AND a.scope_id=? AND a.subject<>'restore-continuity' AND a.state='current'
+                      AND a.sequence=(SELECT MAX(sequence) FROM personal_validation_authority
+                                      WHERE study_id=a.study_id AND scope_id=a.scope_id AND subject=a.subject)
+                """, (context.study_id, context.scope_id)).fetchall():
+                    self._authority_event(db, context, authority["subject"], authority["revision"], "revoked", evidence_ref)
+                continuity = self._authority_event(db, context, "restore-continuity", uuid4().hex, "current", evidence_ref)
+                checkpoint = self._latest_checkpoint(db) if self.engineering_fixture else None
+            if checkpoint is not None:
+                self._fixture_batches.clear()
+                self._fixture_file = self._database_identity()
+                self._fixture_checkpoint = checkpoint
+            return continuity
 
     def view(self, batch_id, context, recheck):
         with self.store.db() as db:

@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
 from dataclasses import replace
 from datetime import UTC, datetime
 from pathlib import Path
@@ -252,6 +253,35 @@ class PersonalValidationLedgerTests(unittest.TestCase):
         settled = restarted.reconcile(request["request_id"], self.context, 8, "recon", "ledger-evidence", authorized)
         self.assertEqual(settled["actual_units"], 8)
         self.assertEqual(self.state()["batch"]["state"], "revoked")
+
+    def test_actual_stale_v10_restore_cannot_replay_old_reservation(self):
+        request = self.reserve(self.approve())
+        backup = self.store.directory / "disposable-v10-backup.sqlite3"
+        with closing(self.store.connect()) as current, closing(sqlite3.connect(backup)) as older:
+            current.backup(older)
+            self.assertEqual(older.execute("PRAGMA user_version").fetchone()[0], 10)
+        self.assertIsNotNone(self.claim(request))
+        self.ledger.transition(self.batch_id, self.context, "revoked", "owner-revoked", authorized)
+        self.bind("search", "tavily", "fixture-search", "search-fixture", None)
+        with closing(sqlite3.connect(backup)) as older, closing(self.store.connect()) as current:
+            older.backup(current)
+        self.assertEqual(self.state()["batch"]["state"], "approved")
+        self.assertEqual(self.state()["requests"][0]["state"], "reserved")
+
+        cold_start = ValidationLedger(self.store, engineering_fixture=True, clock=lambda: self.now)
+        for ledger in (self.ledger, cold_start):
+            with self.assertRaisesRegex(Conflict, "VALIDATION_RESTORE_CONTINUITY_REQUIRED"):
+                ledger.claim(request["request_id"], self.context, authorized)
+        self.ledger.record_authority(
+            self.context, "restore-continuity", "restore.stale", "restore_hold", "restore-audit", authorized,
+        )
+        self.ledger.rebind_after_restore(self.context, "reviewed-stale-backup", authorized)
+        view = self.state()
+        self.assertEqual(view["batch"]["state"], "revoked")
+        self.assertEqual(view["requests"][0]["state"], "reconciliation")
+        self.assertEqual(view["remaining"]["units"], 90)
+        self.assertIsNone(view["credentials"][0]["credential_revision"])
+        self.assertIsNone(self.claim(request))
 
     def test_duplicate_provider_receipt_freezes_original_claim(self):
         first = self.reserve(self.approve())
