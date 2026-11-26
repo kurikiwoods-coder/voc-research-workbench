@@ -14,7 +14,7 @@ from src.raw_store import store as storage
 import test_corpus as fixtures
 
 
-V8 = 8
+V9 = 9
 ROOT = Path(__file__).resolve().parents[1]
 CHILD = """
 from contextlib import closing
@@ -70,7 +70,7 @@ def snapshot(db):
     return {
         name: {tuple(row) for row in db.execute(f'SELECT * FROM "{name}"')}
         for (name,) in tables
-        if not name.startswith(("m06_", "m07_"))
+        if not name.startswith(("m06_", "m07_", "personal_"))
     }
 
 
@@ -123,7 +123,7 @@ class M06MigrationTests(unittest.TestCase):
 
     def assert_upgraded(self, directory, historical=None):
         with closing(storage.Store(directory).connect()) as db:
-            self.assert_database(db, V8)
+            self.assert_database(db, V9)
             self.assertTrue(db.execute(
                 "SELECT 1 FROM sqlite_schema WHERE type='table' AND name='m06_registry'"
             ).fetchone())
@@ -274,7 +274,7 @@ class M06MigrationTests(unittest.TestCase):
         for process in (holder, waiter):
             out, error = process.communicate(timeout=20)
             self.assertEqual(process.returncode, 0, error)
-            self.assertEqual(out.strip(), str(V8))
+            self.assertEqual(out.strip(), str(V9))
         self.assertTrue((sync / "holder-ran-v7").exists())
         self.assertFalse((sync / "waiter-ran-v7").exists())
 
@@ -292,7 +292,7 @@ class M06MigrationTests(unittest.TestCase):
         for process in processes:
             out, error = process.communicate(timeout=20)
             self.assertEqual(process.returncode, 0, error)
-            self.assertEqual(out.strip(), str(V8))
+            self.assertEqual(out.strip(), str(V9))
         self.assertEqual(len(list(self.root.glob("fresh-*-ran-v7"))), 1)
         self.assert_upgraded(self.root)
 

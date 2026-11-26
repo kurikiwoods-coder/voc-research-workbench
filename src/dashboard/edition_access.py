@@ -6,6 +6,7 @@ from functools import partial
 import sqlite3
 
 from fastapi import HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.routing import APIRoute
 from starlette.concurrency import run_in_threadpool
 
@@ -24,7 +25,17 @@ CORPUS = "/api/corpus/{study_id}"
 BATCH = "/batches/{batch_id}"
 UPLOAD = "/uploads/{file_id}"
 RECORD = "/records/{record_id}"
+GOVERNANCE_PREFIX = "/api/personal/governance/"
+GOVERNANCE = GOVERNANCE_PREFIX + "{study_id}"
+APPROVALS = GOVERNANCE + "/approvals"
+CREDENTIAL = GOVERNANCE + "/credential"
 PERSONAL_ROUTES = {
+    ("GET", APPROVALS): Permission.READ_PERSONAL_APPROVALS,
+    ("POST", APPROVALS): Permission.WRITE_PERSONAL_APPROVALS,
+    ("POST", APPROVALS + "/{event_id}/approve"): Permission.WRITE_PERSONAL_APPROVALS,
+    ("POST", APPROVALS + "/{event_id}/revoke"): Permission.WRITE_PERSONAL_APPROVALS,
+    ("PUT", CREDENTIAL): Permission.MANAGE_PERSONAL_CREDENTIALS,
+    ("DELETE", CREDENTIAL): Permission.MANAGE_PERSONAL_CREDENTIALS,
     ("GET", STUDY + "/scopes/{scope_id}"): Permission.READ_SCOPE,
     ("GET", STUDY + "/denominators"): Permission.READ_FORMAL_STATUS,
     ("GET", "/api/edition/projects/{study_id}"): Permission.READ_SCOPE,
@@ -151,6 +162,8 @@ def check_route(request):
     policy = request.app.state.edition_policy
     path = request.scope["route"].path
     if policy.deployment == Deployment.LOCAL and policy.edition == Edition.BUSINESS:
+        if path.startswith(GOVERNANCE_PREFIX):
+            raise HTTPException(403, "当前部署未开放个人审批。")
         return
     if CLAIM_HEADERS.intersection(request.headers) or CLAIM_PARAMS.intersection(request.query_params):
         raise HTTPException(403, "版本和身份只由本机服务端授权。")
@@ -188,9 +201,15 @@ class EditionRoute(APIRoute):
         async def guarded(request):
             # Run edition authorization before FastAPI parses a request body.
             policy = request.app.state.edition_policy
-            if policy.edition != Edition.BUSINESS or policy.deployment != Deployment.LOCAL:
+            governance = self.path.startswith(GOVERNANCE_PREFIX)
+            if governance or policy.edition != Edition.BUSINESS or policy.deployment != Deployment.LOCAL:
                 await run_in_threadpool(edition_access, request)
-            return await handle(request)
+            try:
+                return await handle(request)
+            except RequestValidationError:
+                if governance:
+                    raise HTTPException(422, "INVALID_GOVERNANCE_REQUEST") from None
+                raise
 
         return guarded
 

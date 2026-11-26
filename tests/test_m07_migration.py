@@ -12,7 +12,7 @@ from test_m06_constraints import insert, registry, seal_registry
 
 
 V7 = 7
-V8 = 8
+V9 = 9
 M07_TABLES = {"m07_draft", "m07_draft_revision", "m07_draft_command", "m07_shared_example"}
 
 
@@ -65,12 +65,12 @@ class M07MigrationTests(unittest.TestCase):
         m07_tables = {name for (name,) in db.execute(
             "SELECT name FROM sqlite_schema WHERE type='table' AND name GLOB 'm07_*'"
         )}
-        self.assertEqual(m07_tables, M07_TABLES if version == V8 else set())
+        self.assertEqual(m07_tables, M07_TABLES if version >= 8 else set())
 
     def assert_upgraded(self, directory, history, head):
         store = storage.Store(directory)
         with closing(store.connect()) as db:
-            self.assert_database(db, V8)
+            self.assert_database(db, V9)
             self.assertEqual(registry_history(db), history)
             self.assertEqual(db.execute("SELECT registry_version FROM m06_registry_head").fetchone()[0], head)
             for table in M07_TABLES:
@@ -131,7 +131,7 @@ class M07MigrationTests(unittest.TestCase):
             self.assertEqual(registry_history(db), history)
         self.assert_upgraded(old.directory, history, "1.1.0")
 
-    def test_fresh_workspace_reopens_v8_and_other_store_roles_stay_v1(self):
+    def test_fresh_workspace_reopens_current_schema_and_other_store_roles_stay_v1(self):
         workspace = storage.Store(self.root)
         fixture = storage.Store(self.root, fixture=True)
         diagnostic = storage.Store(self.root, diagnostic=True)
@@ -139,7 +139,7 @@ class M07MigrationTests(unittest.TestCase):
         self.assertEqual(fixture.path, self.root / "synthetic_contract.sqlite3")
         self.assertEqual(diagnostic.path, self.root / "api-diagnostics" / "connectivity.sqlite3")
         for store, version in (
-            (storage.Store(self.root), V8),
+            (storage.Store(self.root), V9),
             (storage.Store(self.root, fixture=True), 1),
             (storage.Store(self.root, diagnostic=True), 1),
         ):

@@ -3,7 +3,7 @@
 from base64 import b64decode
 from pathlib import Path
 import argparse
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 import json
 import os
 import socket
@@ -29,16 +29,20 @@ from src.config import Settings
 from src.dashboard.app import create_app
 from src.dashboard.personal_workspace import provision
 from test_edition_policy import fixture_root, owner_environment
+from test_personal_credentials import synthetic_protection
 from test_api_setup import review_pair
+from personal_governance_browser import governance_browser_checks
 from relations_browser import relation_fixture_grants, relations_browser_checks
 from registry_browser import registry_browser_checks, registry_fixture_grants
 
 
-def serve(data, port, *, personal=False):
+def serve(data, port, *, personal=False, governance_fixture=False):
     import uvicorn
 
+    protection = (patch("src.raw_store.personal_credentials._protect", synthetic_protection)
+                  if governance_fixture and personal and os.name != "nt" else nullcontext())
     # Keep the real service and SQLite, and exercise the unavailable-source path without egress.
-    with patch("src.execution.transport.build_opener", side_effect=URLError("offline browser regression")):
+    with protection, patch("src.execution.transport.build_opener", side_effect=URLError("offline browser regression")):
         cfg = Settings.load_base() if personal else Settings(Path(data))
         app = create_app(cfg, relation_grants=lambda: (
             *relation_fixture_grants(data), *registry_fixture_grants(data),
@@ -299,11 +303,13 @@ def browser_checks(base, output, directory, studies_only=False, relations_only=F
 
 
 @contextmanager
-def server(directory, port, *, personal_environment=None):
+def server(directory, port, *, personal_environment=None, governance_fixture=False):
     argv = [sys.executable, __file__, "--serve", directory, str(port)]
     env = None
     if personal_environment is not None:
         argv.append("--personal")
+        if governance_fixture:
+            argv.append("--governance-fixture")
         env = os.environ | personal_environment | {"VOC_EDITION": "PERSONAL", "VOC_DEPLOYMENT": "LOCAL",
                                                    "VOC_DATA_DIR": str(directory)}
     process = subprocess.Popen(argv, cwd=ROOT, env=env)
@@ -421,10 +427,45 @@ def run_edition_browser(output):
     print("Chromium Personal edition passed. Desktop and mobile, authenticated scope, 0 external requests.")
 
 
+def run_governance_browser(output):
+    output.mkdir(parents=True, exist_ok=True)
+    with sync_playwright() as playwright:
+        browser = playwright.chromium.launch(executable_path=os.getenv("VOC_CHROMIUM") or None)
+        for variant, viewport in (("desktop", {"width": 1440, "height": 960}),
+                                  ("mobile", {"width": 393, "height": 852})):
+            with fixture_root("voc-governance-browser-") as directory:
+                with socket.socket() as port_probe:
+                    port_probe.bind(("127.0.0.1", 0))
+                    port = port_probe.getsockname()[1]
+                scope = provision(Path(directory), "浏览器合成审批项目", "验证个人审批", uuid4())
+                other = provision(Path(directory), "未授权合成项目", "验证项目隔离", uuid4())
+                environment, secret = owner_environment(scope)
+                with server(directory, port, personal_environment=environment, governance_fixture=True) as base:
+                    context = browser.new_context(viewport=viewport, locale="zh-CN", service_workers="block",
+                                                  http_credentials={"username": "owner", "password": secret,
+                                                                    "origin": base.rstrip("/"), "send": "always"})
+                    page = context.new_page()
+                    errors, outbound = [], []
+                    page.on("pageerror", lambda error: errors.append(str(error)))
+                    page.on("request", lambda request: outbound.append(request.url)
+                            if not request.url.startswith(base) else None)
+                    page.route("**/*", lambda route: route.continue_()
+                               if route.request.url.startswith(base) else route.abort())
+                    governance_browser_checks(page, base, directory, scope, other, secret, output, variant)
+                    assert not errors, errors
+                    assert not outbound, outbound
+                    context.close()
+        browser.close()
+    protection = "native Windows DPAPI" if os.name == "nt" else "isolated credential protection fixture"
+    print(f"Chromium Personal approvals passed. Desktop and mobile, {protection}, 0 external requests.")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--serve", nargs=2, metavar=("DIR", "PORT"))
     parser.add_argument("--personal", action="store_true")
+    parser.add_argument("--governance-fixture", action="store_true")
+    parser.add_argument("--governance-only", action="store_true")
     parser.add_argument("--edition-only", action="store_true")
     parser.add_argument("--studies-only", action="store_true")
     parser.add_argument("--relations-only", action="store_true")
@@ -434,7 +475,11 @@ def main():
     parser.add_argument("--output", type=Path, default=ROOT / "test-results/browser")
     args = parser.parse_args()
     if args.serve:
-        return serve(args.serve[0], int(args.serve[1]), personal=args.personal)
+        return serve(args.serve[0], int(args.serve[1]), personal=args.personal,
+                     governance_fixture=args.governance_fixture)
+    if args.governance_only:
+        run_governance_browser(args.output)
+        return
     if args.edition_only:
         run_edition_browser(args.output)
         return
@@ -471,6 +516,7 @@ def main():
         run_packycode_browser(args.output)
         run_acquisition_browser(args.output)
         run_edition_browser(args.output)
+        run_governance_browser(args.output)
     print("Chromium E2E passed. Screenshots:", args.output)
 
 

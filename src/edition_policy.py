@@ -43,6 +43,9 @@ class Permission(StrEnum):
     READ_CORPUS = "read_corpus"
     REVIEW_CORPUS = "review_corpus"
     READ_FORMAL_STATUS = "read_formal_status"
+    READ_PERSONAL_APPROVALS = "read_personal_approvals"
+    WRITE_PERSONAL_APPROVALS = "write_personal_approvals"
+    MANAGE_PERSONAL_CREDENTIALS = "manage_personal_credentials"
 
 
 @dataclass(frozen=True)

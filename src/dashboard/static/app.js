@@ -872,7 +872,15 @@ function renderEdition(data) {
       ? "经本机 Owner 验证后，可在授予的项目和冻结范围内读取、导入或复核。"
       : "当前部署只提供状态查询。", data.operations.scoped_local_workspace
       ? '<p><a class="btn quiet" href="/api/edition/projects">核对已授权项目</a></p>' : "") +
-    '<p class="state-box">正式采集、外部模型、正式编码和发布关闭。</p>';
+    '<p class="state-box">正式采集、外部模型、正式编码和发布关闭。</p>' +
+    (personal && local && data.operations.scoped_local_workspace
+      ? '<div id="personal-governance"></div>' : "");
+  const governance = el("personal-governance");
+  if (governance) import("./personal-governance.js").then(({ mountGovernance }) => {
+    if (governance.isConnected) mountGovernance(governance, { api, esc });
+  }).catch(() => {
+    governance.textContent = "无法载入个人审批中心，请刷新工作台。";
+  });
 }
 
 async function startWorkspace() {

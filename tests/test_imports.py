@@ -33,19 +33,19 @@ MIGRATIONS = Path(__file__).resolve().parents[1] / "src/raw_store/migrations"
 
 
 def discard_empty_registry_fixture_schema(db):
-    """Remove the v7–v8 objects before constructing disposable v3–v5 fixtures."""
+    """Remove newer objects before constructing disposable v3–v5 fixtures."""
     if db.in_transaction or db.execute("PRAGMA foreign_keys").fetchone()[0]:
         raise ValueError("Use a fresh raw connection to the disposable fixture")
     objects = db.execute(
         """SELECT type, name FROM sqlite_schema
-           WHERE name GLOB 'm06_*' OR name GLOB 'm07_*'
+           WHERE name GLOB 'm06_*' OR name GLOB 'm07_*' OR name GLOB 'personal_*'
            ORDER BY type = 'table', name"""
     ).fetchall()
     if any(
         db.execute(f'SELECT 1 FROM "{name}" LIMIT 1').fetchone() is not None
         for kind, name in objects if kind == "table"
     ):
-        raise ValueError("The fixture contains M06 or M07 rows")
+        raise ValueError("The fixture contains rows from later migrations")
     for kind, name in objects:
         db.execute(f'DROP {kind} "{name}"')
 
@@ -605,7 +605,7 @@ class ImportMigrationTest(unittest.TestCase):
                 self.assertEqual(old.execute("PRAGMA user_version").fetchone()[0], 2)
                 self.assertIsNone(old.execute("SELECT name FROM sqlite_master WHERE name='import_batches'").fetchone())
             store = Store(root)
-            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 8)
+            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 9)
             self.assertEqual(store.one("SELECT study_id, scope_id FROM study_scope_freezes"), {"study_id": "p", "scope_id": "s"})
             self.assertEqual(Store(root).one("PRAGMA integrity_check")["integrity_check"], "ok")
 

@@ -264,7 +264,7 @@ class CorpusLicenseTests(unittest.TestCase):
             self.assertEqual(db.execute("PRAGMA user_version").fetchone()[0], 4)
             self.assertEqual(db.execute("SELECT count(*) FROM corpus_reviews").fetchone()[0], 1)
         with TestClient(create_app(self.case.settings), base_url=ORIGIN, client=("127.0.0.1", 29206), headers=HEADERS) as fresh:
-            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 8)
+            self.assertEqual(fresh.get("/api/health").json()["schema_version"], 9)
             record = fresh.get(f"{self.case.root}/records/{old_record}").json()
             self.assertEqual((record["status"], record["license_status"]), ("pending_review", "pending"))
             self.assertIsNone(record["raw_text"])

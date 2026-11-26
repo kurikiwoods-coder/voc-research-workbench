@@ -350,7 +350,7 @@ class CrossModuleAudit(unittest.TestCase):
             db.execute(old_view)
             db.execute("PRAGMA user_version=5")
         with self.open() as (app, restarted):
-            self.assertEqual(app.state.store.one("PRAGMA user_version"), {"user_version": 8})
+            self.assertEqual(app.state.store.one("PRAGMA user_version"), {"user_version": 9})
             self.assertEqual(app.state.store.rows("PRAGMA foreign_key_check"), [])
             self.assertEqual(restarted.get(alias + "/eligible").status_code, 409)
             self.assertTrue(restarted.get(alias).raise_for_status().json()["source_permission_revoked"])
@@ -466,7 +466,7 @@ class CrossModuleAudit(unittest.TestCase):
             db.execute("INSERT INTO attempts VALUES (1,?,?,?)", (run, ts, ts))
             db.execute("INSERT INTO evidence VALUES (1,1,'audit','local_sqlite',?,NULL,'{}','{}')", (ts,))
         migrated = Store(directory)
-        self.assertEqual(migrated.one("PRAGMA user_version"), {"user_version": 8})
+        self.assertEqual(migrated.one("PRAGMA user_version"), {"user_version": 9})
         self.assertEqual(migrated.audit(run)["attempts"][0]["evidence"][0]["id"], 1)
         self.assertEqual(migrated.rows("PRAGMA foreign_key_check"), [])
         self.assertEqual(Store(directory).audit(run), migrated.audit(run))

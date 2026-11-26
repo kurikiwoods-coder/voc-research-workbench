@@ -410,7 +410,7 @@ ledger.step(
             self.assertEqual(target.execute("PRAGMA integrity_check").fetchone()[0], "ok")
             self.assertEqual(target.execute("PRAGMA foreign_key_check").fetchall(), [])
         self.assertEqual(AcquisitionTaskStore(backup).get(PROJECT, task_id), original)
-        self.assertEqual(work.one("PRAGMA user_version")["user_version"], 8)
+        self.assertEqual(work.one("PRAGMA user_version")["user_version"], 9)
 
 
 if __name__ == "__main__":

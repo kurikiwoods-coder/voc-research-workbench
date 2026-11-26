@@ -510,7 +510,7 @@ class EditionTests(unittest.TestCase):
         self.assertFalse(fresh.exists())
         self.assertEqual(diagnostics.history(), [])
 
-    def test_databases_keep_edition_tag_even_if_copied_and_legacy_v8_is_preserved(self):
+    def test_databases_keep_edition_tag_even_if_copied(self):
         business = Store(self.root / "old-business")
         personal = Store(self.directory, edition=Edition.PERSONAL)
         if os.name != "nt":
@@ -530,7 +530,7 @@ class EditionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "产品版本"):
             Store(target)
         for store in (business, personal):
-            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 8)
+            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 9)
             self.assertEqual(store.one("PRAGMA integrity_check")["integrity_check"], "ok")
             self.assertEqual(store.rows("PRAGMA foreign_key_check"), [])
 

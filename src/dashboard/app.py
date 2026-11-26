@@ -19,6 +19,7 @@ from src.config import (
 )
 from src.dashboard.api_setup import register_setup, setup_view
 from src.dashboard.edition_access import EditionRoute, edition_access, register_edition
+from src.dashboard.personal_governance import register_personal_governance
 from src.edition_policy import Deployment, Edition, EditionPolicy, legacy_execution_allowed
 from src.dashboard.acquisition_api import register_acquisition
 from src.ingestion.m08_sampling import SamplingTasks
@@ -430,6 +431,7 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
         return execute(None, str(run_id))
 
     register_edition(app, business_gate)
+    register_personal_governance(app)
     register_setup(app)
     register_studies(app)
     register_imports(app)
