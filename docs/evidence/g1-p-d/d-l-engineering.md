@@ -13,7 +13,7 @@
 - PackyCode 两片均由 `LIVE_MODEL_HARD_BUDGET_UNVERIFIED` 在预约前关闭。现有 8+3 及 C0-1/C0-2 判定通过模拟档案测试。实际模型发送与响应归档需在可执行的逐请求输出及费用控制可核验后接通复验。
 - 正式判定要求同批受保护回执、当前授权及审阅证据。C0-5/C0-6 的本机 Owner 审阅记录需逐项对照独立日志、合成数据、源码版本和摘要。在正式纳入前完成该交叉核验。[正式矩阵](README.md#六项正式验收状态)
 
-## Windows 10 隔离回归
+## Windows 10 初次交付回归
 
 Windows 10 22H2 Build 19045.6466，Python 3.12.14、SQLite 3.53.1、Node 24.22.3、Playwright 1.65.2。浏览器全量使用已安装的 Chrome 157.0.8103.80。使用隔离数据库和合成凭证。普通 Windows 用户会话原生 DPAPI CurrentUser 往返可用。沙箱会话保存测试凭证返回 503，采用普通用户会话完成原生测试，保留原凭证保护。
 
@@ -27,6 +27,17 @@ Windows 10 22H2 Build 19045.6466，Python 3.12.14、SQLite 3.53.1、Node 24.22.3
 | 历史归档 | 依 CI 的四条 `src.outputs.audit_receipt --verify` 命令，4/4。正式复用 0 |
 | Git 扫描 | `git diff --cached --check` 与 `scripts/check-no-secrets.sh` 通过。合成电子邮箱探针改为运行时构造 |
 | Windows 11 | D-L 源码待实机验收。D-E 历史实机和 Windows Server 2022 CI 各有独立记录 |
+
+## 对账复审
+
+| 优先级 | 已关闭缺陷及复验 |
+| --- | --- |
+| P1 | 两笔本地请求可在不同批次重复认领同一供应商请求 ID。现按供应商、账户及供应商请求 ID 核对 SQLite 回执与受保护费用档案，在同一 SQLite 写事务内绑定归属、归档及结算。后到的重复回执进入对账，原预约保留。 |
+| P1 | 结算事务回滚留下费用档案，或 SQLite 保留结算而档案缺失时，跨批次归属可能失去保护。现双向核对已结算记录与档案。孤立档案保留其请求归属，按原证明恢复 SQLite 结算。现有结算缺少档案时，停止新发送及对账，恢复原档案后复核。 |
+
+四项新增集成用例及强化的既有用例覆盖已有回执冲突、后到回执、并发争用、费用档案缺失、SQLite 回滚、重启恢复和幂等。数据库版本沿用 v11。响应档案保存后若 SQLite 回执提交失败，请求继续按结果未知处理。负责人需要用实际逐笔账单核验供应商请求 ID 及费用，结算记录本身不能补充正式响应证据。
+
+对账补修后的 Windows 10 普通用户回归共运行 536 项 Python 测试，535 通过、1 项非 Windows 用例跳过、0 失败，用时 146.105 秒。Node 2/2、冷启动 3/3、Chrome 全量及原生 DPAPI 均通过。历史归档完整性 4/4，正式纳入 0。补修前的提交 2519672ec1ccf5cb6341b5b1f03a427835d06120 的三项 CI 均通过，补修提交的核验见草稿 PR 的检查记录。[补修前 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45852101131) · [PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2/checks)
 
 ## 未关闭的正式执行条件
 

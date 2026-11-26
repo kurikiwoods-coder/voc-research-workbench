@@ -1,8 +1,10 @@
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 import json
 import sqlite3
+from threading import Barrier
 import unittest
 from unittest.mock import patch
 from urllib.error import URLError
@@ -26,6 +28,7 @@ from src.raw_store.store import Conflict
 
 
 BATCH_BUDGET = Budget(4, 1, 1600, 800, 2400, 100)
+SHARED_ACCOUNT_BUDGET = Budget(4, 4, 1600, 800, 2400, 100)
 LIMITS = {"search": Budget(1, 1, 0, 0, 0, 20), "source": Budget(1, 0, 0, 0, 0, 0),
           "model": Budget(1, 0, 800, 400, 1200, 40)}
 MODEL_FIELDS = {"choices": [[key, value] for key, value in OPTIONS.items()], "text": QUOTE,
@@ -66,10 +69,13 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
                 ("source", "stackexchange", "public-api", "fixture-source-account", None),
             )
         }
-        self.batch = self.engine.draft({
+        self.batch = self.draft_batch()
+
+    def draft_batch(self, evidence_ref="fixture-batch-approval"):
+        return self.engine.draft({
             **{field: getattr(self.context, field) for field in ("owner_ref", "study_id", "scope_id", "scope_version")},
             "starts_at": self.start, "expires_at": self.expiry, "budget": asdict(BATCH_BUDGET), "currency": "USD",
-            "decimals": 6, "single_cost": 40, "evidence_ref": "fixture-batch-approval",
+            "decimals": 6, "single_cost": 40, "evidence_ref": evidence_ref,
         })
 
     def open_engine(self):
@@ -100,7 +106,7 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
             }]}
         return Reply(json.dumps(response).encode())
 
-    def packet(self, operation, *, slot=1, parent=None):
+    def packet(self, operation, *, slot=1, parent=None, batch=None, account_budget=BATCH_BUDGET):
         fields = {}
         keys = MATERIAL
         if operation != "search":
@@ -121,23 +127,24 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
         if parent is not None:
             fields |= {"depends_on": parent["request_id"], "depends_on_sha256": parent["response_sha256"]}
         return fields | {
-            "batch_id": self.batch, "owner_ref": self.context.owner_ref, "operation": operation, "slot": slot,
+            "batch_id": self.batch if batch is None else batch,
+            "owner_ref": self.context.owner_ref, "operation": operation, "slot": slot,
             "target": target, "payload_sha256": digest(payload), "valid_from": self.start, "expires_at": self.expiry,
-            "limit": asdict(LIMITS[operation]), "account_limit": asdict(BATCH_BUDGET),
+            "limit": asdict(LIMITS[operation]), "account_limit": asdict(account_budget),
             "material": {kind: "fixture-" + kind for kind in keys}, "evidence_ref": "fixture-operation-approval",
         } | {key: binding[key] for key in ("provider", "account_ref", "channel_ref", "credential_revision")}
 
-    def execute_search(self):
-        packet = self.packet("search")
-        grant = self.engine.authorize(self.batch, packet)
-        result = self.engine.execute(self.batch, grant, packet)
+    def execute_search(self, *, batch=None, account_budget=BATCH_BUDGET):
+        packet = self.packet("search", batch=batch, account_budget=account_budget)
+        grant = self.engine.authorize(packet["batch_id"], packet)
+        result = self.engine.execute(packet["batch_id"], grant, packet)
         return packet, grant, result
 
     def receipt(self, request_id):
         return self.store.one("SELECT * FROM personal_validation_receipts WHERE request_id=?", (request_id,))
 
-    def view(self):
-        return self.engine.ledger.view(self.batch, self.context, self.engine._owner)
+    def view(self, batch=None):
+        return self.engine.ledger.view(self.batch if batch is None else batch, self.context, self.engine._owner)
 
     def search_bill(self, result):
         return {"request_id": result["request_id"], "provider": "tavily", "account_ref": "fixture-tavily-account",
@@ -257,13 +264,16 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
         self.opener.assert_called_once()
 
     def test_reconciliation_write_failure_preserves_charge_proof_and_pending_reservation(self):
-        _, _, result = self.execute_search()
+        self.opener.side_effect = URLError("fixture disconnect")
+        _, _, result = self.execute_search(account_budget=SHARED_ACCOUNT_BUDGET)
+        second_batch = self.draft_batch("fixture-second-batch")
+        _, _, second = self.execute_search(batch=second_batch, account_budget=SHARED_ACCOUNT_BUDGET)
         proof = self.search_bill(result)
         with patch.object(self.engine.authority, "archive_charge", side_effect=AuthorityError):
             with self.assertRaises(AuthorityError):
                 self.engine.reconcile(self.batch, proof)
         self.assertEqual(self.view()["reconciliations"], [])
-        with patch.object(self.engine.ledger, "reconcile", side_effect=sqlite3.OperationalError):
+        with patch.object(self.engine.ledger, "_request_event", side_effect=sqlite3.OperationalError):
             with self.assertRaises(sqlite3.OperationalError):
                 self.engine.reconcile(self.batch, proof)
         state = self.view()
@@ -273,17 +283,110 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
         self.engine = self.open_engine()
         with self.assertRaisesRegex(AuthorityError, "LIVE_AUTHORITY_CHARGE_CONFLICT"):
             self.engine.reconcile(self.batch, proof | {"actual_units": 13})
+        with self.assertRaisesRegex(Conflict, "LIVE_RECONCILIATION_PROVIDER_REQUEST_CONFLICT"):
+            self.engine.reconcile(second_batch, self.search_bill(second))
+        self.assertEqual(self.view(second_batch)["reconciliations"], [])
         self.assertEqual(self.engine.reconcile(self.batch, proof)["actual_units"], proof["actual_units"])
-        self.opener.assert_called_once()
+        self.assertEqual(len(self.view()["reconciliations"]), 1)
+        self.assertEqual(self.opener.call_count, 2)
 
-    def test_missing_protected_charge_blocks_resume_and_an_already_approved_send(self):
-        _, _, result = self.execute_search()
+    def test_reconciliation_cannot_reuse_provider_id_from_another_receipt(self):
+        _, _, original = self.execute_search(account_budget=SHARED_ACCOUNT_BUDGET)
+        self.assertTrue(original["eligible"])
+        self.opener.side_effect = URLError("fixture disconnect")
+        second_batch = self.draft_batch("fixture-second-batch")
+        _, _, second = self.execute_search(batch=second_batch, account_budget=SHARED_ACCOUNT_BUDGET)
+        with self.assertRaisesRegex(Conflict, "LIVE_RECONCILIATION_PROVIDER_REQUEST_CONFLICT"):
+            self.engine.reconcile(second_batch, self.search_bill(second))
+        self.assertEqual(self.view(second_batch)["requests"][0]["state"], "reconciliation")
+        self.assertEqual(self.view(second_batch)["reconciliations"], [])
+        self.assertEqual(self.opener.call_count, 2)
+
+    def test_reconciliation_fails_closed_when_another_charge_archive_is_missing(self):
+        self.opener.side_effect = URLError("fixture disconnect")
+        second_batch = self.draft_batch("fixture-second-batch")
+        with patch.object(self.engine.ledger, "receipt", side_effect=sqlite3.OperationalError):
+            _, _, first = self.execute_search(account_budget=SHARED_ACCOUNT_BUDGET)
+            _, _, second = self.execute_search(batch=second_batch, account_budget=SHARED_ACCOUNT_BUDGET)
+        self.assertIsNone(self.receipt(first["request_id"]))
+        self.assertIsNone(self.receipt(second["request_id"]))
+        first_proof, second_proof = self.search_bill(first), self.search_bill(second)
+        first_result = self.engine.reconcile(self.batch, first_proof)
+        charge_path = self.authority_path / f"live-charge-{first['request_id']}.dpapi"
+        saved_charge_path = charge_path.rename(charge_path.with_suffix(".saved"))
+
+        try:
+            self.engine = self.open_engine()
+            with self.assertRaisesRegex(AuthorityError, "LIVE_AUTHORITY_CHARGE_MISSING_OR_INVALID"):
+                self.engine.reconcile(second_batch, second_proof)
+            self.assertEqual(self.view(second_batch)["reconciliations"], [])
+        finally:
+            saved_charge_path.rename(charge_path)
+
+        with self.assertRaisesRegex(Conflict, "LIVE_RECONCILIATION_PROVIDER_REQUEST_CONFLICT"):
+            self.engine.reconcile(second_batch, second_proof)
+        self.assertEqual(self.view(second_batch)["reconciliations"], [])
+        self.assertEqual(self.view(second_batch)["requests"][0]["state"], "reconciliation")
+        self.assertEqual(self.engine.reconcile(self.batch, first_proof), first_result)
+        self.assertEqual(len(self.view()["reconciliations"]), 1)
+        self.assertEqual(self.opener.call_count, 2)
+
+    def test_later_provider_reply_cannot_reuse_a_reconciled_provider_request_id(self):
+        self.opener.side_effect = URLError("fixture disconnect")
+        _, _, first = self.execute_search(account_budget=SHARED_ACCOUNT_BUDGET)
+        self.engine.reconcile(self.batch, self.search_bill(first))
+        self.opener.side_effect = self.reply
+        second_batch = self.draft_batch("fixture-second-batch")
+        _, _, second = self.execute_search(batch=second_batch, account_budget=SHARED_ACCOUNT_BUDGET)
+        self.assertTrue(second["dispatched"])
+        self.assertFalse(second["eligible"])
+        self.assertIsNone(self.receipt(second["request_id"]))
+        event = self.store.one(
+            "SELECT state, reason FROM personal_validation_request_events WHERE request_id=? ORDER BY sequence DESC LIMIT 1",
+            (second["request_id"],),
+        )
+        self.assertEqual((event["state"], event["reason"]), ("reconciliation", "provider_receipt_conflict"))
+        self.assertEqual(self.opener.call_count, 2)
+
+    def test_concurrent_reconciliations_bind_provider_request_id_to_only_one_local_request(self):
+        self.opener.side_effect = URLError("fixture disconnect")
+        second_batch = self.draft_batch("fixture-second-batch")
+        requests = {}
+        for batch in (self.batch, second_batch):
+            _, _, result = self.execute_search(batch=batch, account_budget=SHARED_ACCOUNT_BUDGET)
+            requests[batch] = self.search_bill(result)
+
+        barrier = Barrier(len(requests))
+
+        def reconcile(batch):
+            engine = self.open_engine()
+            barrier.wait(timeout=5)
+            try:
+                return engine.reconcile(batch, requests[batch])["request_id"]
+            except Conflict as error:
+                return str(error)
+
+        with ThreadPoolExecutor(max_workers=len(requests)) as workers:
+            outcomes = dict(zip(requests, workers.map(reconcile, requests), strict=True))
+        conflict = "LIVE_RECONCILIATION_PROVIDER_REQUEST_CONFLICT"
+        self.assertEqual(list(outcomes.values()).count(conflict), 1)
+        for batch, proof in requests.items():
+            reconciliations = self.view(batch)["reconciliations"]
+            if outcomes[batch] == conflict:
+                self.assertEqual(reconciliations, [])
+            else:
+                self.assertEqual(outcomes[batch], proof["request_id"])
+                self.assertEqual([row["request_id"] for row in reconciliations], [proof["request_id"]])
+        self.assertEqual(self.opener.call_count, 2)
+
+    def test_missing_protected_charge_blocks_resume_and_preapproved_sends(self):
+        _, _, result = self.execute_search(account_budget=SHARED_ACCOUNT_BUDGET)
         proof = self.search_bill(result)
         self.engine.reconcile(self.batch, proof)
         charge_path = self.authority_path / f"live-charge-{result['request_id']}.dpapi"
         saved_charge_path = charge_path.rename(charge_path.with_suffix(".saved"))
         self.engine = self.open_engine()
-        with self.assertRaisesRegex(Conflict, "LIVE_RECONCILIATION_EVIDENCE_UNAVAILABLE"):
+        with self.assertRaisesRegex(Conflict, "VALIDATION_AUTHORITY_CHANGED"):
             self.engine.resume(self.batch)
         with self.assertRaisesRegex(AuthorityError, "LIVE_AUTHORITY_CHARGE_MISSING_OR_INVALID"):
             self.engine.reconcile(self.batch, proof)
@@ -292,11 +395,20 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
         self.engine.resume(self.batch)
         source = self.packet("source", parent=self.receipt(result["request_id"]))
         grant = self.engine.authorize(self.batch, source)
-        charge_path.unlink()
-        with self.assertRaisesRegex(Conflict, "LIVE_RECONCILIATION_EVIDENCE_UNAVAILABLE"):
-            self.engine.execute(self.batch, grant, source)
-        self.assertEqual(len(self.view()["requests"]), 1)
-        self.opener.assert_called_once()
+        other_batch = self.draft_batch("fixture-other-batch")
+        search = self.packet("search", batch=other_batch, account_budget=SHARED_ACCOUNT_BUDGET)
+        search_grant = self.engine.authorize(other_batch, search)
+        charge_path.rename(saved_charge_path)
+        try:
+            for batch_id, grant_id, packet in ((self.batch, grant, source), (other_batch, search_grant, search)):
+                with self.subTest(batch_id=batch_id), self.assertRaisesRegex(
+                        Conflict, "VALIDATION_RESTORE_CONTINUITY_REQUIRED"):
+                    self.engine.execute(batch_id, grant_id, packet)
+            self.assertEqual(len(self.view()["requests"]), 1)
+            self.assertEqual(self.view(other_batch)["requests"], [])
+            self.opener.assert_called_once()
+        finally:
+            saved_charge_path.rename(charge_path)
 
     def test_charge_file_missing_from_restored_ledger_blocks_other_batch_until_reconciled(self):
         _, _, result = self.execute_search()
@@ -309,17 +421,12 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
                 snapshot.backup(database)
         self.engine = self.open_engine()
         self.assertEqual(self.view()["reconciliations"], [])
-        original_batch = self.batch
-        self.batch = self.engine.draft({
-            **{field: getattr(self.context, field) for field in ("owner_ref", "study_id", "scope_id", "scope_version")},
-            "starts_at": self.start, "expires_at": self.expiry, "budget": asdict(BATCH_BUDGET), "currency": "USD",
-            "decimals": 6, "single_cost": 40, "evidence_ref": "fixture-other-batch",
-        })
-        packet = self.packet("search")
+        other_batch = self.draft_batch("fixture-other-batch")
+        packet = self.packet("search", batch=other_batch)
         with self.assertRaisesRegex(Conflict, "VALIDATION_RESTORE_CONTINUITY_REQUIRED"):
-            self.engine.authorize(self.batch, packet)
-        self.assertEqual(self.engine.reconcile(original_batch, proof)["actual_units"], proof["actual_units"])
-        self.assertTrue(self.engine.authorize(self.batch, packet))
+            self.engine.authorize(other_batch, packet)
+        self.assertEqual(self.engine.reconcile(self.batch, proof)["actual_units"], proof["actual_units"])
+        self.assertTrue(self.engine.authorize(other_batch, packet))
         self.opener.assert_called_once()
 
     def test_nonformal_ledger_cannot_write_formal_batch_history(self):

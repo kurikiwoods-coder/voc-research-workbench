@@ -284,7 +284,10 @@ class LiveAdmission:
                 valid=valid, reason="schema_gap" if reply.response.status == 200 else "http_or_transport_failure",
                 source_sha256=approval.source_sha256, quote_sha256=quote_sha,
             )
-            result = self.ledger.receipt(request_id, self.context, receipt, check)
+            result = self.ledger.receipt(
+                request_id, self.context, receipt, check,
+                provider_request_available=self.authority.charge_request_available,
+            )
         except Exception:
             self.ledger.mark_unknown(request_id, self.context, "send_or_receipt_outcome_unknown", owns_claim)
             return {"request_id": request_id, "state": "reconciliation"}
@@ -365,41 +368,41 @@ class LiveAdmission:
                 "provider_request_id", "currency", "actual_units", "bill_ref"}):
             raise Conflict("LIVE_RECONCILIATION_PROOF_MISMATCH")
         request_id = proof["request_id"]
-        with self.store.db() as db:
+        with self.ledger._transaction() as db:
             batch = self._batch(db, batch_id)
             request, _, grant = self.ledger._request(db, request_id, self.context)
             receipt = db.execute(
                 "SELECT * FROM personal_validation_receipts WHERE request_id=?", (request_id,),
             ).fetchone()
+            provider_request_id = proof["provider_request_id"]
+            if (request["batch_id"] != batch_id or not self.authority.verify_claim(batch, grant, request)
+                    or any(proof[key] != grant[key] for key in ("provider", "account_ref"))
+                    or not _reference(provider_request_id)
+                    or (receipt is not None and receipt["provider_request_id"]
+                        and receipt["provider_request_id"] != provider_request_id)
+                    or proof["currency"] != batch["currency"] or number(proof["actual_units"]) is None
+                    or not _reference(proof["bill_ref"])):
+                raise Conflict("LIVE_RECONCILIATION_PROOF_MISMATCH")
+            if (self.ledger._has_provider_receipt(db, request_id, grant, provider_request_id)
+                    or not self.authority.charge_request_available(db, request_id, grant, provider_request_id)):
+                raise Conflict("LIVE_RECONCILIATION_PROVIDER_REQUEST_CONFLICT")
             prior = db.execute("""
                 SELECT evidence_ref FROM personal_validation_reconciliations
                 WHERE request_id=? ORDER BY sequence DESC LIMIT 1
             """, (request_id,)).fetchone()
-        if (request["batch_id"] != batch_id or not self.authority.verify_claim(batch, grant, request)
-                or any(proof[key] != grant[key] for key in ("provider", "account_ref"))
-                or not _reference(proof["provider_request_id"])
-                or (receipt is not None and receipt["provider_request_id"]
-                    and receipt["provider_request_id"] != proof["provider_request_id"])
-                or proof["currency"] != batch["currency"] or number(proof["actual_units"]) is None
-                or not _reference(proof["bill_ref"])):
-            raise Conflict("LIVE_RECONCILIATION_PROOF_MISMATCH")
-        if prior is None:
-            if request["state"] != "reconciliation":
-                raise Conflict("VALIDATION_NOT_AWAITING_RECONCILIATION")
-            if receipt is not None and receipt["actual_units"] not in {None, proof["actual_units"]}:
-                raise Conflict("VALIDATION_RECONCILIATION_CONFLICT")
-            ref = self.authority.archive_charge(batch, grant, request, proof)
-        else:
-            ref = prior["evidence_ref"]
-
-        def verify(db, current_batch, current_grant):
-            if not self._owner(db, current_batch, current_grant):
-                return False
-            if self.authority.read_charge(current_batch, current_grant, request, ref) != proof:
-                raise Conflict("VALIDATION_RECONCILIATION_CONFLICT")
-            return True
-
-        result = self.ledger.reconcile(request_id, self.context, proof["actual_units"], proof["bill_ref"], ref, verify)
+            if prior is None:
+                if request["state"] != "reconciliation":
+                    raise Conflict("VALIDATION_NOT_AWAITING_RECONCILIATION")
+                if receipt is not None and receipt["actual_units"] not in {None, proof["actual_units"]}:
+                    raise Conflict("VALIDATION_RECONCILIATION_CONFLICT")
+                ref = self.authority.archive_charge(batch, grant, request, proof)
+            else:
+                ref = prior["evidence_ref"]
+                if self.authority.read_charge(batch, grant, request, ref) != proof:
+                    raise Conflict("VALIDATION_RECONCILIATION_CONFLICT")
+            result = self.ledger._settle_reconciliation(
+                db, request, batch, self.context, proof["actual_units"], proof["bill_ref"], ref,
+            )
         return {"request_id": request_id, "actual_units": result["actual_units"]}
 
     def review(self, batch_id, requirement, proof):

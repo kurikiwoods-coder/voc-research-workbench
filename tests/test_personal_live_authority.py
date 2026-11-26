@@ -40,6 +40,15 @@ class ProtectedAuthorityTests(unittest.TestCase):
                     payload_sha256 TEXT, credits INTEGER
                 );
                 CREATE TABLE personal_validation_request_events(request_id TEXT, state TEXT);
+                CREATE TABLE personal_validation_batches(batch_id TEXT PRIMARY KEY, mode TEXT);
+                CREATE TABLE personal_validation_grants(batch_id TEXT, grant_id TEXT, provider TEXT, account_ref TEXT);
+                CREATE TABLE personal_validation_reconciliations(
+                    sequence INTEGER PRIMARY KEY, request_id TEXT, evidence_ref TEXT, actual_units INTEGER,
+                    subject_ref TEXT
+                );
+                CREATE TABLE personal_validation_receipts(
+                    request_id TEXT PRIMARY KEY, provider TEXT, account_ref TEXT, provider_request_id TEXT
+                );
             """)
             db.commit()
         self.local = PersonalLiveAuthority(self.authority, database=self.database)

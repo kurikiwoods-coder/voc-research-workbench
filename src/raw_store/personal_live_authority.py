@@ -226,24 +226,47 @@ class PersonalLiveAuthority:
                 return False
         return True
 
-    def _charges_current(self, db):
+    def _charge_owners(self, db, *, allow_unsettled=False):
+        self._check_root()
+        rows = db.execute("""
+            SELECT c.request_id, q.batch_id, q.grant_id, g.provider, g.account_ref,
+                   c.evidence_ref, c.actual_units, c.subject_ref
+            FROM personal_validation_reconciliations c
+            JOIN personal_validation_requests q USING (request_id)
+            JOIN personal_validation_batches b ON b.batch_id=q.batch_id
+            JOIN personal_validation_grants g ON g.batch_id=q.batch_id AND g.grant_id=q.grant_id
+            WHERE b.mode='formal_live'
+            ORDER BY c.sequence
+        """)
+        settlements = {row[0]: tuple(row[1:]) for row in rows}
+        owners = {}
         for path in _native_path(self.directory).glob("live-charge-*.dpapi"):
             value = self._read(path.stem)
-            if not isinstance(value, dict) or not isinstance(value.get("proof"), dict):
-                return False
-            proof = value["proof"]
-            request_id = proof.get("request_id")
-            if path.stem != f"live-charge-{request_id}":
-                return False
-            row = db.execute("""
-                SELECT c.evidence_ref, c.actual_units, c.subject_ref
-                FROM personal_validation_reconciliations c JOIN personal_validation_requests q USING (request_id)
-                WHERE c.request_id=? AND q.batch_id=? AND q.grant_id=? ORDER BY c.sequence DESC LIMIT 1
-            """, (request_id, value.get("batch_id"), value.get("grant_id"))).fetchone()
-            if row is None or tuple(row) != (f"live-charge-{_digest(value)}", proof.get("actual_units"),
-                                               proof.get("bill_ref")):
-                return False
-        return True
+            proof = value.get("proof") if isinstance(value, dict) else None
+            if not isinstance(proof, dict) or path.stem != f"live-charge-{proof.get('request_id')}":
+                raise AuthorityError("LIVE_AUTHORITY_CHARGE_MISSING_OR_INVALID")
+            request_id = proof["request_id"]
+            key = (proof.get("provider"), proof.get("account_ref"), proof.get("provider_request_id"))
+            if not all(isinstance(part, str) and part for part in key):
+                raise AuthorityError("LIVE_AUTHORITY_CHARGE_MISSING_OR_INVALID")
+            settlement = settlements.pop(request_id, None)
+            if settlement is None:
+                if not allow_unsettled:
+                    raise AuthorityError("LIVE_AUTHORITY_CHARGE_MISSING_OR_INVALID")
+            elif settlement != (
+                value.get("batch_id"), value.get("grant_id"), *key[:2],
+                f"live-charge-{_digest(value)}", proof.get("actual_units"), proof.get("bill_ref"),
+            ):
+                raise AuthorityError("LIVE_AUTHORITY_CHARGE_MISSING_OR_INVALID")
+            if (key in owners or db.execute("""
+                SELECT 1 FROM personal_validation_receipts
+                WHERE provider=? AND account_ref=? AND provider_request_id=? AND request_id<>?
+            """, (*key, request_id)).fetchone()):
+                raise AuthorityError("LIVE_AUTHORITY_CHARGE_CONFLICT")
+            owners[key] = request_id
+        if settlements:
+            raise AuthorityError("LIVE_AUTHORITY_CHARGE_MISSING_OR_INVALID")
+        return owners
 
     def check(self, db, batch, grant):
         """Confirm the SQLite connection and the current independent authorization."""
@@ -251,7 +274,10 @@ class PersonalLiveAuthority:
             sqlite_main = next(row[2] for row in db.execute("PRAGMA database_list") if row[1] == "main")
             if Path(sqlite_main).resolve(strict=True) != self.database:
                 return False
-            return self._current(batch, grant) and self._claims_current(db) and self._charges_current(db)
+            if not self._current(batch, grant) or not self._claims_current(db):
+                return False
+            self._charge_owners(db)
+            return True
         except (OSError, ValueError, sqlite3.Error, StopIteration):
             return False
 
@@ -346,6 +372,14 @@ class PersonalLiveAuthority:
         if not self._create(key, value) and self._read(key) != value:
             raise AuthorityError("LIVE_AUTHORITY_CHARGE_CONFLICT")
         return f"live-charge-{_digest(value)}"
+
+    def charge_request_available(self, db, request_id, grant, provider_request_id):
+        # The caller holds the workspace write lock while checking and recording ownership.
+        owners = self._charge_owners(db, allow_unsettled=True)
+        key = (grant["provider"], grant["account_ref"], provider_request_id)
+        return owners.get(key, request_id) == request_id and not any(
+            owner == request_id and other_key != key for other_key, owner in owners.items()
+        )
 
     def read_charge(self, batch, grant, request, evidence_ref):
         value = self._read(f"live-charge-{request['request_id']}")

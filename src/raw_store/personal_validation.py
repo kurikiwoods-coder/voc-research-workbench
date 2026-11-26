@@ -606,7 +606,13 @@ class ValidationLedger:
                 raise Conflict("VALIDATION_NO_CLAIM")
             return {"request_id": request_id, "state": "reconciliation"}
 
-    def receipt(self, request_id, context, receipt, recheck):
+    def _has_provider_receipt(self, db, request_id, grant, provider_request_id):
+        return _one(db, """
+            SELECT request_id FROM personal_validation_receipts
+            WHERE provider=? AND account_ref=? AND provider_request_id=? AND request_id<>?
+        """, (grant["provider"], grant["account_ref"], provider_request_id, request_id)) is not None
+
+    def receipt(self, request_id, context, receipt, recheck, *, provider_request_available=None):
         with self._transaction() as db:
             request, batch, grant = self._request(db, request_id, context)
             formal = batch["mode"] == "formal_live"
@@ -625,10 +631,12 @@ class ValidationLedger:
                 return prior | {"conflict": True}
             if request["state"] not in {"claimed", "reconciliation"}:
                 raise Conflict("VALIDATION_NO_CLAIM")
-            if receipt.provider_request_id and _one(db, """
-                SELECT request_id FROM personal_validation_receipts
-                WHERE provider=? AND account_ref=? AND provider_request_id=?
-            """, (grant["provider"], grant["account_ref"], receipt.provider_request_id)):
+            provider_request_id = receipt.provider_request_id
+            if provider_request_id and (
+                self._has_provider_receipt(db, request_id, grant, provider_request_id)
+                or (provider_request_available is not None
+                    and not provider_request_available(db, request_id, grant, provider_request_id))
+            ):
                 self._reconciliation(db, request, batch, "provider_receipt_conflict")
                 return {"request_id": request_id, "eligible": 0, "conflict": True}
             current = True
@@ -678,31 +686,35 @@ class ValidationLedger:
             request, batch, grant = self._request(db, request_id, context)
             self._require_write_domain(batch)
             _require(recheck, db, batch, grant)
-            prior = _one(db, """
-                SELECT * FROM personal_validation_reconciliations WHERE request_id=? ORDER BY sequence DESC LIMIT 1
-            """, (request_id,))
-            if prior is not None:
-                if (prior["actual_units"], prior["subject_ref"], prior["evidence_ref"]) != (
-                    actual_units, subject_ref, evidence_ref
-                ):
-                    raise Conflict("VALIDATION_RECONCILIATION_CONFLICT")
-                return prior
-            if request["state"] != "reconciliation":
-                raise Conflict("VALIDATION_NOT_AWAITING_RECONCILIATION")
-            receipt = _one(db, "SELECT * FROM personal_validation_receipts WHERE request_id=?", (request_id,))
-            if receipt is not None and receipt["actual_units"] is not None and receipt["actual_units"] != actual_units:
+            return self._settle_reconciliation(db, request, batch, context, actual_units, subject_ref, evidence_ref)
+
+    def _settle_reconciliation(self, db, request, batch, context, actual_units, subject_ref, evidence_ref):
+        request_id = request["request_id"]
+        prior = _one(db, """
+            SELECT * FROM personal_validation_reconciliations WHERE request_id=? ORDER BY sequence DESC LIMIT 1
+        """, (request_id,))
+        if prior is not None:
+            if (prior["actual_units"], prior["subject_ref"], prior["evidence_ref"]) != (
+                actual_units, subject_ref, evidence_ref
+            ):
                 raise Conflict("VALIDATION_RECONCILIATION_CONFLICT")
-            _insert(db, "reconciliations", {
-                "request_id": request_id, "actual_units": actual_units, "subject_ref": subject_ref,
-                "evidence_ref": evidence_ref, "actor_ref": context.actor_ref, "occurred_at": self._now(),
-            })
-            self._request_event(db, request_id, "settled", "charge_reconciled")
-            if batch["state"] == "reconciliation":
-                self._batch_event(db, batch, "paused" if actual_units <= request["units"] else "blocked",
-                                  "charge_reconciled" if actual_units <= request["units"] else "usage_over_budget")
-            return _one(db, """
-                SELECT * FROM personal_validation_reconciliations WHERE request_id=? ORDER BY sequence DESC LIMIT 1
-            """, (request_id,))
+            return prior
+        if request["state"] != "reconciliation":
+            raise Conflict("VALIDATION_NOT_AWAITING_RECONCILIATION")
+        receipt = _one(db, "SELECT * FROM personal_validation_receipts WHERE request_id=?", (request_id,))
+        if receipt is not None and receipt["actual_units"] is not None and receipt["actual_units"] != actual_units:
+            raise Conflict("VALIDATION_RECONCILIATION_CONFLICT")
+        _insert(db, "reconciliations", {
+            "request_id": request_id, "actual_units": actual_units, "subject_ref": subject_ref,
+            "evidence_ref": evidence_ref, "actor_ref": context.actor_ref, "occurred_at": self._now(),
+        })
+        self._request_event(db, request_id, "settled", "charge_reconciled")
+        if batch["state"] == "reconciliation":
+            self._batch_event(db, batch, "paused" if actual_units <= request["units"] else "blocked",
+                              "charge_reconciled" if actual_units <= request["units"] else "usage_over_budget")
+        return _one(db, """
+            SELECT * FROM personal_validation_reconciliations WHERE request_id=? ORDER BY sequence DESC LIMIT 1
+        """, (request_id,))
 
     def release(self, request_id, context, reason, recheck):
         _ref(reason)
