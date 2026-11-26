@@ -1,5 +1,17 @@
 # 开发与验收矩阵
 
+## G-1-PERSONAL Phase 1 规划映射
+
+商用 G-1 与其历史验收沿用以下原标准，状态 **BLOCKED**。个人 **G-1-PERSONAL = NOT_EVALUATED**。以下条目记录独立个人治理交付，原 C0、PDT、CAT、J 系列和统计口径继续适用。核心工程进度 **39/79**。[负责人批准](decisions/dual-edition-owner-approval.md)
+
+| 单元 | 涵盖需求 | 证据及状态 |
+|---|---|---|
+| G-1-R-B-F | C0-4 计量旁证，实际费用、缓存、回执和估算区分 | 原始 CSV 两笔实扣合计 $0.000238，CSV_VERIFIED。本机原账本 LOCAL_VERIFICATION_PENDING。只作原合成批次费用证据。[脱敏补证](evidence/g1-rb-f/README.md) |
+| EDITION-V1 | 完整功能、产品/部署独立、版本与组织权限、M06 冻结 | APPROVED_AND_DOCUMENTED。[产品策略](architecture/edition-policy.md) · [部署](architecture/edition-deployment-matrix.md) |
+| G-1-P-A | C0-1 至 C0-6 同批、可信身份、逐源与供应商强制授权 | DOCUMENTED，G-1-PERSONAL NOT_EVALUATED。[个人门禁与复用](architecture/personal-research-gate.md) |
+| G-1-P-B/C | 服务端版本门禁、现有阻断、个人审批及撤销 | NOT_STARTED，分阶段授权。[实施、迁移与测试](planning/g1-personal-implementation-plan.md) |
+| G-1-P-D/R | 同批正式复验及独立安全评审 | NOT_STARTED。任一缺项仍关闭，M09 等个人准入及独立开发授权。商用 G-1 另行验收 |
+
 ## M08-V Windows 11 回归验收
 
 | 工程边界 | 验收证据 | 正式验收 |

@@ -1,6 +1,6 @@
 # ROADMAP-V2 完整开发路线图
 
-M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。工程单元计数为 **39/79**，M09 等待单独授权，G-1 保持 **BLOCKED**。[Windows 11 实机证据](../evidence/m08-v/README.md)
+M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。工程单元计数为 **39/79**，商用 G-1 保持 **BLOCKED**。个人版先完成 G-1-PERSONAL 序列，再单独授权 M09。[Windows 11 实机证据](../evidence/m08-v/README.md)
 
 2026-11-25 负责人批准本规划。开发分支 `codex/p0-0-connectivity`，规划基线 `3bd705befb98ee108b77603763c5571ceb7fdc44`。草稿 PR #1 与该基线一致，Ubuntu、Windows Server 2022、Chromium 作业均通过。[负责人批准](../decisions/roadmap-v2-owner-approval.md) · [M06-R 基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45585265229) · [草稿 PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1)
 
@@ -15,6 +15,10 @@ M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机
 [M06-R 审计](../audits/m06-final-engineering-audit.md) · [实机与回归](../evidence/m06-r/README.md) · [1K/10K/100K 对照](../evidence/m06-r/performance-comparison.md) · [最新开发状态](../../DEVELOPMENT_STATUS.md)
 
 PDT v1.3.1 Word 正文与本机副本的 SHA-256 一致。ROADMAP-V2 已核对本机 27 页专案 v2.2 PDF，指纹与需求矩阵原登记一致。仓库提供摘要，历史审计中的原件缺失记录对应各自取证时点。版本分歧按原矩阵处理，包括 C0 编号、问卷分期、新意图及缺概率。五项负责人政策、六层架构、三层关系和统计口径 `M06-B-F.1` 继续作为接口依据。[PDT 正文](../pdt/PDT-v1.3.1.docx) · [PDT 导读](../pdt/PDT-v1.3.1.md) · [专案摘要](../proposal/voc-workbench-proposal-2026-11-23.md) · [需求验收矩阵](../requirements-matrix.md) · [冻结政策](../architecture/m06-owner-approval.md)
+
+## 双版本准入与治理工作单元
+
+EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用核心研究引擎，分别适用 G-1-PERSONAL 及原 G-1。产品版本与本机、云端部署分别管理。个人门禁当前 NOT_EVALUATED，按 G-1-P-B、C、D、R 单独授权；通过前 M09 保持 NOT_STARTED。商用准入继续按原同批和审批标准。两项已交付治理规划、四项接续及 PackyCode 历史费用补证均独立登记。下面 79 项及完成数 39 沿用。[双版本政策](../architecture/edition-policy.md) · [治理单元与接续](g1-personal-implementation-plan.md) · [费用补证](../evidence/g1-rb-f/README.md)
 
 ## 单元计数与分期
 
@@ -49,7 +53,7 @@ flowchart TD
     VOC --> P2["P2 雷达与监控"]
     P00 --> Base["M01–M06 基础工程和设计"]
     P00 --> Review["M06-R 工程复审"]
-    P00 --> Gate["G-1-R 待授权<br/>正式 G-1 阻塞"]
+    P00 --> Gate["商用 G-1-R 待正式验收<br/>G-1 阻塞"]
     P0 --> Register["M07 注册表 · M08-A 至 D 采集"]
     P0 --> Discovery["M09 和 M10 双轨发现 · M11 审核"]
     P0 --> Apply["M12-A 至 E 决策编码"]
@@ -110,7 +114,7 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 
 ## P0 核心研究闭环
 
-正式工作受 G-1 约束。M07-A 至 D 和 M08-A 至 D 已用隔离数据完成工程验收。M08-E 及 M09–M15 待启动。注册表联合发行需要 M07 的版本契约和 M11 的可信人审共同验收。[M07 证据](../evidence/m07/README.md) · [M08-C/D 证据](../evidence/m08-cd/README.md)
+正式工作受适用版本门禁约束，原商用验收沿用 G-1。M07-A 至 D 和 M08-A 至 D 已用隔离数据完成工程验收。M08-E 及 M09–M15 待启动。注册表联合发行需要 M07 的版本契约和 M11 的可信人审共同验收。[M07 证据](../evidence/m07/README.md) · [M08-C/D 证据](../evidence/m08-cd/README.md)
 
 | 单元 | 前置 | 职责及交付 | 验收重点 |
 |---|---|---|---|
@@ -136,7 +140,7 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 | M11-C | M07-C、M11-B、M06-C4 | 候选意图与任务大类联合审核、组合事务和版本发行 | CAT-9，现行资格、原子性、版本竞争和幂等重放 |
 | M11-D | M11-C、M12 联调 | 审核 UI、查询历史、编码复核接入 | J-5/6、PRIVACY，低置信必经队列 |
 | M12-A | M02、M06/M07 | 通用 Decision Adapter、版本配置和能力协议，Jev 首个正式适配，隔离合成适配用于工程测试 | MODEL-ADAPTER-01、MODEL-CAPABILITY-01、MODEL-VERSION-01，冻结原 Jev 行为 |
-| M12-B | M12-A、G-1、获准语料 | 固定 `jev-1.14.0` 的 Choice、Score、Noul 与完整概率落库 | J-1/4/9/12/13，缺字段记 `schema_gap` |
+| M12-B | M12-A、适用版本正式门禁、获准语料 | 固定 `jev-1.14.0` 的 Choice、Score、Noul 与完整概率落库 | J-1/4/9/12/13，缺字段记 `schema_gap` |
 | M12-C | M07-C、M09-A、M12-A/B | 全局意图 Top-K、None 与独立 Noul、未知和复核分流 | J-5/10/14，最多 19 个已知意图加 None，盲测 Recall@K ≥95% 才放量 |
 | M12-D | M11、M12-B/C、人工金标准 | 100–200 条金标准、中文子集、概率校准和阈值版 | J-2/3、G4、D2，报告分类 F1、分档一致和问题 F1 |
 | M12-E | M02-D、M12-A/B | 11 题 8+3、Token 预算、跨分片回执、账本、幂等恢复与故障处理 | J-6/7/8/11、G5/G7、TC-01～TC-08，实际用量、同步状态与输入可回查 |
@@ -180,8 +184,8 @@ M13-A 接手 100K 查询技术债。先以同一证据过滤条件复测常见�
 | 节点 | 阶段及前置 | 交付物与出场条件 | 当前状态 |
 |---|---|---|---|
 | M06-R | 基础及设计，M01–M06-C5 | 跨模块审计、修复、回归、规模恢复、实机部署与冻结记录 | PASS |
-| G-1-R | P0-0，M06-R 已完成且负责人另行授权 | 同一正式批次的 C0-1～C0-6 和所选供应商及通道审核，脱敏请求、响应与账本证据供 G-1 核对，固定版本供 J-9 接续 | [A 阶段工程证据](../evidence/g1-ra/README.md)，B 阶段待启动，G-1 BLOCKED |
-| P0-R | P0，G-1 与 M01–M14 的 P0 交付 | G0–G5、G7、CAT-1～CAT-10、J-1～J-14 及原矩阵的正式验收，含 P0 问卷试填。M12 独立专项复审归 M12 模块 | NOT_STARTED |
+| G-1-R | P0-0，M06-R 已完成且负责人另行授权 | 同一正式批次的 C0-1～C0-6 和所选供应商及通道审核，脱敏请求、响应与账本证据供 G-1 核对，固定版本供 J-9 接续 | [A 阶段工程证据](../evidence/g1-ra/README.md)，B-P 合成契约 PASS，正式 B BLOCKED |
+| P0-R | P0，适用版本正式门禁与 M01–M14 的 P0 交付 | G0–G5、G7、CAT-1～CAT-10、J-1～J-14 及原矩阵的正式验收，含 P0 问卷试填。M12 独立专项复审归 M12 模块 | NOT_STARTED |
 | P1-R | P1，P0-R 与六个 P1 单元 | P1-ANALYSIS/TREND/SOURCES/GOLD/REFLOW、完整 G6，真实趋势和实际答卷回写 | NOT_STARTED |
 | P2-R | P2，P1-R 与 M15 六单元 | P2-RADAR/AMAZON/GITHUB/SCHEDULE/HISTORY，全平台工程复审及正式业务记录 | NOT_STARTED |
 

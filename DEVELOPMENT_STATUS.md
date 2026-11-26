@@ -1,10 +1,18 @@
 # VOC Research Workbench 开发状态
 
+## G-1-PERSONAL Phase 1
+
+2026-11-26，以 M08-V 报告提交 `dd89a14f25ac0dfae3f63dcf1809da2494f1c9dc` 接续，原验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 的 Windows 11 实机及部署均 PASS，当轮新增未关闭 P0/P1/P2/P3 为 0/0/0/0，基线三项 CI 均通过。M06 工程基线 FROZEN，SQLite 工作库 v8，ROADMAP-V2 **39/79**。[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45740807294) · [M08-V](docs/evidence/m08-v/README.md)
+
+`DUAL_EDITION_STRATEGY = APPROVED_AND_DOCUMENTED`，`PERSONAL_EDITION = FULL_ACCESS_PLANNED`，`BUSINESS_EDITION = PLANNED`，`G1_PERSONAL_POLICY = DOCUMENTED`，`G1_PERSONAL_IMPLEMENTATION = NOT_STARTED`。个人门禁 **G-1-PERSONAL = NOT_EVALUATED**，商用 **G-1 = BLOCKED**，M09 = **NOT_STARTED**。下一轮为 G-1-P-B/C，各阶段待独立授权。个人 M09 等 G-1-P-D 与 G-1-P-R 完成准入后另行授权。[批准记录](docs/decisions/dual-edition-owner-approval.md) · [实施计划](docs/planning/g1-personal-implementation-plan.md)
+
+G-1-R-B-F 原始 CSV 两条消费 **CSV_VERIFIED**，累计 809 输入、220 输出、1,029 合计 Token，实际费用 **$0.000238**。与仓库合成回执交叉核对一致。个人 Windows 10 的原始 SQLite 独立核对为 **LOCAL_VERIFICATION_PENDING**。云端离线回归 Python 395/395、Node 2/2、三次空库冷启动通过。M08-V 实机沿用原证据。真实研究及真实供应商 API 调用各 **0 次**。[脱敏费用证据](docs/evidence/g1-rb-f/README.md)
+
 ## M08-V Windows 11 实机与部署验收
 
 2026-11-26 在普通登录用户的原生 Windows 11 Enterprise 25H2 x64（26200.8655）上复验 `74590d4a4d43a66c7a3296943da9205bc6ff65e0`。**M08_V = PASS**、**M01_M08_WINDOWS_11_REGRESSION = PASS**、**WINDOWS_11_REAL_MACHINE = PASS**、**WINDOWS_11_DEPLOYMENT_GATE = PASS**。Python 395/395、Node 2/2、Chromium 全量与两项专项、空库冷启动 3/3、历史归档 4/4、路径启动 6/6、SQLite v7→v8 迁移及恢复、DPAPI 合成凭证均通过。[实机证据](docs/evidence/m08-v/README.md)
 
-**M06_ENGINEERING_BASELINE = FROZEN**、**M07 = ENGINEERING_PASS**、**M08_P0_ENGINEERING = ENGINEERING_PASS**、**M08_FORMAL_BUSINESS_ACCEPTANCE = PENDING**。**G-1 = BLOCKED**、**PACKYCODE_PROVIDER_APPROVAL = PENDING**，真实研究 API 与真实供应商探针各 0 次。ROADMAP-V2 为 **39/79**，M08-E 和 M09–M15 尚未启动。M09 的隔离工程入口具备，等待单独授权。
+**M06_ENGINEERING_BASELINE = FROZEN**、**M07 = ENGINEERING_PASS**、**M08_P0_ENGINEERING = ENGINEERING_PASS**、**M08_FORMAL_BUSINESS_ACCEPTANCE = PENDING**。**G-1 = BLOCKED**、**PACKYCODE_PROVIDER_APPROVAL = PENDING**，真实研究 API 与真实供应商探针各 0 次。ROADMAP-V2 为 **39/79**，M08-E 和 M09–M15 尚未启动。M09 的隔离工程前置接口具备，接续条件见本页顶部的个人版准入。
 
 ## M08-C/D 隔离工程验收
 
@@ -20,7 +28,7 @@ SQLite 正式工作库 v8，A/B 演示账本 v1，C/D 任务账本 v1 独立。M
 
 负责人批准一次固定 8+3 的 PackyCode 合成契约试验，最多两次 POST，使用独立、不可重置的小额令牌和 100,000 输入 Token 本地预算目标。首片通过后须核对扣费和余额再发第二片。独立 SQLite 保存预约、分片证据及回执。结项时 G-1 为 **BLOCKED**，M06 冻结，M07 工程通过，M08 及 M12 当时未启动。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
 
-原批次完成 8+3 题，两个请求均返回 HTTP 200、`jev-1.14.0`。11 题字段校验通过，接口实报合计 **809 输入 / 220 输出 Token**，合成契约为 **PASS**。首片单笔实扣 **$0.000144**，最终测试令牌余额显示 **$2.00**，第二片单笔和实际总扣费未核实。[验收证据](docs/evidence/g1-rb-p/README.md#实际接口结项)
+原批次完成 8+3 题，两个请求均返回 HTTP 200、`jev-1.14.0`。11 题字段校验通过，接口实报合计 **809 输入 / 220 输出 Token**，合成契约为 **PASS**。首片单笔实扣 **$0.000144**，最终测试令牌余额显示 **$2.00**，原结项时第二片消费及总额未核实，Phase 1 已追加原始 CSV 取证。[原验收](docs/evidence/g1-rb-p/README.md#实际接口结项) · [费用补证](docs/evidence/g1-rb-f/README.md)
 
 ## G-1-R-A PackyCode 工程接入
 

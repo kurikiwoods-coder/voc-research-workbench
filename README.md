@@ -8,6 +8,10 @@
 
 VOC 工作台用于研究任意产品、服务或跨品类用户需求。一个研究项目可选择多个品类，也可以只指定研究问题。原话、用户任务和意图分别建模。营养秤是历史试点之一。
 
+## 产品版本与准入
+
+规划中的 **Personal Edition** 提供完整 M01–M15 研究功能。**Business Edition** 共用研究引擎和统计口径，执行企业治理及原商用准入。产品版本独立于 LOCAL/CLOUD 部署，当前工作台仍以本机回环运行。个人门禁 **G-1-PERSONAL = NOT_EVALUATED**，商用 **G-1 = BLOCKED**。两版的逐源许可、模型实测与数据保护按各自获准用途核对。[版本与职责](docs/architecture/edition-policy.md) · [部署矩阵](docs/architecture/edition-deployment-matrix.md) · [后续实施](docs/planning/g1-personal-implementation-plan.md)
+
 ## 启动当前版本
 
 开发分支交付 P0-0 本机工作台，包含 API 接入、连通性检查、验收矩阵、批次记录和 Jev 额度中心。浏览器通过 FastAPI 访问本地 SQLite。没有供应商凭证也能启动并完成配置向导。
@@ -102,7 +106,7 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-
 
 ## 分期与验收
 
-- **P0-0** 先用同一批次和真实证据验收 G-1。
+- **P0-0** 商用 G-1 沿用原同批准入。个人版规划独立 G-1-PERSONAL，同样要求六项证据及独立复审。[个人准入](docs/architecture/personal-research-gate.md)
 - **P0** 实现发现、编码、基础仪表盘与问卷草稿，逐项验收 J、CAT、G 系列。G6 的真实回流按矩阵归入 P1。
 - **P1**：仪表盘四模块 + 声量基线 + 问卷回流。
 - **P2**：竞品 Radar + Amazon 窄路常态化 + GitHub 信号三角验证。

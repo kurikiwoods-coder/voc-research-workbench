@@ -1,10 +1,10 @@
 # PackyCode 通道与准入准备
 
-PackyCode 是 M02 中独立的 Jev 候选供应商。独立合成预检 `PACKYCODE_LIVE_CONTRACT = PASS`，两片共 11 题通过契约校验。第二片单笔实扣未核实。`PACKYCODE_PROVIDER_APPROVAL = PENDING`、`G1_RB = BLOCKED`、`G-1 = BLOCKED`。[安全决定](decisions/packycode-synthetic-preflight.md) · [工程证据](evidence/g1-rb-p/README.md)
+PackyCode 是 M02 中独立的 Jev 候选供应商。独立合成预检 `PACKYCODE_LIVE_CONTRACT = PASS`，两片共 11 题通过契约校验。两片实际费用已据原始 CSV 补证为 $0.000238，个人 Windows 10 的原始账本待本机独立核对。[G-1-R-B-F 费用证据](evidence/g1-rb-f/README.md)`PACKYCODE_PROVIDER_APPROVAL = PENDING`、`G1_RB = BLOCKED`、`G-1 = BLOCKED`。[安全决定](decisions/packycode-synthetic-preflight.md) · [工程证据](evidence/g1-rb-p/README.md)
 
 ## 契约及证据
 
-2026-11-25 核对了下列公开文档和元数据。实际返回的模型、字段和用量仍待受控实测。
+2026-11-25 核对了公开文档和元数据，并完成固定合成输入的实际响应实测。真实研究用途须按各版准入单独验收。[原实际接口结项](evidence/g1-rb-p/README.md#实际接口结项)
 
 | 项目 | 公开证据及实测范围 |
 | --- | --- |
@@ -30,6 +30,8 @@ Set-Location -LiteralPath 'C:\Users\kurik\Documents\Codex\VOC Workbench 研究'
 4. 工作台原有诊断和正式批次继续执行 PackyCode 阻断。一次性合成接口预检使用下列本机命令。
 
 ## 一次性合成接口预检
+
+历史批次的两次 POST 已完成，发送授权已耗尽。以下保留原执行步骤供审计，当前用不含启动标志的查询命令回读既有记录。[原授权](decisions/packycode-synthetic-preflight.md)
 
 普通 Windows PowerShell 在项目目录运行 `.\.venv\Scripts\python.exe -m src.execution.packycode_preflight` 查询独立账本。
 
@@ -64,9 +66,13 @@ Set-Location -LiteralPath 'C:\Users\kurik\Documents\Codex\VOC Workbench 研究'
    .\.venv\Scripts\python.exe -m src.execution.packycode_preflight --resume-second --account-evidence .\runtime\packycode-preflight-account.json
    ```
 
+## 费用补证
+
+控制台原始 CSV 核对 22:08:59 与 22:44:50 两条单笔费用，分别 $0.000144 和 $0.000094，累计 **$0.000238**，809 输入、220 输出及零缓存读写。原账本和历史截图留在授权设备，个人 Windows 10 原始 SQLite 仍需本机复验。Token Center 的程序投影仍按现有估算、真实用量和余额状态显示。账单转录沿用原合成批次，仅保留脱敏两行。[费用补证与本机步骤](evidence/g1-rb-f/README.md)
+
 ## 账户材料及下一轮
 
 - 准备适用当前组织和账户的条款、证据出处和审查日期。材料应能核对请求及响应留存、训练用途、删除机制、处理地区、分处理商、公开语料处理授权、实际转发的上游，以及组织级 ZDR 的适用结果。
 - 审查记录包含审核人、时间、地区、条款引用、上游引用、供应商、分组、固定模型、完整端点、公开语料授权、审核项目记录及附件 SHA-256。现行接口要求保留审查附件并与当前密钥绑定。可按[连接性文档](connectivity.md)查看共用字段。
 - 本机 DPAPI 凭证与负责人截图中的限额测试令牌掩码一致。实际接口结果见[验收证据](evidence/g1-rb-p/README.md)。
-- G-1-R-B 需记录固定模型、按真实阶段要求完成的 8+3 分片、三类实际响应、各片用量和经账户证据核对的余额或扣费。保留原 C0-1 至 C0-6 同批标准及 G-1 正式放行条件。单次合成预检用于连接取证，正式研究数据和流程由下一轮授权及准入条件控制。
+- G-1-R-B 需记录固定模型、按真实阶段要求完成的 8+3 分片、三类实际响应、各片用量和经账户证据核对的余额或扣费。保留原 C0-1 至 C0-6 同批标准及 G-1 正式放行条件。单次合成预检用于连接取证，正式研究数据和流程依所用版本分别获准。原 `run_checks` 及真实传输的 PackyCode 阻断继续生效；个人版将由独立服务端策略审批。[商用 G-1](architecture/business-research-gate.md) · [个人版审批](architecture/personal-approval-workflow.md)

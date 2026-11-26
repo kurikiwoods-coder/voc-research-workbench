@@ -1,10 +1,18 @@
 # 开发交接
 
+## G-1-PERSONAL Phase 1 与后续授权
+
+基于已验收的 M08-V `dd89a14`，交付双版产品规划、个人最低准入及两条 PackyCode 费用证据。各阶段按实际授权接续。接续顺序为 G-1-P-B 服务端版本策略、G-1-P-C 个人审批、G-1-P-D 同批实证、G-1-P-R 独立复审。个人版准入及 M09 各自待负责人授权。**G-1-PERSONAL = NOT_EVALUATED**，商用 **G-1 = BLOCKED**，M09 = **NOT_STARTED**。[批准记录](docs/decisions/dual-edition-owner-approval.md) · [下一轮实施与测试](docs/planning/g1-personal-implementation-plan.md)
+
+后续保留旧 `run_checks`、分片和传输的 PackyCode 真实阻断，个人版由可信服务端作用域独立判定。两版共用全部研究引擎，版本和部署方式独立，保留原关系、可信权限、实时资格及统计口径。[个人门禁](docs/architecture/personal-research-gate.md) · [商用门禁](docs/architecture/business-research-gate.md) · [风险审批](docs/architecture/personal-approval-workflow.md)
+
+历史费用 **$0.000238** 已据原始 CSV 脱敏补证。个人 Windows 10 的原始 SQLite 及相关材料需设备内只读复核，标记 **LOCAL_VERIFICATION_PENDING**。原发送授权已耗尽，复核以原证据为准。M08-V 的 Windows 11 实机与部署 PASS 按原验收源码保留。[费用及本机核对](docs/evidence/g1-rb-f/README.md)
+
 ## M08-V 跨设备接续
 
 `codex/p0-0-connectivity` 在公司 Windows 11 上从 `3bd705b` 安全快进 9 个提交至验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0`。M08-V、Windows 11 实机及部署门禁均通过。后续部署用现有受控迁移及一致性备份升级工作库至 v8，保留诊断、演示、任务及 PackyCode 预检的独立账本。[Windows 11 实机证据](docs/evidence/m08-v/README.md) · [v7→v8 恢复证据](docs/evidence/m08-v/database-migration.md)
 
-M09-A 可在单独授权后接续隔离工程，按项目、冻结范围、记录、精确片段与 M07 封版注册表指针读取当前合格证据。G-1 仍为 BLOCKED，正式准入、外发、供应商审批及同批验收按原矩阵处理。真实研究 API 和真实供应商探针本轮各 0 次。M08-E 与 M09–M15 均尚未启动。[M09 消费契约](docs/architecture/m08-consumer-handover.md)
+M09-A 的工程接口已备，准入与立项条件见本页顶部。接续按项目、冻结范围、记录、精确片段与 M07 封版注册表指针读取当前合格证据。G-1 仍为 BLOCKED，正式准入、外发、供应商审批及同批验收按原矩阵处理。真实研究 API 和真实供应商探针本轮各 0 次。M08-E 与 M09–M15 均尚未启动。[M09 消费契约](docs/architecture/m08-consumer-handover.md)
 
 ## M08-C/D 接续
 
@@ -20,7 +28,7 @@ M08 的 P0 工程通过。M09 获得授权后，按项目、冻结范围、批�
 
 ## G-1-R-B-P 接续
 
-在个人电脑普通 Windows 用户会话运行 `python -m src.execution.packycode_preflight` 查询合成回执。同一账本已有两次预约和两份成功响应，11 题合并回执为 **PASS**，此次发送授权已耗尽。保留原账本和账户证据。供应商的第二片单笔实扣可凭控制台明细补证。正式 G-1 的供应商审核及 C0-1 至 C0-6 同批验收仍适用。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
+在个人电脑普通 Windows 用户会话运行 `python -m src.execution.packycode_preflight` 查询合成回执。同一账本已有两次预约和两份成功响应，11 题合并回执为 **PASS**，此次发送授权已耗尽。保留原账本和账户证据。两片控制台实际费用已由原始 CSV 补证，个人 Windows 10 原始账本待本机复验。[追加证据](docs/evidence/g1-rb-f/README.md)正式 G-1 的供应商审核及 C0-1 至 C0-6 同批验收仍适用。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
 
 ## G-1-R-A 接续
 

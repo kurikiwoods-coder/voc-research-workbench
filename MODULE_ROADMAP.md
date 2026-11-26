@@ -8,13 +8,15 @@
 
 ## 当前模块
 
-2026-11-26 的 M08-V 已在验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 完成 M01–M08 Windows 11 实机与部署复验，两道门禁均为 **PASS**。M08 A–D P0 工程通过，正式业务待验，M09 隔离工程入口需单独授权。[实机验收证据](docs/evidence/m08-v/README.md)
+2026-11-26 的 M08-V 已在验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 完成 M01–M08 Windows 11 实机与部署复验，两道门禁均为 **PASS**。M08 A–D P0 工程通过，正式业务待验。M09 的工程接口已备，个人版先完成自身准入，再单独授权。[实机验收证据](docs/evidence/m08-v/README.md)
 
-M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，第二片实扣待补证。G-1-R-B 为 **BLOCKED**。M08 的 P0 A–D 工程通过，正式业务 **PENDING**，P1 的 M08-E 及 M09–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-C/D 证据](docs/evidence/m08-cd/README.md)
+M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，原始 CSV 已补证两笔实际总扣费 $0.000238，个人 Windows 10 账本待独立复核。[费用证据](docs/evidence/g1-rb-f/README.md)G-1-R-B 为 **BLOCKED**。M08 的 P0 A–D 工程通过，正式业务 **PENDING**，P1 的 M08-E 及 M09–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-C/D 证据](docs/evidence/m08-cd/README.md)
 
-[ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 35 项，待推进 44 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
+[ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 39 项，待推进 40 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
+
+EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B/C/D/R 四个接续单元分别授权，个人门禁 NOT_EVALUATED，商用 G-1 BLOCKED。费用补证和个人治理独立登记。核心 79 项的范围与 39 项完成记录沿用。[治理实施与测试](docs/planning/g1-personal-implementation-plan.md) · [双版本](docs/architecture/edition-policy.md)
 
 ## M01 基础工程与连通性
 
@@ -158,7 +160,7 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 |---|---|
 | PDT 与矩阵编号 | 专案 §5 第三层、PDT §8；DISCOVERY、G3、CAT-4（协作） |
 | 模块职责 | 在合格样本上提取主题、记录聚类和候选复查所需的证据。 |
-| 前置依赖 | M05 可追溯语料、M06 范围与分类、M07 注册表；M11 提供人工审核。 |
+| 前置依赖 | M05 可追溯语料、M06 范围与分类、M07 注册表，M11 提供人审。个人版需 G-1-PERSONAL 准入和独立开发授权。 |
 | 工程开发 | 仅有发现层说明及通用向量召回冒烟，无 BERTopic 实现。 |
 | 工程测试 | 未测试 BERTopic。 |
 | 正式业务验收 | 待验收。 |
@@ -209,7 +211,7 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 |---|---|
 | PDT 与矩阵编号 | §7、§13；J-1～J-14、G4/G5、D2/D3/D5、P1-GOLD；C0-1/2/4（前置） |
 | 模块职责 | 提供通用决策接口和模型版本记录。首套正式实施锁定 `jev-1.14.0`，继承 Choice、Score、Noul、8+3 分片、None 守门及全部原 Jev 验收。[模型接口](docs/architecture/ai-model-adapter-contract.md) |
-| 前置依赖 | M01 G-1、M02 凭证审查、M05 语料、M06/M07 已确认注册表、M11 复核流程。 |
+| 前置依赖 | 适用版本门禁（商用原 G-1、个人 G-1-PERSONAL）、M02 凭证审查、M05 语料、M06/M07 已确认注册表及 M11 复核流程。 |
 | 工程开发 | P0-0 真实请求路径和固定字段校验已有，P0 编码与金标准未实现。 |
 | 工程测试 | 分片、防重和缺概率有工程夹具，正式金标准未测试。 |
 | 正式业务验收 | C0-1/2/4 BLOCKED；J-1～J-14、G4 不作通过。 |

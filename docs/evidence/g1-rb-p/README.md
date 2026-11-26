@@ -47,4 +47,6 @@ PackyAPI 公布全球生产域名、Jev 官方分组和固定模型。模型详�
 
 当前供应商账户审批为 **PENDING**，正式研究 API 调用 **0**。`G-1 = BLOCKED`，仍需实际通道供应商审核及同一正式批次 C0-1 至 C0-6。M06 工程为 **FROZEN**，M07 为 **ENGINEERING_PASS**。
 
+2026-11-26 追加两笔控制台原始 CSV 费用取证。上述结项时的回执和表格按原样保留。[G-1-R-B-F 追加证据](../g1-rb-f/README.md)
+
 [操作说明](../../packycode.md#一次性合成接口预检) · [授权及工程隔离](../../decisions/packycode-synthetic-preflight.md)

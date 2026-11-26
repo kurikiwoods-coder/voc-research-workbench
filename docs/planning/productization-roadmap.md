@@ -2,6 +2,8 @@
 
 产品化在 P2 核心功能稳定后由负责人分别授权。UX、Mobile、Cloud 和 Release 共 15 个可选工作单元，与核心 79 项合计 94 项规划单元。高级模型评估、主辅复核与更多模型的安排单独授权定范围。四个方向均处于可选规划。
 
+Personal 与 Business 的全功能产品规划和 LOCAL／CLOUD 选择分别管理。此处的移动端、VPS、全天候任务、跨设备同步及发布为获准扩展能力，既有本机工作台按回环访问。两版仍须按自身准入、来源和数据许可启用。P2 后 15 项继续沿用，EDITION-V1 与个人治理另行跟踪。[部署矩阵](../architecture/edition-deployment-matrix.md) · [治理计划](g1-personal-implementation-plan.md)
+
 ## 产品化路线
 
 ```mermaid
