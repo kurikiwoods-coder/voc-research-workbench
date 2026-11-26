@@ -1,5 +1,11 @@
 # 开发交接
 
+## M08-V 跨设备接续
+
+`codex/p0-0-connectivity` 在公司 Windows 11 上从 `3bd705b` 安全快进 9 个提交至验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0`。M08-V、Windows 11 实机及部署门禁均通过。后续部署用现有受控迁移及一致性备份升级工作库至 v8，保留诊断、演示、任务及 PackyCode 预检的独立账本。[Windows 11 实机证据](docs/evidence/m08-v/README.md) · [v7→v8 恢复证据](docs/evidence/m08-v/database-migration.md)
+
+M09-A 可在单独授权后接续隔离工程，按项目、冻结范围、记录、精确片段与 M07 封版注册表指针读取当前合格证据。G-1 仍为 BLOCKED，正式准入、外发、供应商审批及同批验收按原矩阵处理。真实研究 API 和真实供应商探针本轮各 0 次。M08-E 与 M09–M15 均尚未启动。[M09 消费契约](docs/architecture/m08-consumer-handover.md)
+
 ## M08-C/D 接续
 
 「来源采集」页面支持固定合成计划、平台许可、任务检查点、暂停及继续。Stack Exchange 与 YouTube 在隔离夹具中回源，Reddit 是禁用候选。每任务独立 v8 工作库保存 M04 批次、M05 审核和本机回执，任务 v1 账本在 `m08-sampling/ledger.sqlite3`。结果未知的计量预约继续阻断。只有已提交的本机回执可以恢复结算。[平台回源](docs/architecture/m08-platform-retrieval-contract.md) · [任务契约](docs/architecture/m08-acquisition-task-contract.md) · [验收证据](docs/evidence/m08-cd/README.md)

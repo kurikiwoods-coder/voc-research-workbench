@@ -1,0 +1,78 @@
+{
+  "date": "2026-11-26",
+  "timezone": "Asia/Taipei",
+  "source_sha": "74590d4a4d43a66c7a3296943da9205bc6ff65e0",
+  "archive_sha256": "99630226020f1c10c7afacfe79f09b970ac3733dd43a45e72a261e53f0d596b6",
+  "os": "Windows 11 Enterprise 25H2",
+  "build": "26200.8655",
+  "architecture": "x64",
+  "execution": "native Windows, interactive standard login user, not elevated",
+  "source_workspace": "existing development checkout with tracked source exported to an isolated test directory",
+  "python_environment": "checkout-local Python 3.12 venv for suites, offline isolated venv per launcher path",
+  "versions": {
+    "powershell": "7.6.9",
+    "git": "2.55.0.windows.5",
+    "python": "3.12.9",
+    "node": "24.19.0",
+    "sqlite": "3.45.3",
+    "playwright": "1.65.2",
+    "chromium": "159.0.8154.6"
+  },
+  "dependencies": {
+    "fastapi": "0.165.0",
+    "uvicorn": "0.54.0",
+    "python-dotenv": "1.2.4",
+    "numpy": "2.5.5",
+    "scikit-learn": "1.9.1",
+    "openpyxl": "3.1.5",
+    "httpx": "0.28.1",
+    "pip_check_exit": 0
+  },
+  "schema": {
+    "workspace": 8,
+    "task_workspace": 8,
+    "connectivity_contract": 1,
+    "api_diagnostics": 1,
+    "m08_demo_ledger": 1,
+    "m08_task_ledger": 1,
+    "packycode_preflight_ledger": 1
+  },
+  "checks": {
+    "python": {
+      "passed": 395,
+      "failed": 0,
+      "skipped": 0,
+      "exit": 0
+    },
+    "node": {
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0,
+      "exit": 0
+    },
+    "chromium": {
+      "full_exit": 0,
+      "acquisition_exit": 0,
+      "packycode_exit": 0,
+      "keyboard_checks": 22
+    },
+    "cold_start": {
+      "passed": 3,
+      "exit": 0
+    },
+    "historical_archive": {
+      "passed": 4,
+      "exit": 0
+    },
+    "launcher": {
+      "passed": 6,
+      "harness_exit": 0,
+      "graceful_ctrl_break_exit": 3
+    },
+    "dpapi_exit": 0,
+    "sqlite_migration_exit": 0,
+    "secret_scan_exit": 0
+  },
+  "real_research_api_calls": 0,
+  "real_supplier_probe_calls": 0
+}

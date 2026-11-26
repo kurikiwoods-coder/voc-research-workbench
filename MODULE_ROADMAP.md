@@ -8,6 +8,8 @@
 
 ## 当前模块
 
+2026-11-26 的 M08-V 已在验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 完成 M01–M08 Windows 11 实机与部署复验，两道门禁均为 **PASS**。M08 A–D P0 工程通过，正式业务待验，M09 隔离工程入口需单独授权。[实机验收证据](docs/evidence/m08-v/README.md)
+
 M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，第二片实扣待补证。G-1-R-B 为 **BLOCKED**。M08 的 P0 A–D 工程通过，正式业务 **PENDING**，P1 的 M08-E 及 M09–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-C/D 证据](docs/evidence/m08-cd/README.md)
 
 [ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 35 项，待推进 44 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)

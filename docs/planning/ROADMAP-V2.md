@@ -1,5 +1,7 @@
 # ROADMAP-V2 完整开发路线图
 
+M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。工程单元计数为 **39/79**，M09 等待单独授权，G-1 保持 **BLOCKED**。[Windows 11 实机证据](../evidence/m08-v/README.md)
+
 2026-11-25 负责人批准本规划。开发分支 `codex/p0-0-connectivity`，规划基线 `3bd705befb98ee108b77603763c5571ceb7fdc44`。草稿 PR #1 与该基线一致，Ubuntu、Windows Server 2022、Chromium 作业均通过。[负责人批准](../decisions/roadmap-v2-owner-approval.md) · [M06-R 基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45585265229) · [草稿 PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1)
 
 | 状态 | 基线观察 |

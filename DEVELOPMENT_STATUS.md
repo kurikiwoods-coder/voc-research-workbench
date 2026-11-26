@@ -1,5 +1,11 @@
 # VOC Research Workbench 开发状态
 
+## M08-V Windows 11 实机与部署验收
+
+2026-11-26 在普通登录用户的原生 Windows 11 Enterprise 25H2 x64（26200.8655）上复验 `74590d4a4d43a66c7a3296943da9205bc6ff65e0`。**M08_V = PASS**、**M01_M08_WINDOWS_11_REGRESSION = PASS**、**WINDOWS_11_REAL_MACHINE = PASS**、**WINDOWS_11_DEPLOYMENT_GATE = PASS**。Python 395/395、Node 2/2、Chromium 全量与两项专项、空库冷启动 3/3、历史归档 4/4、路径启动 6/6、SQLite v7→v8 迁移及恢复、DPAPI 合成凭证均通过。[实机证据](docs/evidence/m08-v/README.md)
+
+**M06_ENGINEERING_BASELINE = FROZEN**、**M07 = ENGINEERING_PASS**、**M08_P0_ENGINEERING = ENGINEERING_PASS**、**M08_FORMAL_BUSINESS_ACCEPTANCE = PENDING**。**G-1 = BLOCKED**、**PACKYCODE_PROVIDER_APPROVAL = PENDING**，真实研究 API 与真实供应商探针各 0 次。ROADMAP-V2 为 **39/79**，M08-E 和 M09–M15 尚未启动。M09 的隔离工程入口具备，等待单独授权。
+
 ## M08-C/D 隔离工程验收
 
 起点 `411f43388daf140c1dc33bfd1de2e26d89b17641`。M08-A/B/C/D 均为 **ENGINEERING_PASS**，`M08_P0_ENGINEERING = ENGINEERING_PASS`，路线图 **39/79**。Windows 10 普通用户环境 Python 395/395、Node 2/2、Chromium 全量、冷启动 3/3、归档 4/4。三批 120 片段及 30/30 证据回查通过。已确认 P0/P1 关闭。本轮源码 Windows 11 实机为 **NOT_TESTED**。[M08-C/D 证据](docs/evidence/m08-cd/README.md)
