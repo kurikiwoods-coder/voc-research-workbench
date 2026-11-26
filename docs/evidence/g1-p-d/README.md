@@ -1,5 +1,7 @@
 # G-1-P-D 个人研究版同批验收准备
 
+后续 G-1-P-D-E Phase 0 已复现 v9 账本缺口。工程状态 **BLOCKED**，接续等待负责人独立批准 Personal 工作库迁移。以下正式同批判定及历史证据继续适用。[Phase 0 复验与风险](phase-0.md) · [迁移草案](../../architecture/g1-personal-pre-admission-design.md)
+
 2026-11-26，**G-1-P-D = BLOCKED**。C 阶段工程交付已通过，本轮完成基线复验、离线演练和请求预算准备。现行服务端缺少受限个人预准入执行入口及同批预约、回执和对账机制，负责人尚未确认最终载荷、实际凭证和金额上限。本轮未建立正式批次。个人门禁 `NOT_EVALUATED`，商用 G-1 `BLOCKED`，R 及 M09–M15 `NOT_STARTED`。工作库 SQLite v9，M06 冻结，核心路线图 39/79。[个人准入](../../architecture/personal-research-gate.md) · [批次准备规范](../g1-p-c/d-preparation.md)
 
 ## 基线与阻塞

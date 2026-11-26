@@ -6,6 +6,8 @@
 
 ## G-1-P-D 个人版正式同批验收准备
 
+2026-11-26，**G-1-P-D-E = BLOCKED**。在 `9f21ffcfd2d9e03d998da455f2d5b030ceacba2d` 复现预准入关闭和 v9 账本缺口。已完成待批的 Personal 专用 v9→v10 迁移草案。工作库仍为 v9。D-L 尚未就绪，进入工程实施需负责人单独批准迁移。[Phase 0 证据](docs/evidence/g1-p-d/phase-0.md) · [迁移草案](docs/architecture/g1-personal-pre-admission-design.md)
+
 **G-1-P-D = BLOCKED**。2026-11-26 以 `5106bb1098ebc706fb3429ba462cd5e82c55b169` 复核 G-1-P-C，三项基线 CI 通过，Windows 11 本机复验完成。C0-5 和 C0-6 的离线工程结果通过。D 尚缺受限个人预准入执行入口、同批预算预约与对账，以及已确认的载荷、凭证和金额上限。C0-1 至 C0-6 的个人正式同批状态均为 `BLOCKED`，真实外部请求、Token、费用及正式历史证据纳入均为 0。[D 复核及预算](docs/evidence/g1-p-d/README.md)
 
 ## G-1-P-C 个人供应商审批中心
