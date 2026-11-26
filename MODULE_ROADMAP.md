@@ -16,7 +16,7 @@ M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FRO
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
-EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B 服务端策略为 ENGINEERING_PASS，三项 CI 通过。G-1-P-B-V 接管及 Windows 11 实机复验 PASS，按本轮授权接续 C。D/R 待独立授权。个人门禁 NOT_EVALUATED，商用 G-1 BLOCKED。费用补证和个人治理独立登记。核心 79 项的范围与 39 项完成记录沿用。[B-V 实机证据](docs/evidence/g1-p-b-v/README.md) · [治理实施与测试](docs/planning/g1-personal-implementation-plan.md)
+EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B 服务端策略为 ENGINEERING_PASS，G-1-P-B-V 接管及 Windows 11 实机复验 PASS。G-1-P-C 已实现项目和冻结范围内的个人审批、证据和版本化凭证治理，实机和工程状态见 C 证据。D/R 待独立授权。个人门禁 NOT_EVALUATED，商用 G-1 BLOCKED，核心进度 39/79。[B-V 实机证据](docs/evidence/g1-p-b-v/README.md) · [C 工程证据](docs/evidence/g1-p-c/README.md)
 
 ## M01 基础工程与连通性
 

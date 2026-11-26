@@ -1,6 +1,6 @@
 # G-1-P-B 双版本服务端策略
 
-统一研究引擎由服务端确定产品版本和部署方式。空配置使用 `BUSINESS / LOCAL`，沿用原工作台、SQLite v8、凭证库、验收和账户审查。显式值使用 `PERSONAL`、`BUSINESS`、`LOCAL` 或 `CLOUD`，非法取值拒绝启动。两种 CLOUD 组合目前只提供状态，不开业务库、凭证库或调度器。[Phase 1 双版本政策](edition-policy.md) · [门禁契约](g1-personal-gate-contract.md)
+统一研究引擎由服务端确定产品版本和部署方式。空配置使用 `BUSINESS / LOCAL`，沿用原工作台、凭证库、验收和账户审查。B 使用 SQLite v8，C 候选升级至 v9。显式值使用 `PERSONAL`、`BUSINESS`、`LOCAL` 或 `CLOUD`，非法取值拒绝启动。两种 CLOUD 组合目前只提供状态，不开业务库、凭证库或调度器。[Phase 1 双版本政策](edition-policy.md) · [个人审批契约](g1-personal-approval-contract.md)
 
 ## 个人本机启动
 
@@ -48,8 +48,9 @@ python -m src.dashboard.personal_workspace $personalRoot --name "图书馆预约
 | `GET /api/edition/projects`、`GET /api/edition/projects/{study_id}` | 认证后查看作用范围、身份标识、操作权限和受控授权引用 |
 | 项目冻结范围、导入、语料接口 | 已有接口复用精确范围及独立权限，未知或无权对象以统一状态回应 |
 | `GET /api/studies/{study_id}/denominators?mode=formal` | 个人正式分析返回 `unavailable`、`counts: null` 及阻塞原因。原统计口径版本 `M06-B-F.1` |
-| 旧连通性、诊断、采集预约和出队、续跑、编排、注册表发行、研究发布 | 个人版旧路径拒绝执行。工程合成回归继续走现有隔离机制，个人审批和正式同批验收入口分别由 C 与 D 交付 |
+| 个人供应商审批中心 | C 提供审批、撤销、当前资料复核及范围内凭证管理。具体权限、路由和材料格式见[审批中心契约](g1-personal-approval-contract.md) |
+| 旧连通性、诊断、采集预约和出队、续跑、编排、注册表发行、研究发布 | 个人版旧路径拒绝执行。工程合成回归继续走现有隔离机制，个人同批验收留待 D |
 | 商用历史与提供商 | 原商用工作台和判定继续适用。新状态摘要在同批证据和当前账户审查一致时才投影商用通过 |
 | PackyCode 独立预检 | 原授权已耗尽，命令只保留原账本查阅；`--execute`、`--resume-second` 均关闭。归档和实际成本证据保留 |
 
-代码由 `src/edition_policy.py` 决策，`src/dashboard/edition_access.py` 在路由解析后、业务请求体解析前执行策略。本机回环和同源限制仍适用。Windows 依当前用户本机运行目录的继承权限及原有 DPAPI 服务；个人版 B 不打开供应商凭证库。[部署契约](edition-deployment-matrix.md) · [工程证据](../evidence/g1-p-b/README.md)
+代码由 `src/edition_policy.py` 决策，`src/dashboard/edition_access.py` 在路由解析后、业务请求体解析前执行策略。本机回环和同源限制适用。C 的个人凭证按项目和冻结范围绑定，依靠运行目录的继承权限及 Windows 当前用户 DPAPI。[部署契约](edition-deployment-matrix.md) · [B 工程证据](../evidence/g1-p-b/README.md) · [C 工程证据](../evidence/g1-p-c/README.md)

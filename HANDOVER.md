@@ -2,13 +2,13 @@
 
 ## G-1-P-B-V 与 G-1-P-C 接续
 
-本机接续 `codex/g1-personal-phase-1` 的 `0d43be5f7b707c4ad8a3384dabc5c595b15d0b7b`，草稿 PR #2。B-V 原生实机及部署门禁通过，本轮授权接续 C。C 独立验证其源码及部署门禁。[B-V 证据](docs/evidence/g1-p-b-v/README.md)
+工作分支 `codex/g1-personal-phase-1`，草稿 PR #2，目标 `codex/p0-0-connectivity`。本机从 `0d43be5f7b707c4ad8a3384dabc5c595b15d0b7b` 接续。B-V 的原生实机及部署门禁和证据提交 `97e942d` 的三项 CI 通过。C 验收源码为 `912ff28e0a10e3329bc49c6e9fdc97e290229a68`。[B-V 证据](docs/evidence/g1-p-b-v/README.md) · [C 验收](docs/evidence/g1-p-c/README.md)
 
 **G-1-P-B = ENGINEERING_PASS**，验收源码 `d7c711660843c8c095fccbedd4b67d5303f9226b`。[三项 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749971864)
 
-个人版通过本机可信启动开启，Owner 按服务端权限、项目、冻结范围和用途进行本机操作。G-1-PERSONAL 为 **NOT_EVALUATED**。原商用 G-1 为 **BLOCKED**。原 PackyCode 执行与续跑授权已耗尽。B 工作库 SQLite v8，M06 冻结，核心进度 39/79。[启动及接口](docs/architecture/g1-personal-server-policy.md) · [工程证据](docs/evidence/g1-p-b/README.md)
+个人版通过本机可信启动开启。Owner 在「版本与研究准入」选择获准项目，按权限配置本机凭证、登记材料和风险、提交申请、批准或撤销。C 工作库 SQLite v9，经隔离验证后接续。G-1-PERSONAL 为 **NOT_EVALUATED**，原商用 G-1 为 **BLOCKED**。原 PackyCode 执行与续跑授权已耗尽。M06 冻结，核心进度 39/79。[可信启动](docs/architecture/g1-personal-server-policy.md) · [C 契约](docs/architecture/g1-personal-approval-contract.md)
 
-G-1-P-C 获单独授权后接入个人供应商审批事件及脱敏证据引用，绑定实际账户、凭证版、通道、作用域、用途、操作者、依据和撤销时效。保持正式采集、外发、编码、发布及 M09 关闭，个人同批实证留待 D，正式准入留待 R。[拟定 API、表和迁移](docs/architecture/g1-personal-gate-contract.md)
+D 的真实执行需负责人另行授权。在取证前核实当前账户、凭证、精确通道、逐源许可及批次预算。准备实现受控个人预准入发送前置与账本，复核恢复后材料撤销历史。新鲜证据全链路预计最少 4 次外部请求，详见[批次准备](docs/evidence/g1-p-c/d-preparation.md)。本轮未发出真实请求，R 与 M09 尚未启动。[未结事项](docs/evidence/g1-p-c/bug-register.md)
 
 ## G-1-PERSONAL Phase 1 与后续授权
 

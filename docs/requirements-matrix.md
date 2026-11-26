@@ -11,8 +11,8 @@
 | G-1-P-A | C0-1 至 C0-6 同批、可信身份、逐源与供应商强制授权 | DOCUMENTED，G-1-PERSONAL NOT_EVALUATED。[个人门禁与复用](architecture/personal-research-gate.md) |
 | G-1-P-B | 服务端版本与部署、可信 Owner、精确项目和冻结范围；商用兼容，个人预准入及正式操作关闭 | ENGINEERING_PASS。[工程与安全回归](evidence/g1-p-b/README.md) · [门禁契约](architecture/g1-personal-gate-contract.md) |
 | G-1-P-B-V | 安全接管，原生 Windows 全量、路径、ACL 和 DPAPI 验收 | PASS。[实机证据](evidence/g1-p-b-v/README.md) |
-| G-1-P-C | 个人审批及撤销、设备、凭证与证据绑定 | NOT_STARTED，独立授权。[API、治理表及迁移草案](architecture/g1-personal-gate-contract.md) |
-| G-1-P-D/R | 同批正式复验及独立安全评审 | NOT_STARTED。任一缺项仍关闭，M09 等个人准入及独立开发授权。商用 G-1 另行验收 |
+| G-1-P-C | 可信 Owner 和精确范围权限、必要材料与风险、审批撤销、个人凭证、追加式证据与 SQLite v9 | 已实现，验收绑定固定源码和对应 CI。[证据](evidence/g1-p-c/README.md) · [实现契约](architecture/g1-personal-approval-contract.md) |
+| G-1-P-D/R | 同批正式复验及独立安全评审 | D 准备材料已登记，真实运行待单独批准。R NOT_STARTED，M09 等个人准入及独立开发授权。商用 G-1 另行验收。[D 取证计划](evidence/g1-p-c/d-preparation.md) |
 
 ## M08-V Windows 11 回归验收
 

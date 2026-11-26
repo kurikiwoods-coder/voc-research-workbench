@@ -1,14 +1,20 @@
 # VOC Research Workbench 开发状态
 
+## G-1-P-C 个人供应商审批中心
+
+**G1_PERSONAL_APPROVAL_CENTER = IMPLEMENTED**，**G1_PERSONAL_IMPLEMENTATION = PARTIAL**。源码 `912ff28e0a10e3329bc49c6e9fdc97e290229a68` 实现可信本机 Owner 的项目和冻结范围审批、必要材料复核、非强制风险登记、凭证绑定及不可变事件，工作库 SQLite v9。该源码 **WINDOWS_11_REAL_MACHINE = PASS**，**WINDOWS_11_DEPLOYMENT_GATE = PASS**。本交付提交的三项 CI 均通过时，**G-1-P-C = ENGINEERING_PASS** 且 **G-1-P-D = READY**。[本轮证据](docs/evidence/g1-p-c/README.md) · [交付检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2/checks)
+
+**G-1-PERSONAL = NOT_EVALUATED**，**G-1 = BLOCKED**。M06 工程基线 FROZEN，正式统计继续 `unavailable/null`，核心 39/79。D 仅登记工程接续条件，真实批次需负责人单独授权。R、M09–M15 为 **NOT_STARTED**。真实研究和真实供应商探针分别为 **0 次**。[D 批次准备](docs/evidence/g1-p-c/d-preparation.md)
+
 ## G-1-P-B-V 网页成果接管
 
-**WEB_CODE_TAKEOVER = PASS**，**G-1-P-B-V = PASS**。原生 Windows 11 在隔离的 B 版源码快照上通过全量回归、DPAPI、ACL 及三种路径启动重启。该源码的 **WINDOWS_11_REAL_MACHINE = PASS**、**WINDOWS_11_DEPLOYMENT_GATE = PASS**。本轮授权允许接续 C。D、R、M09 待单独授权。[验收证据](docs/evidence/g1-p-b-v/README.md)
+**WEB_CODE_TAKEOVER = PASS**，**G-1-P-B-V = PASS**。原生 Windows 11 在隔离的 B 版源码快照上通过全量回归、DPAPI、ACL 及三种路径启动重启。该源码的 **WINDOWS_11_REAL_MACHINE = PASS**、**WINDOWS_11_DEPLOYMENT_GATE = PASS**。验收提交 `97e942d9339921089cabb6fe2b0ea01d6832f5fe` 的三项 CI 通过。[验收证据](docs/evidence/g1-p-b-v/README.md) · [B-V CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45757091621)
 
 ## G-1-P-B 双版本服务端工程
 
 2026-11-26 从 Phase 1 实际远端 `0e7a3d7ec4909cf43410728045a9bb765b2760da` 接续。**G-1-P-B = ENGINEERING_PASS**，`G1_PERSONAL_SERVER_POLICY = IMPLEMENTED`，`G1_PERSONAL_IMPLEMENTATION = PARTIAL`。个人本机 Owner、项目及冻结范围权限、两道门禁与云模式关闭已实现。独立复审及 Windows 兼容回归完成，未关闭 P0/P1 为 0。[工程证据](docs/evidence/g1-p-b/README.md) · [本机启动](docs/architecture/g1-personal-server-policy.md)
 
-**G-1-PERSONAL = NOT_EVALUATED**，**G-1 = BLOCKED**。SQLite v8，M06 工程基线 FROZEN，核心 39/79。G-1-P-C/D/R、M09–M15 为 **NOT_STARTED**，继续按独立授权接续。真实研究及供应商探针各 **0 次**。[C 接入设计](docs/architecture/g1-personal-gate-contract.md)
+该 B 源码使用 SQLite v8，M06 工程基线 FROZEN，核心 39/79。B 阶段真实研究及供应商探针各 **0 次**。
 
 实现验收绑定 `d7c711660843c8c095fccbedd4b67d5303f9226b`。Ubuntu 与 Windows Server 2022 均通过 422 项 Python、2 项 Node、三次空库冷启动及四份归档校验。Chromium 全量通过。Windows Server 的中文及空格路径启动回归通过。[三项 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749971864)
 

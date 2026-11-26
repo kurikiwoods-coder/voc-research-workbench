@@ -5,13 +5,13 @@ Phase 1 交付资料、两版架构和最低准入。后续按 **G-1-P-B → G-1
 | 归属 | 单元 | 当前及验收 |
 |---|---|---|
 | 个人版治理 | EDITION-V1、G-1-P-A | 2 项政策和设计已交付。服务端策略已实现 |
-| 后续个人版治理 | G-1-P-B、G-1-P-C、G-1-P-D、G-1-P-R | B ENGINEERING_PASS，B-V 原生 Windows 11 实机及部署门禁 PASS。本轮获准接续 C，D/R 另行授权。[B-V 证据](../evidence/g1-p-b-v/README.md) |
+| 后续个人版治理 | G-1-P-B、G-1-P-C、G-1-P-D、G-1-P-R | B ENGINEERING_PASS，B-V 原生 Windows 11 实机及部署门禁 PASS。C 已实现，验收以实际证据为准。D/R 另行授权。[B-V 证据](../evidence/g1-p-b-v/README.md) · [C 证据](../evidence/g1-p-c/README.md) |
 | 配套历史补证 | G-1-R-B-F | 控制台原始 CSV 已核对。个人 Windows 10 的原始 SQLite 及相关材料待本机独立核实 |
 | 原研究路线 | 79 个原核心单元 | 维持 39/79。上述治理与补证独立记录 |
 
 ## G-1-P-B 服务端策略和双门禁
 
-当前已接入 `EditionPolicy`、可信本机 Owner、冻结范围授权和本机工作库绑定。个人正式门禁维持 NOT_EVALUATED，原商用 G-1 保持 BLOCKED。B 阶段实际接口和限制见 [服务端策略](../architecture/g1-personal-server-policy.md) 与 [工程证据](../evidence/g1-p-b/README.md)。C 的接口、追加式事件和建议迁移见 [门禁契约](../architecture/g1-personal-gate-contract.md#g-1-p-c-接入与最小迁移草案)。
+当前已接入 `EditionPolicy`、可信本机 Owner、冻结范围授权和本机工作库绑定。个人正式门禁维持 NOT_EVALUATED，原商用 G-1 保持 BLOCKED。B 阶段实际接口和限制见 [服务端策略](../architecture/g1-personal-server-policy.md) 与 [工程证据](../evidence/g1-p-b/README.md)。C 的接口、追加事件和实际迁移见[审批中心契约](../architecture/g1-personal-approval-contract.md)。
 
 1. 先校验服务端部署配置、可信身份和项目授权，产生不可由客户端构造的版本/操作上下文。首版设计一实例承载一个受审版本，沿用共享代码。现有未选版本的工作库继续走旧 Business／Local 兼容路径。授权启动 Personal 时选择受控运行目录，绑定允许的项目和用途。无效配置及未批准的 Cloud 关闭具有特权的入口。
 2. 对 Personal 与 Business 各用自己的门禁评估和读投影。统一决策接口返回有效版本、部署模式、项目、操作、输入及授权范围、策略版、原因、门禁状态和受控证据引用。返回类型表达拒绝或允许，不携带密钥。正式、验证、离线合成各有隔离运行域；正式许可由服务端计算。
@@ -20,7 +20,7 @@ Phase 1 交付资料、两版架构和最低准入。后续按 **G-1-P-B → G-1
 
 ## G-1-P-C 个人审批与风险管理中心
 
-由可信 Owner 在范围内登记申请，服务端逐项验证当前资料。确认和撤销写入不可变事件，登记证据引用、策略版、时效、身份、审批范围、当前账户和凭证版本。支持允许的 `UNKNOWN`、理由和补证，审批输出区分用途中不同的可用状态。浏览器只显示获准且脱敏的字段。API 拟提供状态查询、申请及草稿、确认、撤销、当前版本和历史投影。具体路由及字段在独立工程授权后按已有 API 风格定案。
+可信 Personal Local Owner 从「版本与研究准入」查看阻塞原因、登记材料及获准的 `UNKNOWN` 风险、配置本机凭证、提交申请、核准或撤销。各操作以当前权限、项目和冻结范围为准。SQLite v9 追加不可变事件、证据快照和 DPAPI 版本锚。浏览器只显示获准且脱敏的字段。[审批中心契约](../architecture/g1-personal-approval-contract.md) · [迁移证据](../evidence/g1-p-c/database-migration.md)
 
 C 的供应商审批是独立前提。暂未评价的 G-1-PERSONAL 继续阻断正式使用，个人审批不会写入 `Settings.review_status()` 的商用证据。假定服务重启和凭证轮换均会发生，后续请求以当前有效登记为准。[审批工作流](../architecture/personal-approval-workflow.md)
 
@@ -65,4 +65,4 @@ C 的供应商审批是独立前提。暂未评价的 G-1-PERSONAL 继续阻断�
 | D | 一次独立批准的个人专用批次，逐项标 M05 来源资格、可纳入的历史证据、必要真实请求、用量与账本和同批六项状态。根据实际账单复核追加成本 |
 | R | 独立复验两版互不授权、版本调整、凭证和审批失效、预算不足、数据失格及撤回报告、导出、出队、失败关闭。仅以实测和有效证据决定个人最终准入 |
 
-B 和 C 使用隔离本机库、合成证据及测试传输。需要真实供应商调用由 D 另行授权。Windows 11 实机验证按实际受测版本登记，M08-V 的历史证据分别归档。本计划中的正式运行仍待授权。
+B 和 C 使用隔离本机库、合成证据及测试传输。D 的[同批准备、请求估算与验收材料](../evidence/g1-p-c/d-preparation.md)供负责人单独授权时复核。Windows 11 实机验证按实际受测版本登记，M08-V 的历史证据分别归档。
