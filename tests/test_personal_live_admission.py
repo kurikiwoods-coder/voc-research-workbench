@@ -281,15 +281,14 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
         proof = self.search_bill(result)
         self.engine.reconcile(self.batch, proof)
         charge_path = self.authority_path / f"live-charge-{result['request_id']}.dpapi"
-        artifact = charge_path.read_bytes()
-        charge_path.unlink()
+        saved_charge_path = charge_path.rename(charge_path.with_suffix(".saved"))
         self.engine = self.open_engine()
         with self.assertRaisesRegex(Conflict, "LIVE_RECONCILIATION_EVIDENCE_UNAVAILABLE"):
             self.engine.resume(self.batch)
         with self.assertRaisesRegex(AuthorityError, "LIVE_AUTHORITY_CHARGE_MISSING_OR_INVALID"):
             self.engine.reconcile(self.batch, proof)
         self.assertEqual(len(self.view()["reconciliations"]), 1)
-        charge_path.write_bytes(artifact)
+        saved_charge_path.rename(charge_path)
         self.engine.resume(self.batch)
         source = self.packet("source", parent=self.receipt(result["request_id"]))
         grant = self.engine.authorize(self.batch, source)
