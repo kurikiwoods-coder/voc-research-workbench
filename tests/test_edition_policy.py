@@ -529,8 +529,8 @@ class EditionTests(unittest.TestCase):
             source.backup(copied)
         with self.assertRaisesRegex(ValueError, "产品版本"):
             Store(target)
-        for store in (business, personal):
-            self.assertEqual(store.one("PRAGMA user_version")["user_version"], 9)
+        for store, version in ((business, 9), (personal, 10)):
+            self.assertEqual(store.one("PRAGMA user_version")["user_version"], version)
             self.assertEqual(store.one("PRAGMA integrity_check")["integrity_check"], "ok")
             self.assertEqual(store.rows("PRAGMA foreign_key_check"), [])
 

@@ -18,7 +18,10 @@ from src.config import (
     CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, MODEL, PACKYCODE_CONTRACT, PROVIDERS, ROOT, Settings,
 )
 from src.dashboard.api_setup import register_setup, setup_view
-from src.dashboard.edition_access import EditionRoute, edition_access, register_edition
+from src.dashboard.edition_access import (
+    PERSONAL_PRIVATE_PREFIXES, EditionRoute, edition_access, register_edition,
+)
+from src.dashboard.personal_admission import register_personal_admission
 from src.dashboard.personal_governance import register_personal_governance
 from src.edition_policy import Deployment, Edition, EditionPolicy, legacy_execution_allowed
 from src.dashboard.acquisition_api import register_acquisition
@@ -324,15 +327,16 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
         path = request.url.path
         relation_api = is_relation_path(path)
         acquisition_api = path.startswith("/api/acquisition/")
+        personal_api = path.startswith(PERSONAL_PRIVATE_PREFIXES)
         private_api = (relation_api or path == "/api/studies"
-                       or acquisition_api
+                       or acquisition_api or personal_api
                        or path.startswith(("/api/setup/", "/api/studies/", "/api/imports/", "/api/corpus/")))
         legacy = legacy_execution_allowed(request.app.state.settings)
         local_data = (not legacy and path.startswith("/api/")) or private_api or path in {"/api/workspace", "/api/runs"} or path.startswith("/api/runs/")
         denial_headers = {"Cache-Control": "no-store"} if local_data else None
         origin = request.headers.get("origin")
         expected = f"{request.url.scheme}://{request.headers.get('host')}"
-        if (acquisition_api or not legacy) and origin is not None and origin != expected:
+        if (acquisition_api or personal_api or not legacy) and origin is not None and origin != expected:
             return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403, headers=denial_headers)
         if local_data:
             try:
@@ -432,6 +436,7 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
 
     register_edition(app, business_gate)
     register_personal_governance(app)
+    register_personal_admission(app)
     register_setup(app)
     register_studies(app)
     register_imports(app)

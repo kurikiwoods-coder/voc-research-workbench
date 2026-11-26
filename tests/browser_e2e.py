@@ -451,7 +451,7 @@ def run_governance_browser(output):
                             if not request.url.startswith(base) else None)
                     page.route("**/*", lambda route: route.continue_()
                                if route.request.url.startswith(base) else route.abort())
-                    governance_browser_checks(page, base, directory, scope, other, secret, output, variant)
+                    governance_browser_checks(page, base, directory, scope, other, environment, secret, output, variant)
                     assert not errors, errors
                     assert not outbound, outbound
                     context.close()

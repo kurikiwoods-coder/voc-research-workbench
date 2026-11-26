@@ -25,6 +25,13 @@ APPROVALS = GOVERNANCE + "/approvals"
 CREDENTIAL = GOVERNANCE + "/credential"
 
 
+def governance_decision(decision, owner):
+    grant = next(item for item in owner.grants if item.scope == decision.scope)
+    material = (grant.starts_at.isoformat(), grant.expires_at.isoformat(), decision.data_permissions)
+    stamp = sha256(repr(material).encode("utf-8")).hexdigest()
+    return replace(decision, policy_version=f"{decision.policy_version}/G-1-P-C.1/{stamp}")
+
+
 @contextmanager
 def governed(request, *, writable=False, credential_write=False):
     state = request.app.state
@@ -38,11 +45,7 @@ def governed(request, *, writable=False, credential_write=False):
                 authorizer(db)
                 decision = request.state.edition_decision
                 scope = decision.scope
-                owner = state.edition_policy.owner
-                grant = next(item for item in owner.grants if item.scope == scope)
-                material = (grant.starts_at.isoformat(), grant.expires_at.isoformat(), decision.data_permissions)
-                stamp = sha256(repr(material).encode("utf-8")).hexdigest()
-                decision = replace(decision, policy_version=f"{decision.policy_version}/G-1-P-C.1/{stamp}")
+                decision = governance_decision(decision, state.edition_policy.owner)
                 vault = PersonalCredentials(state.store.directory, study_id=scope.study_id, scope_id=scope.scope_id)
                 yield db, decision, vault
                 authorizer(db)

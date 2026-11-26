@@ -42,6 +42,26 @@ const labels = {
 const terms = (value) => labels[value] ?? value;
 const reasonLabel = (value) => value.startsWith("MISSING_") ? "缺少" + terms(value.slice(8)) : terms(value);
 const endpoint = (studyId) => "/api/personal/governance/" + encodeURIComponent(studyId);
+const admissionEndpoint = (studyId) => "/api/personal/pre-admission/" + encodeURIComponent(studyId);
+const admissionBudget = [
+  ["requests", "请求次数"], ["credits", "搜索 credit"],
+  ["input_tokens", "输入 Token"], ["output_tokens", "输出 Token"], ["total_tokens", "总 Token"],
+];
+const acceptanceChecks = ["C0-1", "C0-2", "C0-3", "C0-4", "C0-5", "C0-6"];
+const admissionLabels = {
+  draft: "草稿", approved: "已批准", executing: "执行中", paused: "已暂停", revoked: "已撤销",
+  blocked: "已阻断", reconciliation: "待对账", evidence_review: "待审核证据", complete: "工程取证完成",
+  requires_execution_recheck: "执行时复核", inactive: "当前不可用", reserved: "已预约",
+  claimed: "已取得发送权", released: "已释放", settled: "已结算", recorded: "已记录",
+  unverified: "待核对", not_applicable: "不适用", search: "搜索", source: "回源", model: "模型",
+  ENGINEERING_EVIDENCE: "工程证据", MISSING: "缺少证据", synthetic_fixture: "合成夹具",
+  local_regression: "本机回归", historical_review: "历史复核", missing: "待取证",
+  batch_created: "验收批次已建立", operation_authorized: "操作授权已登记",
+  send_authority_committed: "发送权已登记", owner_paused: "Owner 已暂停批次", owner_revoked: "Owner 已撤销批次",
+  send_outcome_unknown: "发送结果未知", receipt_commit_unknown: "回执保存结果未知",
+  receipt_conflict: "回执记录冲突", charge_reconciled: "费用已核对", usage_over_budget: "实际使用超过预约预算",
+  restored_batch_requires_new_authorization: "恢复后须重新授权", blocked_reason_restricted: "请在本机审计账本核对阻断详情",
+};
 
 export function mountGovernance(root, { api, esc }) {
   const showDate = (value) => value ? esc(value) : "—";
@@ -140,6 +160,75 @@ export function mountGovernance(root, { api, esc }) {
     }).join("")}</ol>`;
   }
 
+  function admissionRows(batch) {
+    const show = (value) => esc(value ?? "—");
+    const translate = (value) => show(admissionLabels[value] ?? value);
+    const money = (value) => {
+      const scale = batch.decimals;
+      if (value == null) return "未核实";
+      if ((typeof value === "number" && !Number.isSafeInteger(value)) ||
+          !/^\d+$/.test(String(value)) || !Number.isInteger(scale) || scale < 0 || scale > 18) return "—";
+      const digits = String(value).padStart(scale + 1, "0");
+      return esc(scale === 0 ? digits : digits.slice(0, -scale) + "." + digits.slice(-scale));
+    };
+    const budget = admissionBudget.filter(([key]) => Object.hasOwn(batch.budget || {}, key))
+      .map(([key, label]) => [label, `${show(batch.used?.[key])} / ${show(batch.budget[key])}`]);
+    let actions = "";
+    if (batch.can_pause === true) {
+      actions += button("pause-batch", "暂停验收批次", `data-batch="${show(batch.batch_id)}"`);
+    }
+    if (batch.can_revoke === true) {
+      actions += button("revoke-batch", "撤销验收批次", `data-batch="${show(batch.batch_id)}"`);
+    }
+    return `<li><section>
+      <h4>批次 ${show(batch.batch_id)} · ${translate(batch.status)}</h4>
+      ${batch.reason ? `<p>${translate(batch.reason)}</p>` : ""}
+      ${details([
+        ...budget, ["币种", show(batch.currency)], ["单次金额上限", money(batch.single_cost)],
+        ["金额（已占用 / 上限）", `${money(batch.used?.units)} / ${money(batch.budget?.units)}`],
+      ])}
+      <details><summary>操作授权与凭证</summary>
+        ${(batch.authorizations || []).map((item) => details([
+          ["操作", translate(item.operation)], ["授权状态", translate(item.status)],
+          ["供应商", show(item.provider)], ["通道", show(item.channel_ref)],
+          ["账户", show(item.account_ref)], ["凭证绑定",
+            item.credential_current === true ? "绑定记录匹配" : item.credential_current === false ? "绑定记录不匹配" : "待核实"],
+        ])).join("") || "<p>暂无操作授权。</p>"}
+      </details>
+      <details><summary>请求预约及对账</summary>
+        ${(batch.requests || []).map((item) => details([
+          ["请求", show(item.request_id)], ["操作", translate(item.operation)],
+          ["预约状态", translate(item.status)], ["对账状态", translate(item.reconciliation_status)],
+          ["估算费用", money(item.estimated_units)], ["实扣费用", money(item.actual_units)],
+        ])).join("") || "<p>暂无请求预约。</p>"}
+      </details>
+      <details><summary>同批六项证据</summary>
+        ${details(acceptanceChecks.map((check) => {
+          const records = (batch.evidence || []).filter((item) => item.check_id === check);
+          return [check, records.length ? records.map((item) =>
+            [translate(item.status), translate(item.kind), show(item.evidence_ref)].join(" · ")
+          ).join("<br>") : "待取证"];
+        }))}
+      </details>
+      ${actions ? `<div class="actions">${actions}</div>` : ""}
+    </section></li>`;
+  }
+
+  async function loadAdmission(scope) {
+    const panel = body.querySelector("[data-governance-admission]");
+    if (!panel) return;
+    try {
+      const query = new URLSearchParams({ scope_id: scope.scope_id, scope_version: scope.scope_version });
+      const data = await api(admissionEndpoint(scope.study_id) + "?" + query);
+      panel.innerHTML = `<p class="state-box">${data.mode === "synthetic_only" ? "合成验收" : esc(data.mode)}
+        · 正式研究门禁 ${esc(data.formal_gate)}</p>
+        ${data.batches.length ? `<ol class="governance-history">${data.batches.map(admissionRows).join("")}</ol>` :
+          '<p>暂无验收批次。</p>'}`;
+    } catch {
+      panel.textContent = "暂时无法读取验收批次。请重新选择研究项目。";
+    }
+  }
+
   function display(data) {
     const binding = data.credential;
     const project = projects.find((entry) => entry.scope.study_id === studyId);
@@ -185,18 +274,27 @@ export function mountGovernance(root, { api, esc }) {
         ${(readiness?.reasons || []).map(reasonLabel).map(esc).join("、")}
         ${readiness?.ready === true ? "实际供应商验证需要单独授权。" : ""}</p>
     </section>
+    <section>
+      <h3>预准入验收批次</h3>
+      <div data-governance-admission aria-live="polite"></div>
+    </section>
     <section><h3>当前及历史审批事件</h3>${approvalHistory(data.approvals, writable)}</section>`;
   }
 
   async function loadApproval() {
     body.replaceChildren();
-    if (studyId) display(await api(endpoint(studyId) + "/approvals"));
+    if (studyId) {
+      const { scope } = projects.find((project) => project.scope.study_id === studyId);
+      display(await api(endpoint(studyId) + "/approvals"));
+      await loadAdmission(scope);
+    }
   }
 
   async function perform(task, { credential = false, mutation = false, focusTarget } = {}) {
     if (busy) return;
     busy = true;
     root.setAttribute("aria-busy", "true");
+    body.inert = true;
     picker.disabled = true;
     feedback(alert, "");
     feedback(status, "正在核对本机审批记录…");
@@ -218,6 +316,7 @@ export function mountGovernance(root, { api, esc }) {
     } finally {
       busy = false;
       root.removeAttribute("aria-busy");
+      body.inert = false;
       picker.disabled = false;
       if (alert.hidden && focusTarget?.offsetParent) focusTarget.focus();
     }
@@ -256,7 +355,7 @@ export function mountGovernance(root, { api, esc }) {
   root.addEventListener("click", (event) => {
     const control = event.target.closest("[data-governance-action]");
     if (!control || busy) return;
-    const { governanceAction: action, event: eventId } = control.dataset;
+    const { governanceAction: action, event: eventId, batch: batchId } = control.dataset;
     if (action === "projects") {
       perform(async () => {
         studyId = "";
@@ -273,6 +372,18 @@ export function mountGovernance(root, { api, esc }) {
       return;
     }
     const base = endpoint(studyId);
+    if (action === "pause-batch" || action === "revoke-batch") {
+      const pause = action === "pause-batch";
+      if (!window.confirm(pause ? "确定暂停此验收批次？" : "确定撤销此验收批次？")) return;
+      const { scope_id, scope_version } = projects.find((project) => project.scope.study_id === studyId).scope;
+      const path = `${admissionEndpoint(studyId)}/${encodeURIComponent(batchId)}/${pause ? "pause" : "revoke"}`;
+      perform(async () => {
+        await send(path, "POST", { scope_id, scope_version });
+        await loadApproval();
+        return pause ? "已记录批次暂停。" : "已记录批次撤销。";
+      }, { mutation: true });
+      return;
+    }
     if (action === "delete" && window.confirm("删除个人凭证会使相关批准失效。确定删除？")) {
       perform(async () => {
         await send(base + "/credential", "DELETE");

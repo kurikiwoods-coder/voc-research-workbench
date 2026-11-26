@@ -18,11 +18,15 @@ from fastapi.testclient import TestClient
 from src.config import Settings
 from src.dashboard import personal_governance
 from src.dashboard.app import create_app
+from src.dashboard.edition_access import has_scope
 from src.dashboard.personal_workspace import provision
 from src.dashboard.study_api import ProjectInput
-from src.edition_policy import Deployment, Edition, LocalOwner, Permission
+from src.edition_policy import Deployment, Domain, Edition, LocalOwner, Permission
+from src.raw_store.credentials import VaultError
 from src.raw_store.personal_approval_evidence import REGISTRY_NAME, REQUIRED_EVIDENCE
 from src.raw_store.personal_credentials import PersonalCredentials
+from src.raw_store.personal_validation import BatchContext
+from src.raw_store.personal_validation_credentials import put_validation_credential, validation_binding
 from src.raw_store.studies import StudyStore
 from test_edition_policy import fixture_root, owner_environment
 from test_imports import HEADERS, ORIGIN
@@ -292,6 +296,54 @@ class PersonalGovernanceTests(unittest.TestCase):
             self.assertFalse(status["readiness"]["ready"])
             invalid = status["approvals"][0]
             self.assertEqual((invalid["status"], invalid["reasons"]), ("INVALIDATED", ["CREDENTIAL_CHANGED"]))
+
+    def test_c_cleanup_503_preserves_new_anchor_and_blocks_d_replay(self):
+        self.identity["channel_ref"] = "typesafe-officially"
+        client, app = self.open_client()
+        with client:
+            first = self.configure(client)
+            records = self.development_evidence(first)
+            self.write_evidence(records)
+            active = self.approve(client, self.submit(client, records))
+            policy = app.state.edition_policy
+            store = app.state.store
+
+            def authorize(db):
+                return policy.decide(
+                    Permission.MANAGE_PERSONAL_CREDENTIALS, Domain.LOCAL_WORKSPACE, proof=self.proof,
+                    study_id=self.scope["study_id"], current_scope=lambda scope: has_scope(db, scope),
+                )
+
+            with store.db() as db:
+                decision = authorize(db)
+            context = BatchContext(
+                decision.scope.study_id, decision.scope.scope_id, decision.scope.scope_version, decision.actor_ref,
+                decision.owner_ref, decision.evidence_refs[0], decision.policy_version,
+            )
+            grant = put_validation_credential(
+                store, authorize=authorize, operation="model", **self.identity,
+                api_key=None, evidence_ref="local:fixture-model-binding",
+            )
+            with store.db() as db:
+                self.assertEqual(validation_binding(store, db, context, grant), FIRST)
+            retained = self.vault(self.scope)._revision_path(first)
+            with patch.object(PersonalCredentials, "discard_unbound", side_effect=OSError):
+                self.check_response(
+                    client.put(self.credential, json=self.identity | {"api_key": ROTATED}),
+                    503, "PERSONAL_CREDENTIAL_CLEANUP_UNAVAILABLE",
+                )
+            self.assertTrue(retained.exists())
+            invalid = self.status(client)["approvals"][0]
+            self.assertEqual((invalid["event_id"], invalid["status"], invalid["reasons"]),
+                             (active["event_id"], "INVALIDATED", ["CREDENTIAL_CHANGED"]))
+            self.check_response(client.post(self.approvals, json=self.application(records)),
+                                409, "EVIDENCE_NOT_CURRENT")
+            with store.db() as db:
+                self.assertNotEqual(personal_governance.binding_revision(db, decision), first)
+                with self.assertRaises(VaultError):
+                    validation_binding(store, db, context, grant)
+                for table in ("runs", "shards", "personal_validation_requests"):
+                    self.assertEqual(db.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0], 0)
 
     def test_concurrent_retries_and_competing_decisions_append_one_event(self):
         client, app = self.open_client()

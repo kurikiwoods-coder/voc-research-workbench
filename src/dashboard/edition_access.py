@@ -26,7 +26,11 @@ BATCH = "/batches/{batch_id}"
 UPLOAD = "/uploads/{file_id}"
 RECORD = "/records/{record_id}"
 GOVERNANCE_PREFIX = "/api/personal/governance/"
+PRE_ADMISSION_PREFIX = "/api/personal/pre-admission/"
+PERSONAL_PRIVATE_PREFIXES = (GOVERNANCE_PREFIX, PRE_ADMISSION_PREFIX)
 GOVERNANCE = GOVERNANCE_PREFIX + "{study_id}"
+PRE_ADMISSION = PRE_ADMISSION_PREFIX + "{study_id}"
+VALIDATION_BATCH = PRE_ADMISSION + "/{validation_batch_id}"
 APPROVALS = GOVERNANCE + "/approvals"
 CREDENTIAL = GOVERNANCE + "/credential"
 PERSONAL_ROUTES = {
@@ -36,6 +40,9 @@ PERSONAL_ROUTES = {
     ("POST", APPROVALS + "/{event_id}/revoke"): Permission.WRITE_PERSONAL_APPROVALS,
     ("PUT", CREDENTIAL): Permission.MANAGE_PERSONAL_CREDENTIALS,
     ("DELETE", CREDENTIAL): Permission.MANAGE_PERSONAL_CREDENTIALS,
+    ("GET", PRE_ADMISSION): Permission.READ_PERSONAL_APPROVALS,
+    ("POST", VALIDATION_BATCH + "/pause"): Permission.WRITE_PERSONAL_APPROVALS,
+    ("POST", VALIDATION_BATCH + "/revoke"): Permission.WRITE_PERSONAL_APPROVALS,
     ("GET", STUDY + "/scopes/{scope_id}"): Permission.READ_SCOPE,
     ("GET", STUDY + "/denominators"): Permission.READ_FORMAL_STATUS,
     ("GET", "/api/edition/projects/{study_id}"): Permission.READ_SCOPE,
@@ -162,7 +169,7 @@ def check_route(request):
     policy = request.app.state.edition_policy
     path = request.scope["route"].path
     if policy.deployment == Deployment.LOCAL and policy.edition == Edition.BUSINESS:
-        if path.startswith(GOVERNANCE_PREFIX):
+        if path.startswith(PERSONAL_PRIVATE_PREFIXES):
             raise HTTPException(403, "当前部署未开放个人审批。")
         return
     if CLAIM_HEADERS.intersection(request.headers) or CLAIM_PARAMS.intersection(request.query_params):
@@ -201,7 +208,7 @@ class EditionRoute(APIRoute):
         async def guarded(request):
             # Run edition authorization before FastAPI parses a request body.
             policy = request.app.state.edition_policy
-            governance = self.path.startswith(GOVERNANCE_PREFIX)
+            governance = self.path.startswith(PERSONAL_PRIVATE_PREFIXES)
             if governance or policy.edition != Edition.BUSINESS or policy.deployment != Deployment.LOCAL:
                 await run_in_threadpool(edition_access, request)
             try:
