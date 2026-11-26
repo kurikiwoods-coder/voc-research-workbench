@@ -5,7 +5,7 @@ Phase 1 交付资料、两版架构和最低准入。后续按 **G-1-P-B → G-1
 | 归属 | 单元 | 当前及验收 |
 |---|---|---|
 | 个人版治理 | EDITION-V1、G-1-P-A | 2 项政策和设计已交付。服务端策略已实现 |
-| 后续个人版治理 | G-1-P-B、G-1-P-C、G-1-P-D、G-1-P-R | B 的服务端策略 ENGINEERING_PASS。C、D、R 继续单独授权 |
+| 后续个人版治理 | G-1-P-B、G-1-P-C、G-1-P-D、G-1-P-R | B ENGINEERING_PASS，B-V 原生 Windows 11 实机及部署门禁 PASS。本轮获准接续 C，D/R 另行授权。[B-V 证据](../evidence/g1-p-b-v/README.md) |
 | 配套历史补证 | G-1-R-B-F | 控制台原始 CSV 已核对。个人 Windows 10 的原始 SQLite 及相关材料待本机独立核实 |
 | 原研究路线 | 79 个原核心单元 | 维持 39/79。上述治理与补证独立记录 |
 

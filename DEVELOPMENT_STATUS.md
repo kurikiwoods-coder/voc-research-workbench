@@ -1,8 +1,12 @@
 # VOC Research Workbench 开发状态
 
+## G-1-P-B-V 网页成果接管
+
+**WEB_CODE_TAKEOVER = PASS**，**G-1-P-B-V = PASS**。原生 Windows 11 在隔离的 B 版源码快照上通过全量回归、DPAPI、ACL 及三种路径启动重启。该源码的 **WINDOWS_11_REAL_MACHINE = PASS**、**WINDOWS_11_DEPLOYMENT_GATE = PASS**。本轮授权允许接续 C。D、R、M09 待单独授权。[验收证据](docs/evidence/g1-p-b-v/README.md)
+
 ## G-1-P-B 双版本服务端工程
 
-2026-11-26 从 Phase 1 实际远端 `0e7a3d7ec4909cf43410728045a9bb765b2760da` 接续。**G-1-P-B = ENGINEERING_PASS**，`G1_PERSONAL_SERVER_POLICY = IMPLEMENTED`，`G1_PERSONAL_IMPLEMENTATION = PARTIAL`。个人本机 Owner、项目及冻结范围权限、两道门禁与云模式关闭已实现。独立复审及 Windows 兼容回归完成，未关闭 P0/P1 为 0。在本轮新源码上 Windows 11 实机及部署门禁为 **NOT_TESTED**。[工程证据](docs/evidence/g1-p-b/README.md) · [本机启动](docs/architecture/g1-personal-server-policy.md)
+2026-11-26 从 Phase 1 实际远端 `0e7a3d7ec4909cf43410728045a9bb765b2760da` 接续。**G-1-P-B = ENGINEERING_PASS**，`G1_PERSONAL_SERVER_POLICY = IMPLEMENTED`，`G1_PERSONAL_IMPLEMENTATION = PARTIAL`。个人本机 Owner、项目及冻结范围权限、两道门禁与云模式关闭已实现。独立复审及 Windows 兼容回归完成，未关闭 P0/P1 为 0。[工程证据](docs/evidence/g1-p-b/README.md) · [本机启动](docs/architecture/g1-personal-server-policy.md)
 
 **G-1-PERSONAL = NOT_EVALUATED**，**G-1 = BLOCKED**。SQLite v8，M06 工程基线 FROZEN，核心 39/79。G-1-P-C/D/R、M09–M15 为 **NOT_STARTED**，继续按独立授权接续。真实研究及供应商探针各 **0 次**。[C 接入设计](docs/architecture/g1-personal-gate-contract.md)
 
