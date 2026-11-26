@@ -24,8 +24,15 @@ MIGRATIONS = (
     "008_m07_registry_drafts.sql",
     "009_personal_provider_approvals.sql",
 )
+PERSONAL_MIGRATIONS = ("010_personal_pre_admission.sql",)
 MIGRATION_DIRECTORY = Path(__file__).parent / "migrations"
 SQLITE_TIMEOUT = 12
+
+
+def configure_workspace_connection(db):
+    db.create_function("snapshot_requires_restriction", 8, snapshot_requires_restriction, deterministic=True)
+    db.create_function("source_permission_revoked", 1, source_permission_revoked, deterministic=True)
+    db.create_function("source_identity", 1, source_identity, deterministic=True)
 
 
 def now():
@@ -52,6 +59,7 @@ class Store:
         self.directory.mkdir(parents=True, exist_ok=True)
         self.fixture = fixture
         self.diagnostic = diagnostic
+        self.schema_target = 1 if fixture or diagnostic else len(self._migrations(self.edition))
         self.path = self.directory / (
             "synthetic_contract.sqlite3" if fixture else "connectivity.sqlite3"
         )
@@ -61,14 +69,33 @@ class Store:
             raise ValueError("个人工作库不能通过符号链接引用。")
         connect = self._connect if self.edition == Edition.PERSONAL else self.connect
         with closing(connect()) as db:
-            self._migrate(db, 1 if fixture or diagnostic else len(MIGRATIONS), self.edition)
+            self._migrate(db, self.schema_target, self.edition)
+
+    @staticmethod
+    def _migrations(edition):
+        return MIGRATIONS + PERSONAL_MIGRATIONS if edition == Edition.PERSONAL else MIGRATIONS
+
+    @staticmethod
+    def _inspect_migration_source(db, target, edition):
+        application_id, version, has_schema = db.execute(
+            """
+            SELECT application_id, user_version, EXISTS(SELECT 1 FROM sqlite_schema)
+            FROM pragma_application_id(), pragma_user_version()
+            """
+        ).fetchone()
+        new_personal = edition == Edition.PERSONAL and application_id == 0 and version == 0 and not has_schema
+        if application_id != APPLICATION_IDS[edition] and not new_personal:
+            raise ValueError("SQLite 工作库的产品版本与运行实例不符。")
+        if not 0 <= version <= target:
+            raise ValueError("不支持的数据库版本")
+        return version, new_personal
 
     @staticmethod
     def _migrate(db, target, edition=Edition.BUSINESS):
-        application_id = APPLICATION_IDS[edition]
-        initial_id = db.execute("PRAGMA application_id").fetchone()[0]
-        if initial_id != application_id and not (edition == Edition.PERSONAL and initial_id == 0):
-            raise ValueError("SQLite 工作库的产品版本与运行实例不符。")
+        migrations = Store._migrations(edition)
+        if not 1 <= target <= len(migrations):
+            raise ValueError("不支持的数据库用途或目标版本")
+        Store._inspect_migration_source(db, target, edition)
         # Journal mode changes happen outside transactions and can return busy
         # immediately when two processes open a brand-new file.
         deadline = time.monotonic() + SQLITE_TIMEOUT
@@ -88,18 +115,12 @@ class Store:
         db.autocommit = True
         db.execute("BEGIN IMMEDIATE")
         try:
-            version = db.execute("PRAGMA user_version").fetchone()[0]
-            actual_id = db.execute("PRAGMA application_id").fetchone()[0]
-            if actual_id != application_id:
-                if (edition != Edition.PERSONAL or actual_id != 0 or version != 0
-                        or db.execute("SELECT 1 FROM sqlite_schema LIMIT 1").fetchone()):
-                    raise ValueError("SQLite 工作库的产品版本与运行实例不符。")
-                db.execute(f"PRAGMA application_id={application_id}")
-            if not 0 <= version <= target:
-                raise ValueError("不支持的数据库版本")
+            version, new_personal = Store._inspect_migration_source(db, target, edition)
+            if new_personal:
+                db.execute(f"PRAGMA application_id={APPLICATION_IDS[edition]}")
             if version < target:
                 for number in range(version + 1, target + 1):
-                    script = (MIGRATION_DIRECTORY / MIGRATIONS[number - 1]).read_text("utf-8")
+                    script = (MIGRATION_DIRECTORY / migrations[number - 1]).read_text("utf-8")
                     db.executescript(script)
                     if db.execute("PRAGMA user_version").fetchone()[0] != number:
                         raise sqlite3.DatabaseError("数据库迁移版本与预期不一致")
@@ -121,6 +142,10 @@ class Store:
         try:
             if db.execute("PRAGMA application_id").fetchone()[0] != APPLICATION_IDS[self.edition]:
                 raise ValueError("SQLite 工作库的产品版本与运行实例不符。")
+            if self.edition == Edition.PERSONAL and not (
+                0 <= db.execute("PRAGMA user_version").fetchone()[0] <= self.schema_target
+            ):
+                raise ValueError("不支持的数据库版本")
         except BaseException:
             db.close()
             raise
@@ -131,9 +156,7 @@ class Store:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")
         if not (self.fixture or self.diagnostic):
-            db.create_function("snapshot_requires_restriction", 8, snapshot_requires_restriction, deterministic=True)
-            db.create_function("source_permission_revoked", 1, source_permission_revoked, deterministic=True)
-            db.create_function("source_identity", 1, source_identity, deterministic=True)
+            configure_workspace_connection(db)
         return db
 
     @contextmanager

@@ -8,7 +8,7 @@ import stat
 from tempfile import NamedTemporaryFile
 from uuid import uuid4
 
-from src.edition_policy import REFERENCE, canonical_uuid
+from src.edition_policy import REFERENCE, SCOPE_VERSION, canonical_uuid
 from src.raw_store.credentials import VaultError, windows_protect
 from src.raw_store.runtime_binding import MARKER, personal_directory
 
@@ -59,15 +59,21 @@ def _status(payload):
 
 
 class PersonalCredentials:
-    def __init__(self, directory, *, study_id=None, scope_id=None):
+    def __init__(self, directory, *, study_id=None, scope_id=None, validation_operation=None, scope_version=None):
         self.directory = Path(directory)
         if (study_id is None) != (scope_id is None) or (
             study_id is not None and (canonical_uuid(study_id) != study_id or canonical_uuid(scope_id) != scope_id)
         ):
             raise ValueError("无效的个人凭证范围。")
         self.scope = f"{study_id}.{scope_id}" if study_id is not None else ""
+        if validation_operation is not None or scope_version is not None:
+            if (not self.scope or validation_operation not in {"search", "source"}
+                    or not isinstance(scope_version, str) or not SCOPE_VERSION.fullmatch(scope_version)):
+                raise ValueError("无效的个人预准入凭证范围。")
+            self.scope += f".{scope_version}.{validation_operation}"
         suffix = f".{self.scope}" if self.scope else ""
-        self.path = self.directory / f"personal-provider{suffix}.dpapi"
+        basename = "personal-provider" if validation_operation is None else "personal-validation-provider"
+        self.path = self.directory / f"{basename}{suffix}.dpapi"
 
     def _check_root(self):
         _check_path(self.directory.lstat(), directory=True)
@@ -92,13 +98,26 @@ class PersonalCredentials:
         return self.path.with_suffix(f".{revision}.dpapi")
 
     def read(self, revision=None):
+        return _status(self._read_payload(revision))
+
+    def secret(self, revision, *, provider, channel_ref, account_ref):
+        if not self.scope or not isinstance(revision, str) or not _REVISION.fullmatch(revision):
+            raise VaultError("无效的个人凭证版本。")
+        payload = self._read_payload(revision)
+        if not payload["configured"] or (
+            payload["provider"], payload["channel_ref"], payload["account_ref"]
+        ) != (provider, channel_ref, account_ref):
+            raise VaultError("个人供应商凭证与当前绑定不一致。")
+        return payload["api_key"]
+
+    def _read_payload(self, revision):
         try:
             self._check_root()
             if self.scope and revision is None:
-                return _status(_EMPTY)
+                return _EMPTY
             path = _native_path(self._revision_path(revision) if self.scope else self.path)
             if not self._exists(path):
-                return _status(_EMPTY)
+                return _EMPTY
             flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
             with os.fdopen(os.open(path, flags), "rb") as handle:
                 data = handle.read(_LIMIT + 1)
@@ -110,7 +129,7 @@ class PersonalCredentials:
             if payload.pop("scope", None) != self.scope:
                 raise ValueError
             if payload.get("configured") is False and payload.keys() == _EMPTY.keys():
-                return _status(_EMPTY)
+                return _EMPTY
             if payload.get("configured") is not True or payload.keys() != {*_EMPTY, *_BINDING_FIELDS, "api_key"}:
                 raise ValueError
             _validate_binding(payload["provider"], payload["channel_ref"], payload["account_ref"], payload["api_key"])
@@ -118,7 +137,7 @@ class PersonalCredentials:
                 self.scope and revision != payload["credential_revision"]
             ):
                 raise ValueError
-            return _status(payload)
+            return payload
         except (OSError, ValueError, TypeError, RecursionError):
             raise VaultError("无法读取个人供应商凭证，请检查本机工作区及凭证库。") from None
 

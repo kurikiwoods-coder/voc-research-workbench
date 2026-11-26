@@ -38,6 +38,7 @@ def snapshot(db):
 
 class PersonalApprovalMigrationTests(unittest.TestCase):
     def setUp(self):
+        self.enterContext(patch.object(storage, "PERSONAL_MIGRATIONS", ()))
         self.root = Path(self.enterContext(TemporaryDirectory(
             prefix="voc-personal-migration-", dir=os.environ.get("LOCALAPPDATA") if os.name == "nt" else None,
         ))).resolve()
