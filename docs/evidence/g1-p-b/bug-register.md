@@ -12,7 +12,7 @@
 | PB-06 | P1 | CLOUD 下旧归档 CLI 对未知批次会创建商用数据库，直接恢复路径也缺模式复核 | 归档与恢复在打开库及传输前限制版本和部署；历史归档脱机核对继续通过。已关闭 |
 | PB-07 | P2 | 新状态投影曾允许用当前供应商审查配对较早的 G-1 状态行 | 验证同一已结束尝试的商用六项状态、已登记门禁证据和当前同一审查。原 G-1 历史验收保留。已关闭 |
 | PB-08 | P3 | 未认证直接访问个人正式分母状态 API，原关系响应包装会省略浏览器身份验证挑战 | 先从「版本与研究准入」打开「核对已授权项目」完成 Owner 验证。接口仍然拒绝无权读取。记录为本机体验债务 |
-| PB-09 | P1 | Windows Server 2022 首轮 CI 中，商用路径安全校验把短路径别名作为长路径返回，导致 M06/M07 原接口和历史 PackyCode 专项出现三处断言失败 | 用解析后的路径查隔离标识，商用 `Store.path` 继续保留调用方路径。原断言保留，等待后续 CI 复验 |
-| PB-10 | P1 | 首轮 CI 的损坏 SQLite 启动按预期拒绝，版本标识读取异常后 Windows 文件仍被句柄占用 | 异常分支关闭 SQLite 连接再重新抛出。原库内容保护和清理测试保留，等待后续 CI 复验 |
+| PB-09 | P1 | Windows Server 2022 首轮 CI 中，商用路径安全校验把短路径别名作为长路径返回，导致 M06/M07 原接口和历史 PackyCode 专项出现三处断言失败 | 用解析后的路径查隔离标识，商用 `Store.path` 继续保留调用方路径。原断言保留，Windows Server 2022 复验通过。已关闭 |
+| PB-10 | P1 | 首轮 CI 的损坏 SQLite 启动按预期拒绝，版本标识读取异常后 Windows 文件仍被句柄占用 | 异常分支关闭 SQLite 连接再重新抛出。原库内容保护和清理测试保留，Windows Server 2022 复验通过。已关闭 |
 
-首轮 CI 新增的两处回归已修复，等待 Windows Server 2022 确认。此前 Linux 复审的 P0/P1 发现均已关闭。Windows 11 本机 ACL、登录和 DPAPI 另列实机验证。
+累计修复 **9 项**，分级为 P0 1、P1 7、P2 1。未关闭 P0/P1/P2/P3 为 **0/0/0/1**。兼容修复的云端 Linux 与 Windows Server 2022 已复验。[首轮 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749282638) · [修复后 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749971864)Windows 11 本机 ACL、登录和 DPAPI 另列实机验证。

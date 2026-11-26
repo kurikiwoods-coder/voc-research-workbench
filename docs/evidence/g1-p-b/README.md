@@ -40,3 +40,7 @@
 ## 首轮 GitHub CI
 
 实现提交 `385c1e455312fb3754abc4449bd90120e7bab0e5` 的 Ubuntu 与 Chromium 作业通过。Windows Server 2022 首轮 Python 运行 422 项，418 项通过、3 项断言失败、1 项清理错误，后续步骤未执行。失败根因是商用短路径形态被展开及损坏库连接在异常时未关闭。原测试保留。[首轮 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749282638) · [Windows 失败日志](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749282638/job/139672912126) · [缺陷台账](bug-register.md)
+
+## 修复后的工程验收
+
+**G-1-P-B = ENGINEERING_PASS**，验收源码 `d7c711660843c8c095fccbedd4b67d5303f9226b`，PR #2 保留开放草稿。Ubuntu、Windows Server 2022 和 Chromium 三项作业均通过。Windows Server 2022 实际执行 Python **422/422**、Node **2/2**、冷启动 **3/3**、历史归档 **4/4**、脱敏扫描以及中文、带空格的路径下启动与重启。云端 Linux 的 Python、Node 和全量 Chromium 也在修复后重新通过。所有发现的 P0/P1 已关闭，另记录一项 P3 界面提示债务。Windows 11 新源码的实机与部署门禁均为 **NOT_TESTED**。[三项 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749971864) · [Windows Server 2022 核验](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749971864/job/139675115194) · [缺陷台账](bug-register.md)

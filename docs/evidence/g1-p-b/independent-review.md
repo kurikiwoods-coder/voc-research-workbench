@@ -8,3 +8,5 @@
 - 核对 `src/raw_store/migrations/`、`denominators.py`、`relation_access.py` 和冻结文档没有改动。既有 Windows 实机只绑定原受测源码。
 
 复审确认 7 个已修复问题，其中 P0 1、P1 5、P2 1。未关闭 P0/P1 为 **0**。补记一项 P3 浏览器身份验证提示。Windows 11 原生 ACL、运行与 DPAPI 为本轮实机待核。[缺陷台账](bug-register.md) · [回归记录](README.md)
+
+Windows Server 2022 首轮的 PB-09 与 PB-10 修复后，独立复验 M06 迁移 11/11、M07 迁移 4/4、PackyCode 合成预检 15/15、B 策略 27/27、损坏库保护 1/1，合计 **58/58**。另实测存储路径保留、别名无法重开个人库以及头校验异常会关闭连接。修复后的 Windows Server 2022 CI 亦通过。[修复后 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749971864)
