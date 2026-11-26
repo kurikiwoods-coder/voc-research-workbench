@@ -1,10 +1,10 @@
 # G-1-P-D 个人研究版同批验收准备
 
-后续 G-1-P-D-E Phase 0 已复现 v9 账本缺口。负责人已批准 Personal 工作库 v9→v10 迁移和 D 受限执行工程，工程候选及恢复复验见工程证据。实际部署库未迁移。以下正式同批判定及历史证据继续适用。[Phase 0 复验与风险](phase-0.md) · [负责人批准](../../decisions/g1-p-d-e-v10-owner-approval.md) · [当前工程证据](engineering.md) · [D-L 申请草案](d-l-authorization-draft.md)
+G-1-P-D-E Phase 0 复现了 v9 账本缺口。经负责人批准，后续完成 Personal 工作库 v9→v10 受控迁移工程和 D 受限执行，现为 **ENGINEERING_PASS**。实际部署库未迁移。以下正式同批判定及 D 准备阶段的历史证据继续适用。[Phase 0 复验与风险](phase-0.md) · [负责人批准](../../decisions/g1-p-d-e-v10-owner-approval.md) · [工程证据](engineering.md) · [D-L 申请草案](d-l-authorization-draft.md)
 
-2026-11-26，**G-1-P-D = BLOCKED**。C 阶段工程交付已通过，D 准备阶段完成基线复验、离线演练和请求预算准备。正式批次尚未建立，待完成 D-E 工程验收并核准最终载荷、实际凭证和金额上限。个人门禁 `NOT_EVALUATED`，商用 G-1 `BLOCKED`，R 及 M09–M15 `NOT_STARTED`。M06 冻结，I18N-PRE 为 `PLANNED`，核心路线图 39/79。[个人准入](../../architecture/personal-research-gate.md) · [批次准备规范](../g1-p-c/d-preparation.md)
+2026-11-26，**G-1-P-D = BLOCKED**。正式批次尚未建立。D-L 已具备工程接续条件，需独立核准最终载荷、实际凭证、逐源许可和各项限额。个人门禁 `NOT_EVALUATED`，商用 G-1 `BLOCKED`，R 及 M09–M15 `NOT_STARTED`。M06 冻结，I18N-PRE 为 `PLANNED`，核心路线图 39/79。[个人准入](../../architecture/personal-research-gate.md) · [批次准备规范](../g1-p-c/d-preparation.md)
 
-## D 准备阶段基线与阻塞
+## D 准备阶段历史基线与阻塞
 
 准备前的本机、远端和开放草稿 PR #2 均指向 `5106bb1098ebc706fb3429ba462cd5e82c55b169`，PR 目标为 `codex/p0-0-connectivity`。该提交的 Ubuntu、Windows Server 2022、Chromium 均通过。接续前工作区仅有已授权的八份 I18N-PRE 规划文档，已独立提交为 `0a5014f7d79d0612a94ba5074894e9a954c3a382`。I18N-PRE 为 `PLANNED`，在 M10 验收后另行授权，安排于 M11 前。[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45762882859) · [草稿 PR](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2) · [规划授权](../../decisions/i18n-pre-owner-approval.md)
 
@@ -62,4 +62,4 @@ D-L 的实际费用上限和凭证绑定待正式批准。**实际请求 0，搜
 
 I18N-PRE 提交通过 `git diff --cached --check`、相对链接和路线图顺序核对，以及仓库 `scripts/check-no-secrets.sh` 所含扫描。D 准备提交同样执行文档检查及该扫描。阶段交付对应远端提交及三项 CI 以草稿 PR #2 记录为准。[PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2/checks)
 
-G-1-P-R 的接续前提是 D 的同批证据完整。D-L 先完成工程验收，再由负责人另行批准最终载荷、当前凭证、来源许可及可执行预算。个人准入由后续独立复审决定。
+G-1-P-R 的接续前提是 D 的同批证据完整。D-L 须由负责人另行批准最终载荷、当前凭证、来源许可及可执行预算。个人准入由后续独立复审决定。

@@ -6,9 +6,9 @@
 
 ## G-1-P-D 个人版正式同批验收准备
 
-2026-11-26，负责人已批准 Personal 工作库 v9→v10 与 D 受限执行工程。在 `37fc746177c8b7e911479f057ed78f6e0c8809ae` 基线上接续。**G-1-P-D-E = BLOCKED**，Personal v10、受限执行及恢复修复已交付工程候选，出场由最终实机全量及对应 CI 证据判定。实际部署库未迁移。Business 工作库目标 v9，两版诊断及合成契约库目标 v1。**G-1-P-D-L 尚未就绪**。[负责人批准](docs/decisions/g1-p-d-e-v10-owner-approval.md) · [Phase 0 证据](docs/evidence/g1-p-d/phase-0.md) · [当前工程证据](docs/evidence/g1-p-d/engineering.md)
+2026-11-26，从 `37fc746177c8b7e911479f057ed78f6e0c8809ae` 接续。**G-1-P-D-E = ENGINEERING_PASS**。Personal v10、受限执行及恢复修复通过隔离 Windows 11 实机验收，交付提交 `4c7d705b277352af530c59f917f787bcc3a69bfd` 的 Ubuntu、Windows Server 2022、Chromium 均通过。实际部署库未迁移。隔离验证确认 Business 工作库 v9，两版诊断及合成契约库 v1。**G-1-P-D-L = READY（工程接续）**，真实执行待独立授权。[负责人批准](docs/decisions/g1-p-d-e-v10-owner-approval.md) · [工程证据](docs/evidence/g1-p-d/engineering.md) · [交付 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45794168453)
 
-**G-1-P-D = BLOCKED**。C0-1 至 C0-6 的个人正式同批状态均为 `BLOCKED`，C0-5 和 C0-6 保留既有离线通过。正式实证还需工程验收、实际账户和凭证、逐源许可、最终载荷及预算批准。真实外部请求、探针、账户查询、真实 Token、费用及正式历史证据纳入均为 0。[D 六项及证据](docs/evidence/g1-p-d/README.md) · [D-L 申请草案](docs/evidence/g1-p-d/d-l-authorization-draft.md)
+**G-1-P-D = BLOCKED**。C0-1 至 C0-6 的个人正式同批状态均为 `BLOCKED`，C0-5 和 C0-6 保留既有离线通过。正式实证还需实际账户和凭证、逐源许可、最终载荷及预算批准。真实研究供应商请求、探针、账户查询、真实研究 Token、新增研究费用及正式历史证据纳入均为 0。[D 六项及证据](docs/evidence/g1-p-d/README.md) · [D-L 申请草案](docs/evidence/g1-p-d/d-l-authorization-draft.md)
 
 ## G-1-P-C 个人供应商审批中心
 

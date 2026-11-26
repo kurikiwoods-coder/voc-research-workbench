@@ -1,6 +1,6 @@
 # G-1-P-D-L 真实同批实证申请草案
 
-状态 **未提交授权，尚未就绪**。拟在 G-1-P-D-E 工程验收通过后，由负责人签发带 UTC 有效期的单次批次授权。真实请求、探针、余额查询、真实 Token 及新增研究费用当前均为 0。C0-1 至 C0-6 正式状态均为 `BLOCKED`。[本轮工程批准](../../decisions/g1-p-d-e-v10-owner-approval.md) · [正式准入政策](../../architecture/personal-research-gate.md)
+状态 **READY（工程接续），待独立授权**。G-1-P-D-E 工程验收已完成。真实执行须由负责人核准本页材料并签发带 UTC 有效期的单次批次授权。真实研究供应商请求、探针、余额查询、真实研究 Token 及新增研究费用均为 0。C0-1 至 C0-6 正式状态均为 `BLOCKED`。[工程证据](engineering.md) · [正式准入政策](../../architecture/personal-research-gate.md)
 
 ## 调用计划与批准依赖
 

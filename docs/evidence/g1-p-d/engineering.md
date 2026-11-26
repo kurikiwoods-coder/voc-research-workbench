@@ -1,6 +1,6 @@
 # G-1-P-D-E 受限执行工程验收
 
-2026-11-26 从 `37fc746177c8b7e911479f057ed78f6e0c8809ae` 接续，使用 `codex/g1-personal-phase-1` 及草稿 PR #2。运行候选源码为 `bac46aa0f7289e086b3f6c6651e71f185f471a76`。当前 D-E 为 `BLOCKED`，D-L 尚未就绪，D 正式同批为 `BLOCKED`。实际部署库未迁移。个人研究门禁为 `NOT_EVALUATED`，商用 G-1 为 `BLOCKED`。[负责人批准](../../decisions/g1-p-d-e-v10-owner-approval.md) · [基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45779232960) · [候选交付检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2/checks)
+2026-11-26 从 `37fc746177c8b7e911479f057ed78f6e0c8809ae` 接续，使用 `codex/g1-personal-phase-1` 及草稿 PR #2。验收源码为 `bac46aa0f7289e086b3f6c6651e71f185f471a76`，工程交付提交为 `4c7d705b277352af530c59f917f787bcc3a69bfd`。D-E 为 `ENGINEERING_PASS`，D-L 为 `READY`（工程接续，待独立授权），D 正式同批为 `BLOCKED`。实际部署库未迁移。个人研究门禁为 `NOT_EVALUATED`，商用 G-1 为 `BLOCKED`。[负责人批准](../../decisions/g1-p-d-e-v10-owner-approval.md) · [基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45779232960) · [草稿 PR #2](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2)
 
 ## 原生 Windows 11 工程证据
 
@@ -15,7 +15,8 @@
 | 执行与权限 | 12/12，退出 0，其中 7 个执行用例与 5 个路由用例。包含同一命中合成回源及固定模型 8+3、11 已知候选加 None、逐片和跨片预算、过期来源、跨项目权限、响应后撤销、越界跳转、写入故障与未知结局。成功链 4 次合成传输。 |
 | 浏览器 | Windows 11 Chromium 全量及审批桌面和移动专项均退出 0，分别生成 38 与 2 张合成截图。实际 D 读取、暂停与撤销通过，界面刷新在数据读完后开放交互，凭证删除确认实际 HTTP 响应。 |
 | 启动 | 空库冷启动 3/3，Node 2/2，退出 0。候选早期源码的普通、中文、含空格路径首次及同库重启 6/6，SQLite v10、完整性 `ok`、外键违规 0、受权项目读回与端口释放。探针退出 0，正常终止后启动器退出 3。 |
-| 全量与交付 | 最终源码的 Windows Python 全量、归档核验与三项 CI 以发布验证结果为准。 |
+| Windows Python 全量 | 验收源码归档运行 482 项，481 通过、0 失败、1 跳过，退出 0。相对 443 项基线增加 39 项。跳过 `test_no_unencrypted_production_fallback`，原因是该用例专测非 Windows 的 fail-closed 分支。本机原生 DPAPI 专项另外通过。 |
+| 隐私与归档 | 通过仓库 Git 对象范围扫描，包含此前无法从本机工作区读取的跟踪文档 `docs/evidence/m06-c5/README.md`。扫描范围为交付跟踪内容。本机非交付历史目录的访问限制仍如实保留。四份历史回执由交付 CI 核验。 |
 | 请求和费用 | 真实研究供应商请求、探针、账户查询、研究 Token 与新增费用为 0。正式研究分母新增为 0，未放行统计继续 `unavailable/null`。 |
 
 源码与证据入口。[迁移测试](../../../tests/test_pre_admission_migration.py) · [账本测试](../../../tests/test_personal_validation_ledger.py) · [凭证测试](../../../tests/test_personal_validation_credentials.py) · [执行测试](../../../tests/test_personal_admission.py) · [路由测试](../../../tests/test_personal_admission_routes.py) · [浏览器测试](../../../tests/personal_governance_browser.py)
@@ -25,9 +26,13 @@
 | 状态 | 事项 |
 | --- | --- |
 | P1 已修复并通过恢复专项 | 恢复较早 SQLite 快照可能使已撤销的历史批次重新显示为已批准。工程入口现在校验进程见证的批次、文件标识及追加账本，缺少连续性即关闭旧发送权。真实执行须另由受信证据核对授权、凭证、请求和费用连续性。 |
-| P1 出场验证 | 受限入口、预算预约、回执和对账已通过专项。完整出场检查以 Windows 11 全量与最终提交的 CI 为准。 |
+| P1 原执行缺口已关闭 | 隔离实测覆盖受限入口、预算预约、发送权、回执、未知结局对账和批次证据关联。未登记开放的 P0/P1 工程出场缺陷。 |
 | P2 继续跟踪 | C 凭证锚提交后旧密文清理可能返回 503。D 回归通过旧密文重放阻断，清理失败仍需跟踪。 |
 | P3 继续跟踪 | B 阶段 PB-08 界面提示。 |
 | D-L 业务前置 | 实际账户 API 权利、精确通道、当前凭证、条款、逐源许可、最终载荷、硬预算和 UTC 窗口待审批。历史证据可分类登记，确认其当前资格并接入受信父回执后才可走减少请求的路径。 |
 
 C0-1 至 C0-6 支持同批关联，工程夹具、离线回归、历史审核及缺项分开登记。六项正式状态保持 `BLOCKED`，C0-5 与 C0-6 沿用离线证据。M06 保持 `FROZEN`，R 与 M09–M15 为 `NOT_STARTED`，I18N-PRE 为 `PLANNED`，核心路线图 39/79。[六项矩阵](README.md#六项正式验收状态) · [C 缺陷台账](../g1-p-c/bug-register.md) · [D-L 申请草案](d-l-authorization-draft.md)
+
+## GitHub 出场核验
+
+交付提交 `4c7d705b277352af530c59f917f787bcc3a69bfd` 在草稿 PR #2 的同一 SHA 上三项通过。结项文档提交的对应检查可从 PR 检查页核对。[Ubuntu](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45794168453/job/139820428913) · [Windows Server 2022](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45794168453/job/139820428901) · [Chromium](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45794168453/job/139820428318) · [PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2/checks)
