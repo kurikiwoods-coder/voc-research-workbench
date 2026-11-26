@@ -22,14 +22,16 @@ def personal_directory(directory):
 
 
 def bind_directory(directory, edition):
-    directory = Path(directory).resolve()
+    supplied = Path(directory)
+    directory = supplied.resolve()
     if any(os.path.lexists(parent / MARKER) for parent in directory.parents):
         raise ValueError("运行目录不能嵌套于已绑定的个人工作区。")
     marker = directory / MARKER
     if edition == Edition.BUSINESS:
         if os.path.lexists(marker):
             raise ValueError("个人工作区不能作为商用工作区打开。")
-        return directory
+        # The canonical path is for the domain check, not for the legacy Store API.
+        return supplied
 
     if os.name == "nt":
         personal_directory(directory)

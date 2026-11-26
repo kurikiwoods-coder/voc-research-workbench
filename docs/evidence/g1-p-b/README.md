@@ -25,3 +25,18 @@
 | 冻结差异检查 | PDT、M06 政策及统计契约、SQLite 迁移脚本、M06 关系授权与统计引擎、ROADMAP-V2 正文在代码变更前后差异为 0 |
 
 云端测试为 Python 3.12.14 和 Node 24.22.3。GitHub Actions 的现有流程增加对开发分支作为 PR 目标的监听，草稿 PR #2 保持原评审目标。[桌面截图](browser/edition-personal-desktop.png) · [移动端截图](browser/edition-personal-mobile.png)
+
+## 验收反例定位
+
+| 提示编号 | 实际自动化入口 |
+|---|---|
+| 1–4 默认兼容、合法四组合、非法配置、关闭云端特权 | `test_default_install_keeps_business_health_gate_and_setup`、`test_trusted_environment_accepts_each_valid_pair_only`、`test_invalid_owner_startup_and_grant_shapes_fail_closed`、`test_cloud_is_status_only_and_opens_no_directory` |
+| 5–10 可信 Owner、客户端伪造及跨项目 | `test_owner_identity_is_trusted_and_only_exposes_typed_projection`、`test_http_cannot_claim_owner_edition_grant_or_gate`、`test_nonloopback_and_foreign_origin_are_denied_even_with_proof`、`test_unbound_and_nonexistent_project_are_indistinguishable`、`test_deny_without_permissions_does_not_disclose_object_existence` |
+| 11–16 双门禁、真实路径、PackyCode 旧阻断、授权封存 | `test_business_status_requires_current_review_and_same_finished_attempt_evidence`、`test_personal_research_admission_and_engineering_domains_cannot_promote_each_other`、`test_legacy_services_refuse_personal_config_or_personal_store`、`test_transport_protects_configuration_independent_of_http_layer`、`test_no_claim_or_directory_can_restore_consumed_preflight` 与原 PackyCode 专项 |
+| 17–20 合成与正式隔离、正式 null、数量恒等式及历史版本 | `test_import_review_replay_revocation_and_formal_status`、原 `test_m06_denominators.py`、`test_m07_*.py`、`test_recover_source_batch.py`、离线归档校验 |
+| 21–22 凭证管理及任务失败关闭 | 原 `test_api_setup.py` 及 Chromium API 接入、原 M08 任务与恢复、新 `test_closed_live_routes_do_not_create_tasks_runs_or_vendor_requests`、`test_local_mutation_rechecks_inside_write_transaction_and_can_retry`。本轮 Windows 11 原生凭证和部署待测 |
+| 23–25 浏览器投影、零出站、M01–M08 全量 | `tests/browser_e2e.py` 的完整套件及 `run_edition_browser`、`scripts/smoke-test.sh`。独立复审同样只使用受控传输 |
+
+## 首轮 GitHub CI
+
+实现提交 `385c1e455312fb3754abc4449bd90120e7bab0e5` 的 Ubuntu 与 Chromium 作业通过。Windows Server 2022 首轮 Python 运行 422 项，418 项通过、3 项断言失败、1 项清理错误，后续步骤未执行。失败根因是商用短路径形态被展开及损坏库连接在异常时未关闭。原测试保留。[首轮 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749282638) · [Windows 失败日志](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749282638/job/139672912126) · [缺陷台账](bug-register.md)

@@ -11,7 +11,7 @@ Phase 1 交付资料、两版架构和最低准入。后续按 **G-1-P-B → G-1
 
 ## G-1-P-B 服务端策略和双门禁
 
-当前已接入 `EditionPolicy`、可信本机 Owner、冻结范围授权和本机工作库绑定。个人正式门禁维持 NOT_EVALUATED，原商用 G-1 保持 BLOCKED。B 阶段实际接口和限制见 [服务端策略](../architecture/g1-personal-server-policy.md) 与 [工程证据](../evidence/g1-p-b/README.md)。C 的接口、追加式事件和建议迁移见 [门禁契约](../architecture/g1-personal-gate-contract.md#G-1-P-C-接入与最小迁移草案)。
+当前已接入 `EditionPolicy`、可信本机 Owner、冻结范围授权和本机工作库绑定。个人正式门禁维持 NOT_EVALUATED，原商用 G-1 保持 BLOCKED。B 阶段实际接口和限制见 [服务端策略](../architecture/g1-personal-server-policy.md) 与 [工程证据](../evidence/g1-p-b/README.md)。C 的接口、追加式事件和建议迁移见 [门禁契约](../architecture/g1-personal-gate-contract.md#g-1-p-c-接入与最小迁移草案)。
 
 1. 先校验服务端部署配置、可信身份和项目授权，产生不可由客户端构造的版本/操作上下文。首版设计一实例承载一个受审版本，沿用共享代码。现有未选版本的工作库继续走旧 Business／Local 兼容路径。授权启动 Personal 时选择受控运行目录，绑定允许的项目和用途。无效配置及未批准的 Cloud 关闭具有特权的入口。
 2. 对 Personal 与 Business 各用自己的门禁评估和读投影。统一决策接口返回有效版本、部署模式、项目、操作、输入及授权范围、策略版、原因、门禁状态和受控证据引用。返回类型表达拒绝或允许，不携带密钥。正式、验证、离线合成各有隔离运行域；正式许可由服务端计算。

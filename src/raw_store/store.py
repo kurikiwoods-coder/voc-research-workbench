@@ -117,9 +117,12 @@ class Store:
 
     def connect(self):
         db = self._connect()
-        if db.execute("PRAGMA application_id").fetchone()[0] != APPLICATION_IDS[self.edition]:
+        try:
+            if db.execute("PRAGMA application_id").fetchone()[0] != APPLICATION_IDS[self.edition]:
+                raise ValueError("SQLite 工作库的产品版本与运行实例不符。")
+        except BaseException:
             db.close()
-            raise ValueError("SQLite 工作库的产品版本与运行实例不符。")
+            raise
         return db
 
     def _connect(self):
