@@ -4,6 +4,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 import unittest
 from unittest.mock import patch
+from uuid import uuid4
 
 from src.edition_policy import Edition
 from src.raw_store.credentials import VaultError, windows_protect
@@ -78,6 +79,33 @@ class PersonalCredentialsTests(unittest.TestCase):
         tombstone = self.lifecycle()
         self.assertEqual({"version": 1, "configured": False, "scope": ""},
                          json.loads(windows_protect(tombstone, encrypt=False)))
+
+    @unittest.skipUnless(os.name == "nt", "Windows extended length vault paths")
+    def test_native_scoped_dpapi_reopens_and_prunes_long_paths(self):
+        folder = "研究 workspace " + "x" * max(0, 150 - len(str(self.root.parent)))
+        root = bind_directory(self.root.parent / folder, Edition.PERSONAL)
+        scope = {"study_id": str(uuid4()), "scope_id": str(uuid4())}
+        vault = PersonalCredentials(root, **scope)
+        replace = os.replace
+
+        def checked_replace(source, destination):
+            self.assertTrue(os.fspath(source).startswith("\\\\?\\"))
+            self.assertTrue(os.fspath(destination).startswith("\\\\?\\"))
+            return replace(source, destination)
+
+        with patch("src.raw_store.personal_credentials.os.replace", side_effect=checked_replace):
+            first = vault.put(*BINDING, FIRST)
+            second = vault.put(*BINDING, ROTATED)
+        first_revision = first["credential_revision"]
+        second_revision = second["credential_revision"]
+        self.assertGreater(len(str(vault._revision_path(first_revision))), 260)
+        reopened = PersonalCredentials(root, **scope)
+        self.assertEqual(first, reopened.read(first_revision))
+        reopened.discard_unbound(second_revision)
+        self.assertEqual(UNCONFIGURED, reopened.read(first_revision))
+        self.assertEqual(second, reopened.read(second_revision))
+        reopened.discard_unbound(None)
+        self.assertEqual(UNCONFIGURED, reopened.read(second_revision))
 
     @unittest.skipIf(os.name == "nt", "non-Windows fail-closed path")
     def test_no_unencrypted_production_fallback(self):

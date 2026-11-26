@@ -26,6 +26,17 @@ def _protect(data, *, encrypt):
     return windows_protect(data, encrypt=encrypt)
 
 
+def _native_path(path):
+    if os.name != "nt":
+        return path
+    absolute = os.path.abspath(path)
+    if absolute.startswith("\\\\?\\"):
+        return Path(absolute)
+    if absolute.startswith("\\\\"):
+        return Path("\\\\?\\UNC\\" + absolute[2:])
+    return Path("\\\\?\\" + absolute)
+
+
 def _check_path(info, *, directory=False, private=False):
     expected = stat.S_ISDIR if directory else stat.S_ISREG
     reparse = getattr(info, "st_file_attributes", 0) & getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
@@ -85,7 +96,7 @@ class PersonalCredentials:
             self._check_root()
             if self.scope and revision is None:
                 return _status(_EMPTY)
-            path = self._revision_path(revision) if self.scope else self.path
+            path = _native_path(self._revision_path(revision) if self.scope else self.path)
             if not self._exists(path):
                 return _status(_EMPTY)
             flags = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0)
@@ -128,7 +139,7 @@ class PersonalCredentials:
 
     def discard_unbound(self, active_revision):
         self._check_root()
-        for path in self.directory.glob(f"{self.path.stem}.*.dpapi"):
+        for path in _native_path(self.directory).glob(f"{self.path.stem}.*.dpapi"):
             revision = path.stem.rsplit(".", 1)[-1]
             if _REVISION.fullmatch(revision) and revision != active_revision and self._exists(path):
                 path.unlink(missing_ok=True)
@@ -137,10 +148,11 @@ class PersonalCredentials:
         temporary = None
         try:
             self._check_root()
+            path = _native_path(path)
             self._exists(path)
             raw = json.dumps({**payload, "scope": self.scope}, separators=(",", ":")).encode("utf-8")
             encrypted = _protect(raw, encrypt=True)
-            with NamedTemporaryFile(dir=self.directory, delete=False) as handle:
+            with NamedTemporaryFile(dir=path.parent, delete=False) as handle:
                 temporary = Path(handle.name)
                 handle.write(encrypted)
                 handle.flush()
