@@ -6,9 +6,9 @@
 
 ## G-1-P-D 个人版正式同批验收准备
 
-2026-11-26，**G-1-P-D-E = BLOCKED**。在 `9f21ffcfd2d9e03d998da455f2d5b030ceacba2d` 复现预准入关闭和 v9 账本缺口。已完成待批的 Personal 专用 v9→v10 迁移草案。工作库仍为 v9。D-L 尚未就绪，进入工程实施需负责人单独批准迁移。[Phase 0 证据](docs/evidence/g1-p-d/phase-0.md) · [迁移草案](docs/architecture/g1-personal-pre-admission-design.md)
+2026-11-26，负责人已批准 Personal 工作库 v9→v10 与 D 受限执行工程。在 `37fc746177c8b7e911479f057ed78f6e0c8809ae` 基线上接续。**G-1-P-D-E = BLOCKED**，Personal v10、受限执行及恢复修复已交付工程候选，出场由最终实机全量及对应 CI 证据判定。实际部署库未迁移。Business 工作库目标 v9，两版诊断及合成契约库目标 v1。**G-1-P-D-L 尚未就绪**。[负责人批准](docs/decisions/g1-p-d-e-v10-owner-approval.md) · [Phase 0 证据](docs/evidence/g1-p-d/phase-0.md) · [当前工程证据](docs/evidence/g1-p-d/engineering.md)
 
-**G-1-P-D = BLOCKED**。2026-11-26 以 `5106bb1098ebc706fb3429ba462cd5e82c55b169` 复核 G-1-P-C，三项基线 CI 通过，Windows 11 本机复验完成。C0-5 和 C0-6 的离线工程结果通过。D 尚缺受限个人预准入执行入口、同批预算预约与对账，以及已确认的载荷、凭证和金额上限。C0-1 至 C0-6 的个人正式同批状态均为 `BLOCKED`，真实外部请求、Token、费用及正式历史证据纳入均为 0。[D 复核及预算](docs/evidence/g1-p-d/README.md)
+**G-1-P-D = BLOCKED**。C0-1 至 C0-6 的个人正式同批状态均为 `BLOCKED`，C0-5 和 C0-6 保留既有离线通过。正式实证还需工程验收、实际账户和凭证、逐源许可、最终载荷及预算批准。真实外部请求、探针、账户查询、真实 Token、费用及正式历史证据纳入均为 0。[D 六项及证据](docs/evidence/g1-p-d/README.md) · [D-L 申请草案](docs/evidence/g1-p-d/d-l-authorization-draft.md)
 
 ## G-1-P-C 个人供应商审批中心
 

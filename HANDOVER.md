@@ -8,7 +8,7 @@
 
 个人版通过本机可信启动开启。Owner 在「版本与研究准入」选择获准项目，按权限配置本机凭证、登记材料和风险、提交申请、批准或撤销。C 工作库 SQLite v9，经隔离验证后接续。G-1-PERSONAL 为 **NOT_EVALUATED**，原商用 G-1 为 **BLOCKED**。原 PackyCode 执行与续跑授权已耗尽。M06 冻结，核心进度 39/79。[可信启动](docs/architecture/g1-personal-server-policy.md) · [C 契约](docs/architecture/g1-personal-approval-contract.md)
 
-**G-1-P-D、G-1-P-D-E 均为 BLOCKED**。Phase 0 复现预准入关闭和 v9 账本缺口。接续需负责人独立批准 Personal 工作库 v9→v10。起步按草案核验隔离备份、事务回滚、Business v9 兼容和当前资格，之后用合成替身验证受限执行。D-L 尚未就绪。正式执行须另行审批当前账户、凭证、通道、逐源许可、最终载荷与限额。全新取证顺利路径 4 次，当前实际 0 次。G-1-P-R 与 M09–M15 为 `NOT_STARTED`。[Phase 0](docs/evidence/g1-p-d/phase-0.md) · [迁移草案](docs/architecture/g1-personal-pre-admission-design.md) · [六项与预算](docs/evidence/g1-p-d/README.md)
+**G-1-P-D = BLOCKED，G-1-P-D-E = BLOCKED**。候选源码已完成受限运行及恢复复验，出场证据见下方工程记录。负责人已批准 Personal 工作库 v9→v10 和试运行账本。以 `37fc746177c8b7e911479f057ed78f6e0c8809ae` 及草稿 PR #2 为接续基线。隔离环境核验迁移备份、回滚、撤销连续性、Business v9 兼容及合成执行。实际部署库未迁移。D-L 尚未就绪，真实执行须另行审批账户、凭证、通道、逐源许可、最终载荷与限额。全新取证顺利路径 4 次，实际 0 次。G-1-P-R 与 M09–M15 为 `NOT_STARTED`，I18N-PRE 为 `PLANNED`。[负责人批准](docs/decisions/g1-p-d-e-v10-owner-approval.md) · [工程证据](docs/evidence/g1-p-d/engineering.md) · [D-L 申请草案](docs/evidence/g1-p-d/d-l-authorization-draft.md)
 
 ## G-1-PERSONAL Phase 1 与后续授权
 

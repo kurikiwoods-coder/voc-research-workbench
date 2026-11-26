@@ -1,10 +1,10 @@
 # G-1-P-D 个人研究版同批验收准备
 
-后续 G-1-P-D-E Phase 0 已复现 v9 账本缺口。工程状态 **BLOCKED**，接续等待负责人独立批准 Personal 工作库迁移。以下正式同批判定及历史证据继续适用。[Phase 0 复验与风险](phase-0.md) · [迁移草案](../../architecture/g1-personal-pre-admission-design.md)
+后续 G-1-P-D-E Phase 0 已复现 v9 账本缺口。负责人已批准 Personal 工作库 v9→v10 迁移和 D 受限执行工程，工程候选及恢复复验见工程证据。实际部署库未迁移。以下正式同批判定及历史证据继续适用。[Phase 0 复验与风险](phase-0.md) · [负责人批准](../../decisions/g1-p-d-e-v10-owner-approval.md) · [当前工程证据](engineering.md) · [D-L 申请草案](d-l-authorization-draft.md)
 
-2026-11-26，**G-1-P-D = BLOCKED**。C 阶段工程交付已通过，本轮完成基线复验、离线演练和请求预算准备。现行服务端缺少受限个人预准入执行入口及同批预约、回执和对账机制，负责人尚未确认最终载荷、实际凭证和金额上限。本轮未建立正式批次。个人门禁 `NOT_EVALUATED`，商用 G-1 `BLOCKED`，R 及 M09–M15 `NOT_STARTED`。工作库 SQLite v9，M06 冻结，核心路线图 39/79。[个人准入](../../architecture/personal-research-gate.md) · [批次准备规范](../g1-p-c/d-preparation.md)
+2026-11-26，**G-1-P-D = BLOCKED**。C 阶段工程交付已通过，D 准备阶段完成基线复验、离线演练和请求预算准备。正式批次尚未建立，待完成 D-E 工程验收并核准最终载荷、实际凭证和金额上限。个人门禁 `NOT_EVALUATED`，商用 G-1 `BLOCKED`，R 及 M09–M15 `NOT_STARTED`。M06 冻结，I18N-PRE 为 `PLANNED`，核心路线图 39/79。[个人准入](../../architecture/personal-research-gate.md) · [批次准备规范](../g1-p-c/d-preparation.md)
 
-## 基线与阻塞
+## D 准备阶段基线与阻塞
 
 准备前的本机、远端和开放草稿 PR #2 均指向 `5106bb1098ebc706fb3429ba462cd5e82c55b169`，PR 目标为 `codex/p0-0-connectivity`。该提交的 Ubuntu、Windows Server 2022、Chromium 均通过。接续前工作区仅有已授权的八份 I18N-PRE 规划文档，已独立提交为 `0a5014f7d79d0612a94ba5074894e9a954c3a382`。I18N-PRE 为 `PLANNED`，在 M10 验收后另行授权，安排于 M11 前。[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45762882859) · [草稿 PR](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2) · [规划授权](../../decisions/i18n-pre-owner-approval.md)
 
@@ -40,7 +40,7 @@
 
 两片历史合成参考合计输入 809、输出 220、总计 1,029 Token，费用 USD 0.000238。历史费率为 USD 0.2940/百万输入 Token、输出免费。正式载荷及账户未知，当前只能给参考量。实际估算按审核后的两片输入/输出上限 × 当前账户分项费率，再加搜索和回源费用。须由负责人确认请求、Token、金额上限及可用额度。符合纳入规则的历史搜索及回源分别可减少 1 次，两项都纳入则最低 2 次。当前正式复用 **0**。[详细预算规则](../g1-p-c/d-preparation.md) · [费用旁证](../g1-rb-f/README.md)
 
-本轮批准的真实调用金额和凭证绑定均待确认。**实际请求 0，搜索 0，回源 0，模型 0，实际 Token 0，新增费用 USD 0。** 批次 ID、账本、预约和结算未建立。无本轮未同步费用，账户余额未查询。
+D-L 的实际费用上限和凭证绑定待正式批准。**实际请求 0，搜索 0，回源 0，模型 0，实际 Token 0，新增费用 USD 0。** 正式批次、预约和结算均为 0，账户余额查询 0 次。
 
 实际执行前按契约绑定批次 ID、可信身份、版本、项目及冻结范围、用途、供应商、通道、账户、固定模型、凭证版本、批准输入和指纹、风险决议、审批引用、证据、UTC 有效期及预算。逐次检查权限和来源、预约并保存响应及用量。在外部请求结束后于本地写事务复核资格，对账和重启回读独立确认。扣费或结果不明时暂停，不增加调用。[批次契约](../../architecture/g1-personal-gate-contract.md) · [正式最低准入](../../architecture/personal-research-gate.md)
 
@@ -62,4 +62,4 @@
 
 I18N-PRE 提交通过 `git diff --cached --check`、相对链接和路线图顺序核对，以及仓库 `scripts/check-no-secrets.sh` 所含扫描。D 准备提交同样执行文档检查及该扫描。阶段交付对应远端提交及三项 CI 以草稿 PR #2 记录为准。[PR 检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2/checks)
 
-G-1-P-R 的工程接续前提是 D 的同批证据完整。负责人确认受限执行入口与专用账本的工程范围、最终载荷、当前凭证及预算后，可继续 D。个人准入仍由后续独立复审决定。
+G-1-P-R 的接续前提是 D 的同批证据完整。D-L 先完成工程验收，再由负责人另行批准最终载荷、当前凭证、来源许可及可执行预算。个人准入由后续独立复审决定。

@@ -1,6 +1,6 @@
 # G-1-P-D-E Phase 0 复验与风险记录
 
-2026-11-26 · Windows 11 · 源码 `9f21ffcfd2d9e03d998da455f2d5b030ceacba2d`。**G-1-P-D-E = BLOCKED**。已完成 v9 能力审计、隔离复现及迁移提案。[待批技术设计](../../architecture/g1-personal-pre-admission-design.md)
+2026-11-26 · Windows 11 · 源码 `9f21ffcfd2d9e03d998da455f2d5b030ceacba2d`。Phase 0 当时结论为 **G-1-P-D-E = BLOCKED**。已完成 v9 能力审计、隔离复现及迁移提案。后续负责人已批准 Personal v10 工程实施。[技术设计](../../architecture/g1-personal-pre-admission-design.md) · [后续批准](../../decisions/g1-p-d-e-v10-owner-approval.md)
 
 ## 根因与风险
 
