@@ -233,11 +233,14 @@ BATCH_QUERY = """
 
 
 class ValidationLedger:
-    def __init__(self, store, *, engineering_fixture=False, clock=None):
+    def __init__(self, store, *, engineering_fixture=False, live_continuity=None, clock=None):
         if store.edition != Edition.PERSONAL or store.fixture or store.diagnostic:
             raise ValueError("PERSONAL_WORKSPACE_REQUIRED")
         self.store = store
         self.engineering_fixture = engineering_fixture is True
+        if live_continuity is not None and (engineering_fixture or not callable(live_continuity)):
+            raise ValueError("INVALID_VALIDATION_TRANSPORT_MODE")
+        self.live_continuity = live_continuity
         self.clock = clock or (lambda: datetime.now(UTC))
         self._fixture_batches = set()
         self._fixture_lock = RLock()
@@ -291,6 +294,22 @@ class ValidationLedger:
         if self.engineering_fixture and batch["batch_id"] not in self._fixture_batches:
             raise Conflict("VALIDATION_RESTORE_CONTINUITY_REQUIRED")
 
+    def _require_write_domain(self, batch):
+        if batch["mode"] == "formal_live":
+            if self.live_continuity is None:
+                raise Conflict("VALIDATION_FORMAL_OWNER_COMMAND_REQUIRED")
+        elif self.live_continuity is not None:
+            raise Conflict("VALIDATION_BATCH_DOMAIN_MISMATCH")
+
+    def _require_send_authority(self, db, batch, grant):
+        if self.engineering_fixture and batch["mode"] == "engineering_fixture":
+            return
+        if self.live_continuity is not None and batch["mode"] == "formal_live":
+            if not self.live_continuity(db, batch, grant):
+                raise Conflict("VALIDATION_RESTORE_CONTINUITY_REQUIRED")
+            return
+        raise Conflict("VALIDATION_TRANSPORT_DISABLED")
+
     def batch(self, db, batch_id, context):
         result = _one(db, BATCH_QUERY + " WHERE b.batch_id=? AND b.study_id=? AND b.scope_id=? AND b.scope_version=?",
                       (batch_id, *_scope(context)))
@@ -334,6 +353,7 @@ class ValidationLedger:
             "batch_id": str(uuid4()), "starts_at": starts_at, "expires_at": expires_at,
             "created_at": self._now(), **_limits(budget), "single_cost": single_cost,
             "currency": currency, "decimals": decimals, "evidence_ref": evidence_ref,
+            "mode": "formal_live" if self.live_continuity is not None else "engineering_fixture",
         }
         with self._fixture_lock:
             with self._transaction() as db:
@@ -390,6 +410,10 @@ class ValidationLedger:
     def authorize(self, batch_id, context, grant, recheck):
         with self._transaction() as db:
             batch = self.batch(db, batch_id, context)
+            if batch["mode"] == "formal_live" or self.live_continuity is not None:
+                self._require_send_authority(db, batch, None)
+                if grant.limit.requests != 1 or ((grant.operation != "search") != (grant.depends_on is not None)):
+                    raise Conflict("VALIDATION_FORMAL_OPERATION_INVALID")
             if batch["state"] not in ACTIVE | {"draft"}:
                 raise Conflict("VALIDATION_BATCH_NOT_ACTIVE")
             start, end = _utc(grant.valid_from), _utc(grant.expires_at)
@@ -410,10 +434,10 @@ class ValidationLedger:
             incompatible = _one(db, """
                 SELECT g.grant_id FROM personal_validation_grants g
                 JOIN personal_validation_batches b USING(batch_id)
-                WHERE g.provider=? AND g.account_ref=? AND b.starts_at<? AND b.expires_at>?
+                WHERE b.mode=? AND g.provider=? AND g.account_ref=? AND b.starts_at<? AND b.expires_at>?
                   AND (g.account_limits<>? OR b.currency<>? OR b.decimals<>?)
                 LIMIT 1
-            """, (grant.provider, grant.account_ref, batch["expires_at"], batch["starts_at"],
+            """, (batch["mode"], grant.provider, grant.account_ref, batch["expires_at"], batch["starts_at"],
                   values["account_limits"], batch["currency"], batch["decimals"]))
             if incompatible is not None:
                 raise Conflict("VALIDATION_ACCOUNT_LIMIT_CHANGED")
@@ -457,11 +481,11 @@ class ValidationLedger:
             JOIN personal_validation_batches b ON b.batch_id=q.batch_id
             LEFT JOIN personal_validation_receipts r USING(request_id)
             WHERE q.batch_id=? OR (
-                g.provider=? AND g.account_ref=? AND b.starts_at<? AND b.expires_at>?
+                b.mode=? AND g.provider=? AND g.account_ref=? AND b.starts_at<? AND b.expires_at>?
             )
         """, (
-            batch["batch_id"], grant["provider"] if grant else None, grant["account_ref"] if grant else None,
-            batch["expires_at"], batch["starts_at"],
+            batch["batch_id"], batch["mode"], grant["provider"] if grant else None,
+            grant["account_ref"] if grant else None, batch["expires_at"], batch["starts_at"],
         ))
         for row in rows:
             if row["state"] == "released":
@@ -485,7 +509,7 @@ class ValidationLedger:
 
     def reserve(self, batch_id, context, grant_id, slot, payload_sha256, estimate, recheck):
         _hash(payload_sha256)
-        if not self.engineering_fixture:
+        if not self.engineering_fixture and self.live_continuity is None:
             raise Conflict("VALIDATION_TRANSPORT_DISABLED")
         if type(slot) is not int or not 1 <= slot <= 2 or estimate.requests != 1 or (
             estimate.total_tokens != estimate.input_tokens + estimate.output_tokens
@@ -494,6 +518,7 @@ class ValidationLedger:
         with self._transaction() as db:
             batch = self.batch(db, batch_id, context)
             grant = self.grant(db, batch_id, grant_id)
+            self._require_send_authority(db, batch, grant)
             self._latest_grant(db, grant)
             self._authorize_operation(db, context, batch, grant, recheck)
             if (grant["slot"], grant["payload_sha256"]) != (slot, payload_sha256):
@@ -545,10 +570,11 @@ class ValidationLedger:
         return request, batch, self.grant(db, batch["batch_id"], request["grant_id"])
 
     def claim(self, request_id, context, recheck):
-        if not self.engineering_fixture:
+        if not self.engineering_fixture and self.live_continuity is None:
             raise Conflict("VALIDATION_TRANSPORT_DISABLED")
         with self._transaction() as db:
             request, batch, grant = self._request(db, request_id, context)
+            self._require_send_authority(db, batch, grant)
             if request["state"] != "reserved":
                 return None
             if batch["state"] not in ACTIVE:
@@ -572,6 +598,7 @@ class ValidationLedger:
         _ref(reason)
         with self._transaction() as db:
             request, batch, grant = self._request(db, request_id, context)
+            self._require_write_domain(batch)
             _require(recheck, db, batch, grant)
             if request["state"] == "claimed":
                 self._reconciliation(db, request, batch, reason)
@@ -582,6 +609,9 @@ class ValidationLedger:
     def receipt(self, request_id, context, receipt, recheck):
         with self._transaction() as db:
             request, batch, grant = self._request(db, request_id, context)
+            formal = batch["mode"] == "formal_live"
+            if formal != (self.live_continuity is not None):
+                raise Conflict("VALIDATION_TRANSPORT_DISABLED")
             prior = _one(db, "SELECT * FROM personal_validation_receipts WHERE request_id=?", (request_id,))
             value = {name: val for name, val in asdict(receipt).items() if name not in {"valid", "reason"}}
             value |= {
@@ -603,6 +633,9 @@ class ValidationLedger:
                 return {"request_id": request_id, "eligible": 0, "conflict": True}
             current = True
             try:
+                if formal:
+                    self._require_send_authority(db, batch, grant)
+                    self._latest_grant(db, grant)
                 self._authorize_operation(db, context, batch, grant, recheck, settling=True)
             except (Conflict, KeyError, ValueError, sqlite3.Error, OSError):
                 current = False
@@ -643,6 +676,7 @@ class ValidationLedger:
         _ref(evidence_ref)
         with self._transaction() as db:
             request, batch, grant = self._request(db, request_id, context)
+            self._require_write_domain(batch)
             _require(recheck, db, batch, grant)
             prior = _one(db, """
                 SELECT * FROM personal_validation_reconciliations WHERE request_id=? ORDER BY sequence DESC LIMIT 1
@@ -674,6 +708,7 @@ class ValidationLedger:
         _ref(reason)
         with self._transaction() as db:
             request, batch, grant = self._request(db, request_id, context)
+            self._require_write_domain(batch)
             _require(recheck, db, batch, grant)
             if request["state"] == "reserved":
                 self._request_event(db, request_id, "released", reason)
@@ -681,11 +716,15 @@ class ValidationLedger:
                 raise Conflict("VALIDATION_SEND_ALREADY_CLAIMED")
             return request | {"state": "released"}
 
-    def transition(self, batch_id, context, state, reason, recheck):
+    def transition(self, batch_id, context, state, reason, recheck, *, formal_review=None):
         _ref(reason)
         with self._transaction() as db:
             batch = self.batch(db, batch_id, context)
+            self._require_write_domain(batch)
             _require(recheck, db, batch)
+            if batch["mode"] == "formal_live" and state in {"evidence_review", "complete"}:
+                if formal_review is None or not formal_review(db, batch, None):
+                    raise Conflict("VALIDATION_FORMAL_REVIEW_REQUIRED")
             if batch["state"] == state:
                 return batch
             if state not in CHANGES[batch["state"]]:
@@ -694,7 +733,7 @@ class ValidationLedger:
                            (batch_id,))
             if pending and state not in {"paused", "revoked", "blocked"}:
                 raise Conflict("VALIDATION_REQUEST_IN_FLIGHT")
-            if state in {"evidence_review", "complete"}:
+            if batch["mode"] == "engineering_fixture" and state in {"evidence_review", "complete"}:
                 problems = _one(db, """
                     SELECT q.request_id FROM personal_validation_requests q
                     LEFT JOIN personal_validation_receipts r USING(request_id)
@@ -730,6 +769,7 @@ class ValidationLedger:
     def recover(self, batch_id, context, recheck):
         with self._transaction() as db:
             batch = self.batch(db, batch_id, context)
+            self._require_write_domain(batch)
             _require(recheck, db, batch)
             for row in db.execute(REQUEST_QUERY + " WHERE q.batch_id=? AND state='claimed'", (batch_id,)).fetchall():
                 self._reconciliation(db, row, batch, "send_outcome_unknown")
@@ -737,14 +777,23 @@ class ValidationLedger:
             return batch
 
     def add_evidence(self, batch_id, context, requirement, kind, evidence_ref, evidence_sha256, reason, recheck):
-        if requirement not in REQUIREMENTS or kind not in {"synthetic_fixture", "local_regression", "historical_review", "missing"}:
+        kinds = {"synthetic_fixture", "local_regression", "historical_review", "missing", "formal_live",
+                 "formal_offline"}
+        if requirement not in REQUIREMENTS or kind not in kinds:
             raise ValueError("INVALID_VALIDATION_EVIDENCE")
         _ref(evidence_ref)
         _ref(reason)
         _hash(evidence_sha256)
         with self._transaction() as db:
             batch = self.batch(db, batch_id, context)
+            self._require_write_domain(batch)
             _require(recheck, db, batch)
+            if kind in {"formal_live", "formal_offline"}:
+                if self.live_continuity is None or batch["mode"] != "formal_live":
+                    raise Conflict("VALIDATION_EVIDENCE_DOMAIN_MISMATCH")
+                self._require_send_authority(db, batch, None)
+            if batch["mode"] == "formal_live" and kind in {"synthetic_fixture", "historical_review"}:
+                raise Conflict("VALIDATION_EVIDENCE_DOMAIN_MISMATCH")
             if batch["state"] in {"revoked", "complete"}:
                 raise Conflict("VALIDATION_BATCH_NOT_ACTIVE")
             values = {

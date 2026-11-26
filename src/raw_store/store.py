@@ -24,7 +24,7 @@ MIGRATIONS = (
     "008_m07_registry_drafts.sql",
     "009_personal_provider_approvals.sql",
 )
-PERSONAL_MIGRATIONS = ("010_personal_pre_admission.sql",)
+PERSONAL_MIGRATIONS = ("010_personal_pre_admission.sql", "011_personal_live_admission.sql")
 MIGRATION_DIRECTORY = Path(__file__).parent / "migrations"
 SQLITE_TIMEOUT = 12
 
@@ -95,7 +95,7 @@ class Store:
         migrations = Store._migrations(edition)
         if not 1 <= target <= len(migrations):
             raise ValueError("不支持的数据库用途或目标版本")
-        Store._inspect_migration_source(db, target, edition)
+        initial_version, _ = Store._inspect_migration_source(db, target, edition)
         # Journal mode changes happen outside transactions and can return busy
         # immediately when two processes open a brand-new file.
         deadline = time.monotonic() + SQLITE_TIMEOUT
@@ -113,9 +113,14 @@ class Store:
         # In legacy transaction mode executescript would commit our lock
         # before the first statement. Use SQL transaction control here.
         db.autocommit = True
-        db.execute("BEGIN IMMEDIATE")
+        rebuild_ledger = edition == Edition.PERSONAL and initial_version < 11 <= target
+        if rebuild_ledger:
+            db.execute("PRAGMA foreign_keys=OFF")
         try:
+            db.execute("BEGIN IMMEDIATE")
             version, new_personal = Store._inspect_migration_source(db, target, edition)
+            if edition == Edition.PERSONAL and version < 11 <= target and not rebuild_ledger:
+                raise sqlite3.OperationalError("个人工作库启动期间版本已变化，请重新启动。")
             if new_personal:
                 db.execute(f"PRAGMA application_id={APPLICATION_IDS[edition]}")
             if version < target:
@@ -136,6 +141,9 @@ class Store:
             if db.in_transaction:
                 db.execute("ROLLBACK")
             raise
+        finally:
+            if rebuild_ledger:
+                db.execute("PRAGMA foreign_keys=ON")
 
     def connect(self):
         db = self._connect()

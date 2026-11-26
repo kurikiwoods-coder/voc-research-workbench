@@ -98,6 +98,7 @@ def _request(request, receipt, reconciliation):
 
 def _projection(view, writable, now):
     batch = view["batch"]
+    writable = writable and batch["mode"] == "engineering_fixture"
     state = batch["state"]
     reason = batch["state_reason"]
     if reason not in PUBLIC_REASONS:
@@ -106,7 +107,7 @@ def _projection(view, writable, now):
     receipts = {item["request_id"]: item for item in view["receipts"]}
     reconciliations = {item["request_id"]: item for item in view["reconciliations"]}
     return {
-        "batch_id": batch["batch_id"], "status": state, "reason": reason,
+        "batch_id": batch["batch_id"], "status": state, "reason": reason, "mode": batch["mode"],
         "can_pause": writable and "paused" in CHANGES[state], "can_revoke": writable and "revoked" in CHANGES[state],
         "budget": {key: str(batch[column]) for key, column in zip(BUDGET_FIELDS, LIMIT_FIELDS, strict=True)},
         "used": {key: str(value) for key, value in view["spent"].items()},
@@ -136,7 +137,8 @@ def register_personal_admission(app):
             projected = [_projection(view, writable, now) for view in views]
             with ledger.store.db() as db:
                 recheck(db, None, None)
-        return {"batches": projected, "mode": "synthetic_only", "formal_gate": "NOT_EVALUATED"}
+        mode = "formal_owner_command" if any(item["mode"] == "formal_live" for item in projected) else "synthetic_only"
+        return {"batches": projected, "mode": mode, "formal_gate": "NOT_EVALUATED"}
 
     def stop(request, validation_batch_id, body, state, reason):
         with _access(request, body) as (ledger, context, recheck):

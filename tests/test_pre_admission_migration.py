@@ -23,6 +23,7 @@ from test_m07_migration import append_registry_version
 
 
 PERSONAL_ID = APPLICATION_IDS[Edition.PERSONAL]
+V10_MIGRATIONS = storage.PERSONAL_MIGRATIONS[:1]
 BATCHES = "personal_validation_batches"
 APPROVALS = "personal_provider_approval_events"
 CREDENTIAL = "personal_credential_binding"
@@ -47,12 +48,13 @@ class PreAdmissionMigrationTests(unittest.TestCase):
         ))).resolve()
 
     def personal(self, directory):
-        return storage.Store(directory, edition=Edition.PERSONAL)
+        with patch.object(storage, "PERSONAL_MIGRATIONS", V10_MIGRATIONS):
+            return storage.Store(directory, edition=Edition.PERSONAL)
 
     def historical(self, directory):
         with patch.object(storage, "PERSONAL_MIGRATIONS", ()):
             binding = provision(directory, "合成迁移项目", "合成范围", uuid4())
-            store = self.personal(directory)
+            store = storage.Store(directory, edition=Edition.PERSONAL)
         with store.db() as db:
             insert(db, CREDENTIAL, study_id=binding["study_id"], scope_id=binding["scope_id"],
                    credential_revision="a" * 32)
@@ -81,13 +83,13 @@ class PreAdmissionMigrationTests(unittest.TestCase):
             self.assertEqual(db.execute("PRAGMA foreign_key_check").fetchall(), [])
             self.assertEqual(
                 db.execute("SELECT 1 FROM sqlite_schema WHERE name=?", (BATCHES,)).fetchone() is not None,
-                version == 10,
+                version >= 10,
             )
-            if version == 10:
+            if version >= 10:
                 self.assertEqual(db.execute(f"SELECT COUNT(*) FROM {BATCHES}").fetchone()[0], 0)
 
     def test_fresh_and_reopened_workspaces_keep_six_schema_targets(self):
-        for edition, version, application_id in ((Edition.BUSINESS, 9, 0), (Edition.PERSONAL, 10, PERSONAL_ID)):
+        for edition, version, application_id in ((Edition.BUSINESS, 9, 0), (Edition.PERSONAL, 11, PERSONAL_ID)):
             with self.subTest(edition=edition):
                 directory = self.root / edition.value
                 for role, expected in (({}, version), ({"fixture": True}, 1), ({"diagnostic": True}, 1)):
@@ -118,7 +120,7 @@ class PreAdmissionMigrationTests(unittest.TestCase):
         self.assertNotEqual(archived_rows, live_rows)
         shutil.copyfile(old.directory / MARKER, recovered / MARKER)
         with patch.object(storage, "PERSONAL_MIGRATIONS", ()):
-            self.assert_database(self.personal(recovered), 9, PERSONAL_ID)
+            self.assert_database(storage.Store(recovered, edition=Edition.PERSONAL), 9, PERSONAL_ID)
         for directory, expected_rows in ((old.directory, live_rows), (recovered, archived_rows)):
             with self.subTest(directory=directory):
                 for _ in range(2):
@@ -159,7 +161,7 @@ class PreAdmissionMigrationTests(unittest.TestCase):
         old, _ = self.historical(self.root / "old")
         updated = self.personal(old.directory)
         with patch.object(storage, "PERSONAL_MIGRATIONS", ()), self.assertRaisesRegex(ValueError, "数据库版本"):
-            self.personal(old.directory)
+            storage.Store(old.directory, edition=Edition.PERSONAL)
         with self.assertRaisesRegex(ValueError, "数据库版本"):
             old.connect()
         self.assert_database(updated, 10, PERSONAL_ID)
@@ -250,13 +252,14 @@ storage.Store(Path(sys.argv[1]), edition=Edition.PERSONAL)
         script = """import sys, time
 from pathlib import Path
 from src.edition_policy import Edition
-from src.raw_store.store import Store
+from src.raw_store import store as storage
 
 Path(sys.argv[2]).touch()
 start = Path(sys.argv[3])
 while not start.is_file():
     time.sleep(0.01)
-store = Store(Path(sys.argv[1]), edition=Edition.PERSONAL)
+storage.PERSONAL_MIGRATIONS = storage.PERSONAL_MIGRATIONS[:1]
+store = storage.Store(Path(sys.argv[1]), edition=Edition.PERSONAL)
 assert store.one('PRAGMA user_version')['user_version'] == 10
 """
         children = []

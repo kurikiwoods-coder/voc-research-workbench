@@ -259,7 +259,7 @@ class PersonalValidationLedgerTests(unittest.TestCase):
         backup = self.store.directory / "disposable-v10-backup.sqlite3"
         with closing(self.store.connect()) as current, closing(sqlite3.connect(backup)) as older:
             current.backup(older)
-            self.assertEqual(older.execute("PRAGMA user_version").fetchone()[0], 10)
+            self.assertEqual(older.execute("PRAGMA user_version").fetchone()[0], 11)
         self.assertIsNotNone(self.claim(request))
         self.ledger.transition(self.batch_id, self.context, "revoked", "owner-revoked", authorized)
         self.bind("search", "tavily", "fixture-search", "search-fixture", None)
