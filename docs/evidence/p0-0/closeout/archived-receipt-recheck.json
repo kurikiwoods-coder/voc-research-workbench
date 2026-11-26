@@ -1,0 +1,16 @@
+{
+  "run": "ffc9fea1-cbd6-40ac-a96b-a848783a561b",
+  "checks": {
+    "C0-1": "BLOCKED",
+    "C0-2": "BLOCKED",
+    "C0-3": "BLOCKED",
+    "C0-4": "BLOCKED",
+    "C0-5": "PASS",
+    "C0-6": "PASS",
+    "G-1": "BLOCKED"
+  },
+  "evidence_records": 10,
+  "shards": 0,
+  "sqlite_integrity": "ok",
+  "receipt_sha256": "3965bc0723858eb789ea5cd80f62595d215e0cd6979e340d957bf9befc394f4e"
+}

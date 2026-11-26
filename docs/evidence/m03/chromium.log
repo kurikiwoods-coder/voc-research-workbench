@@ -1,0 +1,5 @@
+API setup E2E passed: wizard, local key save/rotation/delete, preflight evidence, and 320/390 layouts.
+M01 connectivity E2E passed: navigation, batch evidence and recovery, Token Center, and 320/390 layouts.
+M03 project E2E passed: create, validation, duplicate submission, history, archive/restore, search, active project, and 320/390 layouts.
+M03 restart E2E passed: same SQLite database, current project, and scope versions reopened in a new process.
+Chromium E2E passed. Screenshots: /home/runner/work/voc-research-workbench/voc-research-workbench/test-results/browser

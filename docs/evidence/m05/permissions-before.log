@@ -1,0 +1,2 @@
+BUG-01 expected HTTP 422, actual HTTP 200 status verified
+BUG-02 labeled withdrawn False expected HTTP 409, actual HTTP 200 raw visible True

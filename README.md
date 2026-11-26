@@ -1,12 +1,43 @@
 # VOC 研究工作台
 
-> **状态：P0 进行中 — 设计与定义文档，尚未实现。** 本仓库承载专案、PDT、字段定义与代码骨架，新增的额度条、搜索器、适配器均为待实现需求，并非已具备的功能。
+> **当前处于 P0-0，G-1 为 BLOCKED。** Tavily 认证搜索及原帖回源已通过 C0-3。Jev 固定模型、返回契约和真实用量等待供应商留存审查。[Tavily 实测](docs/evidence/p0-0/tavily-live/README.md) · [API 接入实测](docs/evidence/p0-0/api-setup/README.md)
+
+[完整路线图](docs/planning/ROADMAP-V2.md) · [主模块](MODULE_ROADMAP.md) · [开发与验收状态](DEVELOPMENT_STATUS.md) · [开发交接](HANDOVER.md)
 
 ## 目的
 
-一个以站外用户原话为依据的研究工作台：多源检索发现清单外的新意图，用 Jev（强制，`jev-1.14.0`）规模化编码，再把发现转成可验证的调查问卷，全部可审计、可重跑。Amazon 评价因官方 API 不给评论文本、条款禁抓，只作初步来源；主线是 Tavily/Brave 搜索发现 URL + 许可论坛 / YouTube 原话，Reddit 为备用适配器、CSV 保底。试点品类为 COSORI 智能营养秤（美国市场），架构按品类无关设计。
+VOC 工作台用于研究任意产品、服务或跨品类用户需求。一个研究项目可选择多个品类，也可以只指定研究问题。原话、用户任务和意图分别建模。营养秤是历史试点之一。
 
-## 三件产出物
+## 启动当前版本
+
+开发分支交付 P0-0 本机工作台，包含 API 接入、连通性检查、验收矩阵、批次记录和 Jev 额度中心。浏览器通过 FastAPI 访问本地 SQLite。没有供应商凭证也能启动并完成配置向导。
+
+**Windows** 安装 Python 3.12 后双击 `scripts/start-windows.cmd`，浏览器打开 **http://127.0.0.1:8765/**。Linux 或 macOS 可在 Python 虚拟环境执行以下命令。
+
+```sh
+python -m pip install -r requirements.txt
+python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-headers
+```
+
+首次启动可跟随向导，也可以从「设置 → API 接入」继续。选择 TypeSafe 或 JevModel，配置 Tavily 或 Brave 中的至少一家。粘贴密钥后点「保存密钥」，立即生效。导入所选 Jev 通道的留存审查，再逐服务点「检查连接」。[用户操作说明](docs/connectivity.md#从工作台配置-api) · [供应商注册与取钥](docs/connectivity.md#注册与创建密钥)
+
+点「运行正式验收」执行原有六项检查。可在「运行记录」恢复批次或导出脱敏证据。YouTube 和 Google Forms 当前提供接入资料，分别等待 P0 和 P1。[阶段验收记录](docs/evidence/p0-0/README.md) · [需求与冲突矩阵](docs/requirements-matrix.md)
+
+## 本机研究项目
+
+进入「研究项目 → 新建项目」，可管理产品、服务、跨品类和开放式课题。项目详情可切换当前项目、冻结范围和查看历次快照。归档前会提示，恢复后仍能查看原研究范围。M03 已获准独立预开发，可在没有 API Key 时使用。[项目操作与接口](docs/studies.md)
+
+## 本机研究数据导入
+
+先冻结项目范围，在「数据导入中心」选择 CSV 或 XLSX。可检查工作表、调整字段映射、确认质量并回查批次。暂存数据留在本地，正式研究证据需按 PDT 核验。[操作说明、模板与接口](docs/imports.md)
+
+在「原始语料」可核对候选原话、回查冻结范围和来源文件行、记录审核依据及保留日期，并查看项目内的重复组。[本机原话审核](docs/imports.md#m05-原始语料审核)
+
+## 工程回归
+
+安装 Python 3.12、Node 24 和 `requirements-dev.txt`，执行 `bash scripts/smoke-test.sh`。本地 Chromium 回归执行 `python -m playwright install chromium` 和 `python tests/browser_e2e.py`。GitHub Actions 在 PR 上运行 Linux、Windows Server 和 Chromium 工程测试，保存日志和截图。Windows 10/11 真机验收单独登记。[CI 工作流](.github/workflows/p0-0-ci.yml) · [Actions 运行记录](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/workflows/p0-0-ci.yml)
+
+## 研究闭环的目标产出
 
 1. **意图注册表** — 发现了什么意图、定义、包含/排除标准、代表原话、版本号。
 2. **洞察仪表盘** — 情感 / 问题 / 趋势 / 推荐四模块，数字按来源分开报。
@@ -25,12 +56,12 @@
 
 架构原则：先存原始、再谈分析；自家与竞品数据分开算（Radar 独立）；改注册表后可全量重跑；核心动作（检索、编码、汇总、出题）都留程序/MCP 接口，不锁在一个网页里。
 
-## 快速开始（P0 窄链）
+## P0 准入后的研究流程
 
-1. 读 [docs/pdt/PDT-v1.2.md](docs/pdt/PDT-v1.2.md) §12.1。
+1. 冻结研究主题与范围，登记来源权限和采样规则。
 2. CSV + Tavily/Brave 搜索发现 → 至少 100 条去重且可核验的真实用户语义片段入库（尽量 ≥3 个独立站点/批次）。
 3. 发现层试点：BERTopic + TopicGPT 双轨提候选，人工确认入注册表。
-4. Jev 校准：100–200 条人工金标准，中文单独校准，通过 J-1~J-10 后放量。
+4. Jev 校准：100–200 条人工金标准，中文单独校准，通过 J-1～J-14 后放量。
 5. 问卷生成器 v1：按发现类型映射出题，模拟预检 → 2–3 人真人试填 → 导出 Google Forms。
 
 ## Jev 强制项
@@ -39,9 +70,9 @@
 - **只用 Choice / Score / Noul 三种**；Jev 1.14 新增的 Box（图片框选）明确排除出 P0。
 - **每个 Choice 必须配 None 选项**（「以上都不是」）**+ 一道 Noul 守门**「是否属于现有意图清单」；答否即进发现队列，即使 Choice 第一名概率很高。依据：独立评测（EurekaLeo，2026-10-07 截止，101 项核心研究）显示，即使给了明确的 None 选项，Jev 也只在 7% 的缺失正确答案菜单上拒绝作答。
 - **中文单独校准**：中文与英文金标准分开建、分开报一致率；不要用英文翻译后跑分代替中文原文跑分（Chinese-Jev，arXiv:2609.36965）。
-- **CX 内部客诉绝不进 Jev**：Jev 走 TypeSafe 托管 API，同样算第三方 API；CX 只做本地/人工编码。不要把「不训练用客户数据」写成「数据不留存」（零留存仅限企业版，上线前在 TypeSafe 控制台确认）。
+- **CX 内部客诉绝不进 Jev**：Jev 走 TypeSafe 托管 API，同样算第三方 API；CX 只做本地/人工编码。TypeSafe 由组织管理员在控制台启用并留存 ZDR 凭据。独立第三方服务单独审查。
 - **成本**：官方价输入 $0.042/百万 tokens、输出免费；每条约 300 输入 tokens 时，1,000 条跑一整套问题约 $0.013。P0 真正成本是人工标注与复核。
-- 详见 [docs/pdt/PDT-v1.2.md](docs/pdt/PDT-v1.2.md) §6 与 [docs/checks/jev-pdt-check-2026-11-23.md](docs/checks/jev-pdt-check-2026-11-23.md)。
+- 详见 [PDT v1.3.1](docs/pdt/PDT-v1.3.1.docx) §7 与 [docs/checks/jev-pdt-check-2026-11-23.md](docs/checks/jev-pdt-check-2026-11-23.md)。
 
 ## 数据源与口径
 
@@ -71,9 +102,16 @@
 
 ## 分期与验收
 
-- **P0**：窄链跑通（发现 + 执行 + 出题），8 道 Gate G0–G7（见 [docs/pdt/PDT-v1.2.md](docs/pdt/PDT-v1.2.md) 附录 C）。
+- **P0-0** 先用同一批次和真实证据验收 G-1。
+- **P0** 实现发现、编码、基础仪表盘与问卷草稿，逐项验收 J、CAT、G 系列。G6 的真实回流按矩阵归入 P1。
 - **P1**：仪表盘四模块 + 声量基线 + 问卷回流。
 - **P2**：竞品 Radar + Amazon 窄路常态化 + GitHub 信号三角验证。
+
+## 开发路线与模型规划
+
+M01–M06 已完成工程验收，M06-R 工程基线已冻结。核心路线图共 79 项，工程或复审完成范围为 31 项。G-1-R 等待单独授权，其后按依赖接续 M07–M15。P2 后另列 15 项可选产品化。[实施顺序及版本目标](docs/planning/development-sequence.md) · [产品化路线](docs/planning/productization-roadmap.md)
+
+模型治理规划分别接入决策、生成和向量能力。M12 以锁定的 `jev-1.14.0` 作为首个正式决策模型，后续候选须有自己的审批、真实接口证据及校准。通用适配接口处于规划状态。[多模型接口图](docs/architecture/ai-model-adapter-contract.md#接口树)
 
 ## 红线
 

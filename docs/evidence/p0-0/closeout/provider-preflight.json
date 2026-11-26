@@ -1,0 +1,19 @@
+{
+  "checked_at": "2026-11-24T02:12:52.625117+00:00",
+  "model": "jev-1.14.0",
+  "provider": "jevmodel",
+  "credential_present": {
+    "TYPESAFE_API_KEY": false,
+    "JEVMODEL_API_KEY": false,
+    "TAVILY_API_KEY": false,
+    "BRAVE_API_KEY": false
+  },
+  "retention_review_approved": false,
+  "ready_for_live_gate": false,
+  "authenticated_requests_sent": 0,
+  "missing_prerequisites": [
+    "Jev credential",
+    "provider retention review",
+    "Tavily or Brave credential"
+  ]
+}

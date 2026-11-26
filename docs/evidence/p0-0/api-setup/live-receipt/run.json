@@ -1,0 +1,634 @@
+{
+  "format": 1,
+  "run": {
+    "id": "7fbcdf4d-3e8b-4f02-9974-ce52fe1a520e",
+    "provider": "jevmodel",
+    "started_at": "2026-11-24T02:47:35.441+00:00",
+    "finished_at": "2026-11-24T02:47:46.129+00:00",
+    "state": "paused"
+  },
+  "attempts": [
+    {
+      "id": 1,
+      "started_at": "2026-11-24T02:47:35.441+00:00",
+      "finished_at": "2026-11-24T02:47:46.129+00:00"
+    }
+  ],
+  "operational_db_check": {
+    "integrity_check": "ok",
+    "foreign_key_violations": 0
+  },
+  "checks": [
+    {
+      "requirement_id": "C0-1",
+      "stage": "P0-0",
+      "title": "固定模型与分片",
+      "description": "固定模型与 8+3 分片。真实返回模型与锁定版本一致；字段对齐、合并完整；不支持固定版本则 BLOCKED，禁止自动用别名回退。",
+      "implementation": "src/execution/jev.py",
+      "test_case": "test_live_model_and_shards",
+      "status": "BLOCKED",
+      "evidence": [
+        6
+      ],
+      "blocker": "JEVMODEL_API_KEY 未配置；缺少该供应商的公开语料留存审查记录",
+      "last_checked_at": "2026-11-24T02:47:46.070+00:00",
+      "detail": "固定模型尚缺完整的两片真实响应。"
+    },
+    {
+      "requirement_id": "C0-2",
+      "stage": "P0-0",
+      "title": "返回字段与概率",
+      "description": "Choice、Score 与 Noul 返回契约。完整分布符合契约才通过；第三方无 probs 标 schema_gap，改走符合要求的另一供应商。",
+      "implementation": "src/execution/jev.py",
+      "test_case": "test_live_answer_contract",
+      "status": "BLOCKED",
+      "evidence": [
+        6
+      ],
+      "blocker": "JEVMODEL_API_KEY 未配置；缺少该供应商的公开语料留存审查记录",
+      "last_checked_at": "2026-11-24T02:47:46.073+00:00",
+      "detail": "三类返回字段尚未通过完整校验。"
+    },
+    {
+      "requirement_id": "C0-3",
+      "stage": "P0-0",
+      "title": "搜索与公开原话",
+      "description": "搜索命中与许可原话。原话/原址/采集方式/许可状态齐全；仅搜索摘要则不通过。",
+      "implementation": "src/ingestion/public_source.py",
+      "test_case": "test_live_discovery_and_quote",
+      "status": "BLOCKED",
+      "evidence": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "blocker": "tavily 未配置；brave 未配置",
+      "last_checked_at": "2026-11-24T02:47:46.064+00:00",
+      "detail": "论坛检索与原话接口均已核验。专案指定的搜索引擎尚未取证。"
+    },
+    {
+      "requirement_id": "C0-4",
+      "stage": "P0-0",
+      "title": "持久化与额度",
+      "description": "SQLite 回读与分片用量。数据可恢复、额外重试不重复计费、密钥不进入日志/浏览器/仓库。",
+      "implementation": "src/raw_store/store.py",
+      "test_case": "test_live_ledger_readback",
+      "status": "BLOCKED",
+      "evidence": [
+        7
+      ],
+      "blocker": "缺少两片真实 Jev 用量，余额未同步。",
+      "last_checked_at": "2026-11-24T02:47:46.081+00:00",
+      "detail": "重新打开 SQLite 后，已核对证据、批次和分片账本。"
+    },
+    {
+      "requirement_id": "C0-5",
+      "stage": "P0-0",
+      "title": "内部数据隔离",
+      "description": "CX 隔离与故障演练。携带 cx_internal 或 internal_confidential 标志的记录 100% 在客户端调用前被拦截。",
+      "implementation": "src/execution/transport.py",
+      "test_case": "test_isolation_drill",
+      "status": "PASS",
+      "evidence": [
+        8
+      ],
+      "blocker": null,
+      "last_checked_at": "2026-11-24T02:47:46.099+00:00",
+      "detail": "执行 36 次外发拦截与六种故障注入。"
+    },
+    {
+      "requirement_id": "C0-6",
+      "stage": "P0-0",
+      "title": "三层模型与召回",
+      "description": "三层关系与全局向量召回。所有 ID/关联有效；意图不会因产品品类不同被硬过滤；版本与候选可追踪。",
+      "implementation": "src/discovery/recall.py",
+      "test_case": "test_cross_category_recall",
+      "status": "PASS",
+      "evidence": [
+        9
+      ],
+      "blocker": null,
+      "last_checked_at": "2026-11-24T02:47:46.119+00:00",
+      "detail": "全库 30 个意图参与召回，已记录两个跨品类查询的候选与版本。"
+    },
+    {
+      "requirement_id": "G-1",
+      "stage": "P0-0",
+      "title": "P0 准入验收",
+      "description": "同一批六项检查均通过，所选供应商真实语料处理审核可追溯",
+      "implementation": "src/execution/checks.py",
+      "test_case": "test_gate_requires_all_six",
+      "status": "BLOCKED",
+      "evidence": [
+        10
+      ],
+      "blocker": "C0-1、C0-2、C0-3、C0-4；供应商留存审查待核验",
+      "last_checked_at": "2026-11-24T02:47:46.125+00:00",
+      "detail": "P0 入口等待本批次完成验收。"
+    }
+  ],
+  "evidence": [
+    {
+      "id": 1,
+      "attempt_id": 1,
+      "name": "tavily",
+      "mode": "configuration",
+      "checked_at": "2026-11-24T02:47:35.445+00:00",
+      "status_code": null,
+      "request": {
+        "query": "site:cooking.stackexchange.com/questions measuring cups sticky honey"
+      },
+      "response": {
+        "reason": "missing_key",
+        "sent": false
+      }
+    },
+    {
+      "id": 2,
+      "attempt_id": 1,
+      "name": "brave",
+      "mode": "configuration",
+      "checked_at": "2026-11-24T02:47:35.449+00:00",
+      "status_code": null,
+      "request": {
+        "query": "site:cooking.stackexchange.com/questions measuring cups sticky honey"
+      },
+      "response": {
+        "reason": "missing_key",
+        "sent": false
+      }
+    },
+    {
+      "id": 3,
+      "attempt_id": 1,
+      "name": "forum_search",
+      "mode": "live_http",
+      "checked_at": "2026-11-24T02:47:40.420+00:00",
+      "status_code": 200,
+      "request": {
+        "endpoint": "https://api.stackexchange.com/2.3/search/advanced",
+        "method": "GET",
+        "parameters": {
+          "order": "desc",
+          "pagesize": 4,
+          "site": "cooking",
+          "sort": "votes",
+          "title": "measuring cups"
+        }
+      },
+      "response": {
+        "hits": [
+          {
+            "id": "94603",
+            "url": "https://cooking.stackexchange.com/questions/94603/how-do-i-get-something-sticky-like-honey-or-golden-syrup-off-measuring-spoons-or"
+          },
+          {
+            "id": "22152",
+            "url": "https://cooking.stackexchange.com/questions/22152/how-to-separate-two-jammed-together-measuring-cups"
+          },
+          {
+            "id": "46715",
+            "url": "https://cooking.stackexchange.com/questions/46715/do-professional-cooks-use-measuring-cups-and-spoons"
+          },
+          {
+            "id": "116576",
+            "url": "https://cooking.stackexchange.com/questions/116576/inner-dimensions-of-anchor-hocking-glass-measuring-cups"
+          }
+        ],
+        "response_sha256": "52333aaa44d1c56fbadef6085cc6e9eabb7d0bddd40405f3895d13ee1a6cc7c7",
+        "quota_remaining": 127
+      }
+    },
+    {
+      "id": 4,
+      "attempt_id": 1,
+      "name": "forum_post",
+      "mode": "live_http",
+      "checked_at": "2026-11-24T02:47:46.058+00:00",
+      "status_code": 200,
+      "request": {
+        "endpoint": "https://api.stackexchange.com/2.3/questions/94603",
+        "filter": "withbody",
+        "method": "GET",
+        "question_id": "94603",
+        "site": "cooking"
+      },
+      "response": {
+        "post_id": "94603",
+        "url": "https://cooking.stackexchange.com/questions/94603/how-do-i-get-something-sticky-like-honey-or-golden-syrup-off-measuring-spoons-or",
+        "license": "CC BY-SA 4.0",
+        "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+        "published_at": "2018-12-09T14:58:24+00:00",
+        "verified": true,
+        "method": "Stack Exchange API /questions/{id}",
+        "search": "forum_search",
+        "source_policy": "SE-public-API-CC-BY-SA-v1",
+        "terms_url": "https://stackoverflow.com/legal/api-terms-of-use",
+        "response_sha256": "8b388d851b9551b1cd0a50d98a80b6c4f00688f6bc11a6d88d650f0a42de447d",
+        "role": "public_connectivity_sample",
+        "research_denominator": 0,
+        "quote_utf8_sha256": "0647dce03824cb470fe43acb9af607b71a2bc3ddc7742ee74f5128226aac1ecb",
+        "attributed_locally": true
+      }
+    },
+    {
+      "id": 5,
+      "attempt_id": 1,
+      "name": "source_contract",
+      "mode": "contract_check",
+      "checked_at": "2026-11-24T02:47:46.062+00:00",
+      "status_code": null,
+      "request": {
+        "pdt": "§13.0 C0-3",
+        "project": "v2.2 §5"
+      },
+      "response": {
+        "blockers": [
+          "tavily 未配置",
+          "brave 未配置"
+        ],
+        "search_to_licensed_quote": "PASS",
+        "source_evidence": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "source_post_id": "94603",
+        "tavily_or_brave_to_licensed_quote": "BLOCKED"
+      }
+    },
+    {
+      "id": 6,
+      "attempt_id": 1,
+      "name": "jev_admission",
+      "mode": "configuration",
+      "checked_at": "2026-11-24T02:47:46.068+00:00",
+      "status_code": null,
+      "request": {
+        "endpoint": "https://jevmodel.org/v1/systemone",
+        "method": "POST",
+        "model": "jev-1.14.0",
+        "planned_question_ids": [
+          [
+            "intent",
+            "in_registry",
+            "friction",
+            "signal_1",
+            "signal_2",
+            "signal_3",
+            "signal_4",
+            "signal_5"
+          ],
+          [
+            "signal_6",
+            "signal_7",
+            "signal_8"
+          ]
+        ],
+        "question_set_version": "connectivity-questions-1",
+        "request_kind": "local_preflight_only"
+      },
+      "response": {
+        "key_configured": false,
+        "model": "jev-1.14.0",
+        "planned_shards": [
+          8,
+          3
+        ],
+        "provider": "jevmodel",
+        "public_source_verified": true,
+        "review": {
+          "approved": false,
+          "checked_at": null,
+          "review_hash": null
+        },
+        "synthetic_probe": false
+      }
+    },
+    {
+      "id": 7,
+      "attempt_id": 1,
+      "name": "sqlite_readback",
+      "mode": "local_sqlite",
+      "checked_at": "2026-11-24T02:47:46.078+00:00",
+      "status_code": null,
+      "request": {
+        "reopened_connection": true,
+        "run_id": "7fbcdf4d-3e8b-4f02-9974-ce52fe1a520e"
+      },
+      "response": {
+        "balance_synced": false,
+        "foreign_key_violations": 0,
+        "input_tokens": null,
+        "integrity_check": "ok",
+        "persisted_evidence": 6,
+        "replayed_local_keys": [],
+        "reported_usage_rows": 0,
+        "shards": []
+      }
+    },
+    {
+      "id": 8,
+      "attempt_id": 1,
+      "name": "outbound_isolation",
+      "mode": "synthetic_fault_drill",
+      "checked_at": "2026-11-24T02:47:46.095+00:00",
+      "status_code": null,
+      "request": {
+        "channels": [
+          "typesafe",
+          "jevmodel",
+          "tavily",
+          "brave",
+          "stackexchange",
+          "forum_search"
+        ]
+      },
+      "response": {
+        "blocked_before_transport": 36,
+        "dataset": "synthetic_fault_drill",
+        "fault_outcomes": {
+          "401": {
+            "backoff_seconds": [],
+            "calls": 1,
+            "kind": "invalid_key",
+            "next_shard_started": false,
+            "same_request_key": true,
+            "state": "retryable",
+            "verified": true
+          },
+          "402": {
+            "backoff_seconds": [],
+            "calls": 1,
+            "kind": "insufficient_balance",
+            "next_shard_started": false,
+            "same_request_key": true,
+            "state": "retryable",
+            "verified": true
+          },
+          "422": {
+            "backoff_seconds": [],
+            "calls": 1,
+            "kind": "invalid_contract",
+            "next_shard_started": false,
+            "same_request_key": true,
+            "state": "retryable",
+            "verified": true
+          },
+          "429": {
+            "backoff_seconds": [
+              1,
+              2
+            ],
+            "calls": 3,
+            "kind": "rate_limited",
+            "next_shard_started": false,
+            "same_request_key": true,
+            "state": "retryable",
+            "verified": true
+          },
+          "502": {
+            "backoff_seconds": [
+              1,
+              2
+            ],
+            "calls": 3,
+            "kind": "upstream_error",
+            "next_shard_started": false,
+            "same_request_key": true,
+            "state": "retryable",
+            "verified": true
+          },
+          "offline": {
+            "backoff_seconds": [],
+            "calls": 1,
+            "kind": "offline",
+            "next_shard_started": false,
+            "same_request_key": true,
+            "state": "uncertain",
+            "verified": true
+          }
+        },
+        "passed": true,
+        "private_transport_calls": 0,
+        "public_control_calls": 1,
+        "research_denominator": 0,
+        "synthetic_cases": 36
+      }
+    },
+    {
+      "id": 9,
+      "attempt_id": 1,
+      "name": "global_recall",
+      "mode": "synthetic_smoke",
+      "checked_at": "2026-11-24T02:47:46.113+00:00",
+      "status_code": null,
+      "request": {
+        "fixture": "2 products, 3 tasks, 30 intents"
+      },
+      "response": {
+        "counts": {
+          "intents": 30,
+          "mentions": 30,
+          "products": 2,
+          "tasks": 3
+        },
+        "dataset": "synthetic_smoke",
+        "embedding_model": "char-tfidf(1,3)+lsa(20)+cosine; sklearn-1.8.0",
+        "index_version": "c0b9d4ded0d25561",
+        "k": 12,
+        "orphan_links": 0,
+        "passed": true,
+        "queries": [
+          {
+            "candidates": [
+              {
+                "cosine": 0.992756,
+                "intent_id": "use-00"
+              },
+              {
+                "cosine": 0.616458,
+                "intent_id": "use-01"
+              },
+              {
+                "cosine": 0.601865,
+                "intent_id": "set-up-07"
+              },
+              {
+                "cosine": 0.413304,
+                "intent_id": "use-06"
+              },
+              {
+                "cosine": 0.29118,
+                "intent_id": "use-05"
+              },
+              {
+                "cosine": 0.12867,
+                "intent_id": "care-03"
+              },
+              {
+                "cosine": 0.126619,
+                "intent_id": "use-07"
+              },
+              {
+                "cosine": 0.094794,
+                "intent_id": "set-up-04"
+              },
+              {
+                "cosine": 0.08069,
+                "intent_id": "use-04"
+              },
+              {
+                "cosine": 0.079199,
+                "intent_id": "use-03"
+              },
+              {
+                "cosine": 0.07797,
+                "intent_id": "use-08"
+              },
+              {
+                "cosine": 0.038034,
+                "intent_id": "care-05"
+              }
+            ],
+            "choice_options": [
+              "use-00",
+              "use-01",
+              "set-up-07",
+              "use-06",
+              "use-05",
+              "care-03",
+              "use-07",
+              "set-up-04",
+              "use-04",
+              "use-03",
+              "use-08",
+              "care-05",
+              "None"
+            ],
+            "cross_product_hit": true,
+            "evidence_product": "P-A",
+            "expected": "use-00",
+            "noul_guard": "in_registry",
+            "query": "我出门时没联网，希望能断网离线继续使用",
+            "query_product": "P-B"
+          },
+          {
+            "candidates": [
+              {
+                "cosine": 0.995053,
+                "intent_id": "set-up-05"
+              },
+              {
+                "cosine": 0.543802,
+                "intent_id": "care-07"
+              },
+              {
+                "cosine": 0.258311,
+                "intent_id": "set-up-03"
+              },
+              {
+                "cosine": 0.143319,
+                "intent_id": "use-09"
+              },
+              {
+                "cosine": 0.133447,
+                "intent_id": "set-up-04"
+              },
+              {
+                "cosine": 0.11818,
+                "intent_id": "set-up-01"
+              },
+              {
+                "cosine": 0.112006,
+                "intent_id": "use-08"
+              },
+              {
+                "cosine": 0.074415,
+                "intent_id": "care-09"
+              },
+              {
+                "cosine": 0.068796,
+                "intent_id": "set-up-08"
+              },
+              {
+                "cosine": 0.01538,
+                "intent_id": "care-03"
+              },
+              {
+                "cosine": 0.008386,
+                "intent_id": "set-up-07"
+              },
+              {
+                "cosine": 0.006531,
+                "intent_id": "use-00"
+              }
+            ],
+            "choice_options": [
+              "set-up-05",
+              "care-07",
+              "set-up-03",
+              "use-09",
+              "set-up-04",
+              "set-up-01",
+              "use-08",
+              "care-09",
+              "set-up-08",
+              "care-03",
+              "set-up-07",
+              "use-00",
+              "None"
+            ],
+            "cross_product_hit": true,
+            "evidence_product": "P-B",
+            "expected": "set-up-05",
+            "noul_guard": "in_registry",
+            "query": "家人不想一直听到提示，想调整提示音量",
+            "query_product": "P-A"
+          }
+        ],
+        "registry_version": "b031aa1275b8b2b6",
+        "research_denominator": 0,
+        "unrestricted_scope_products": 0
+      }
+    },
+    {
+      "id": 10,
+      "attempt_id": 1,
+      "name": "stage_gate",
+      "mode": "local_gate",
+      "checked_at": "2026-11-24T02:47:46.122+00:00",
+      "status_code": null,
+      "request": {
+        "required": [
+          "C0-1",
+          "C0-2",
+          "C0-3",
+          "C0-4",
+          "C0-5",
+          "C0-6"
+        ]
+      },
+      "response": {
+        "provider_review": {
+          "approved": false,
+          "checked_at": null,
+          "review_hash": null
+        },
+        "statuses": {
+          "C0-1": "BLOCKED",
+          "C0-2": "BLOCKED",
+          "C0-3": "BLOCKED",
+          "C0-4": "BLOCKED",
+          "C0-5": "PASS",
+          "C0-6": "PASS"
+        }
+      }
+    }
+  ],
+  "usage_ledger": [],
+  "research_denominator": 0
+}

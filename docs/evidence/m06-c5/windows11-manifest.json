@@ -1,0 +1,206 @@
+{
+  "revision": "a9eebee24616984dda8e72bab1242373555b06db",
+  "git_tree": "8ae86356ec987102b0f6f255173770a67b491a53",
+  "source_zip_sha256": "ea131b1f2ba96e5d2c62dfc50b962febed2c33ac8e3a1490d0fb15c7ef92195b",
+  "platform": {
+    "os": "Windows 11 Enterprise 25H2",
+    "build": "26200.8655",
+    "machine": "AMD64",
+    "powershell": "7.6.9",
+    "git": "git version 2.55.0.windows.5",
+    "node": "v24.19.0",
+    "python": "3.12.9",
+    "sqlite": "3.45.3",
+    "playwright": "1.65.2",
+    "chromium": "159.0.8154.6",
+    "elevated": false,
+    "official_venv": true
+  },
+  "exits": {
+    "c5": 0,
+    "c4": 0,
+    "browser": 0,
+    "c2": 0,
+    "c1-constraints": 0,
+    "c3": 0,
+    "c1-migration": 0,
+    "m05-licenses": 0,
+    "pre-m06": 0,
+    "m05-corpus": 0,
+    "node": 0,
+    "cold": 0,
+    "python": 0,
+    "dpapi": 0,
+    "archive-1": 0,
+    "archive-2": 0,
+    "archive-3": 0,
+    "archive-4": 0,
+    "launcher": 0,
+    "scan": 0
+  },
+  "python_suites": {
+    "python": {
+      "tests": 269,
+      "passed": 269,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 237.756
+    },
+    "c5": {
+      "tests": 22,
+      "passed": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 38.286
+    },
+    "c4": {
+      "tests": 32,
+      "passed": 32,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 48.604
+    },
+    "c3": {
+      "tests": 25,
+      "passed": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 27.786
+    },
+    "c2": {
+      "tests": 17,
+      "passed": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 14.77
+    },
+    "c1-constraints": {
+      "tests": 22,
+      "passed": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 2.898
+    },
+    "c1-migration": {
+      "tests": 11,
+      "passed": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 20.662
+    },
+    "m05-licenses": {
+      "tests": 10,
+      "passed": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 14.924
+    },
+    "m05-corpus": {
+      "tests": 16,
+      "passed": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 15.837
+    },
+    "pre-m06": {
+      "tests": 16,
+      "passed": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 14.491
+    }
+  },
+  "node": {
+    "tests": 2,
+    "pass": 2,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "browser_groups": [
+    "API setup",
+    "M01 connectivity",
+    "M03 project",
+    "M04 import",
+    "M05 corpus",
+    "C4 localhost HTTP",
+    "C5 localhost HTTP",
+    "C5 Chromium",
+    "C4 Chromium scope",
+    "C4 Chromium",
+    "M03 restart",
+    "M04 restart",
+    "M05 corpus restart"
+  ],
+  "browser_counts": {
+    "chromium": 11,
+    "localhost_http": 2
+  },
+  "cold_starts": 3,
+  "historical_archives": [
+    {
+      "file": "archive-1",
+      "records": 20,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    },
+    {
+      "file": "archive-2",
+      "records": 10,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    },
+    {
+      "file": "archive-3",
+      "records": 10,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    },
+    {
+      "file": "archive-4",
+      "records": 10,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    }
+  ],
+  "launcher_cycles": 6,
+  "launcher_checks": [
+    "ordinary/1 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "ordinary/2 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "chinese/1 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "chinese/2 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "spaces/1 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "spaces/2 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released"
+  ],
+  "dpapi_checks": [
+    "Win32 DPAPI CurrentUser round-trip PASS",
+    "Credential vault encrypted storage, read after service restart, delete and restart PASS",
+    "Browser DOM, storage, console, HTTP responses and validation error, service logs and runtime files: no plaintext marker"
+  ],
+  "sqlite": {
+    "schema": 7,
+    "integrity_check": "ok",
+    "foreign_key_check_violations": 0,
+    "migration_tests_passed": 11
+  },
+  "secret_scan": "OK: Git-bound content and staged files checked",
+  "G-1": "BLOCKED",
+  "data_scope": "Synthetic fixtures and loopback requests, with four permitted redacted historical archives checked locally.",
+  "screenshots": {
+    "screenshots/c5-denominators.png": "6354689d510e38179cb6ecbdfd83dc714d22c5abb3d807e86d85a2ef8e2005ea",
+    "screenshots/c5-denominators-formal.png": "e8b43c3d4edd0c7d66c20173961565fedc3b6db59d278e5d01ac9aabd6467578",
+    "screenshots/c5-denominators-mobile-320.png": "dbe9185de070592fcf46e0a69ccb6bdb09963dc5b64ecd02901987ea28e6e27f",
+    "screenshots/c5-denominators-mobile-390.png": "2fa16e3d4a518ae8723a19fedc296411e20669c9412ff5357842ab93222ec340"
+  }
+}

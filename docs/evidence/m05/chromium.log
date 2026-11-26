@@ -1,0 +1,9 @@
+API setup E2E passed: wizard, local key save/rotation/delete, preflight evidence, and 320/390 layouts.
+M01 connectivity E2E passed: navigation, batch evidence and recovery, Token Center, and 320/390 layouts.
+M03 project E2E passed: create, validation, duplicate submission, history, archive/restore, search, active project, and 320/390 layouts.
+M04 import E2E passed: drag/drop CSV, XLSX sheet selection, mapping, quality, project isolation, report and 320/390px layouts.
+M05 corpus E2E passed: review, trace, duplicates, withdrawal, and 320/390px layouts.
+M03 restart E2E passed: same SQLite database, current project, and scope versions reopened in a new process.
+M04 restart E2E passed: original batch state and XLSX staged rows survived a fresh service process.
+M05 corpus restart E2E passed: original text and local review persisted.
+Chromium E2E passed. Screenshots: test-results\final-browser

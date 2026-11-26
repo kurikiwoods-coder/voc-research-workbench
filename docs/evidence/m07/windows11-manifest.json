@@ -1,0 +1,8 @@
+{
+  "scope": "M07-A through M07-D",
+  "windows_11_real_machine": "NOT_TESTED",
+  "source_sha_tested_on_windows_11": null,
+  "reason": "No Windows 11 machine was accessible from this task.",
+  "m06_r_historical_windows_11_source_sha": "9c27231376fcc32aae39a9b63df6fa9b9b98c4c6",
+  "observed_local_os": "Windows 10 Home China 22H2 x64, 19045.6466"
+}

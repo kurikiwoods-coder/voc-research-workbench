@@ -1,0 +1,38 @@
+Executed: 2026-11-23T13:33:25.087836+00:00 on Linux x86_64
+Python 3.12.14 fastapi 0.141.1 uvicorn 0.52.1 playwright 1.62.0 scikit-learn 1.8.0
+Command: bash scripts/smoke-test.sh
+<site-packages>/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+  from starlette.testclient import TestClient as TestClient  # noqa
+test_alias_missing_answer_nan_and_wrong_sum_do_not_pass (test_connectivity.LocalTests.test_alias_missing_answer_nan_and_wrong_sum_do_not_pass) ... ok
+test_api_empty_workspace_readonly_and_validation (test_connectivity.LocalTests.test_api_empty_workspace_readonly_and_validation) ... ok
+test_first_key_can_resume_unbilled_batch_only (test_connectivity.LocalTests.test_first_key_can_resume_unbilled_batch_only) ... ok
+test_gate_requires_six_same_batch_results_and_review (test_connectivity.LocalTests.test_gate_requires_six_same_batch_results_and_review) ... ok
+test_interrupted_request_pauses_without_double_submission (test_connectivity.LocalTests.test_interrupted_request_pauses_without_double_submission) ... ok
+test_mock_transport_cannot_write_an_operational_gate (test_connectivity.LocalTests.test_mock_transport_cannot_write_an_operational_gate) ... ok
+test_nonpublic_isolation_and_faults (test_connectivity.LocalTests.test_nonpublic_isolation_and_faults) ... ok
+test_offline_history_survives_restart (test_connectivity.LocalTests.test_offline_history_survives_restart) ... ok
+test_partial_second_shard_and_idempotent_resume (test_connectivity.LocalTests.test_partial_second_shard_and_idempotent_resume) ... ok
+test_public_receipt_preserves_quote_digest_without_identity (test_connectivity.LocalTests.test_public_receipt_preserves_quote_digest_without_identity) ... ok
+test_repeated_key_must_bind_same_payload_and_account (test_connectivity.LocalTests.test_repeated_key_must_bind_same_payload_and_account) ... ok
+test_sanitization_and_provider_partition (test_connectivity.LocalTests.test_sanitization_and_provider_partition) ... ok
+test_score_gap_keeps_actual_fields_and_never_infers_distribution (test_connectivity.LocalTests.test_score_gap_keeps_actual_fields_and_never_infers_distribution) ... ok
+test_shards_share_gate_and_are_complete (test_connectivity.LocalTests.test_shards_share_gate_and_are_complete) ... ok
+test_source_id_quote_and_approved_only (test_connectivity.LocalTests.test_source_id_quote_and_approved_only) ... ok
+test_source_review_must_match_provider_and_file_digest (test_connectivity.LocalTests.test_source_review_must_match_provider_and_file_digest) ... ok
+test_storage_immutable_and_writer_lock (test_connectivity.LocalTests.test_storage_immutable_and_writer_lock) ... ok
+test_synthetic_recall_is_global (test_connectivity.LocalTests.test_synthetic_recall_is_global) ... ok
+test_independent_source_checks_match_the_preserved_quote_hash (test_release_receipt.ReceiptTests.test_independent_source_checks_match_the_preserved_quote_hash) ... ok
+test_real_discovery_and_followup_have_source_and_matching_id (test_release_receipt.ReceiptTests.test_real_discovery_and_followup_have_source_and_matching_id) ... ok
+test_recheck_distinguishes_changed_content_from_unavailable_content (test_release_receipt.ReceiptTests.test_recheck_distinguishes_changed_content_from_unavailable_content) ... ok
+test_sqlite_and_json_agree_on_observed_outcome (test_release_receipt.ReceiptTests.test_sqlite_and_json_agree_on_observed_outcome) ... ok
+test_unset_credentials_do_not_create_metered_requests (test_release_receipt.ReceiptTests.test_unset_credentials_do_not_create_metered_requests) ... ok
+
+----------------------------------------------------------------------
+Ran 23 tests in 0.203s
+
+OK
+Linux cold start 1/3: PASS
+Linux cold start 2/3: PASS
+Linux cold start 3/3: PASS
+OK: Git-bound content and staged files checked
+Exit: 0

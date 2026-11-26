@@ -1,0 +1,1853 @@
+{
+  "baseline_source_sha": "7b26d8da89db636c7e3f4ad73490b53dcc555155",
+  "candidate_source_sha": "eb0e2c0780cb15ed413eaca206ff9ce2615b4b0a",
+  "environment": {
+    "platform": "Windows-11-10.0.26200-SP0",
+    "python": "3.12.9",
+    "sqlite": "3.45.3",
+    "research_api_calls": 0,
+    "schema": 7
+  },
+  "samples_per_hot_path": 5,
+  "cold_os_page_cache_measured": false,
+  "baseline_100k_overlap": {
+    "m04_tool_window_utc": [
+      "2026-11-25T08:40:51.123Z",
+      "2026-11-25T08:41:02.416Z"
+    ],
+    "m04_unittest_seconds": 3.115,
+    "m04_benchmark_stage": null,
+    "browser_log_opened_utc": [
+      "2026-11-25T08:44:39.240Z",
+      "2026-11-25T08:45:05.430Z"
+    ],
+    "browser_benchmark_stage": "recovery",
+    "baseline_report_written_utc": "2026-11-25T08:47:24.749Z",
+    "latest_possible_recovery_start_utc": "2026-11-25T08:43:39.504Z"
+  },
+  "measurements": [
+    {
+      "raw_records": 1000,
+      "equal_response_excluding_as_of_utc": true,
+      "exploratory_target_seconds": 1,
+      "candidate_batch_p95_meets_target": true,
+      "batch_median_change_percent_reduction": 21.43,
+      "batch_p95_change_percent_reduction": 23.88,
+      "baseline": {
+        "raw_records": 1000,
+        "counts": {
+          "N_discovered_urls": null,
+          "N_accessible_pages": null,
+          "N_extracted_mentions": 700,
+          "N_eligible_dedup": 599,
+          "N_published_classified": 100,
+          "N_excluded": 101,
+          "buckets": {
+            "published_classified": 100,
+            "none_unknown": 100,
+            "review_pending": 99,
+            "partial_or_schema_gap": 100,
+            "pending_parent": 100,
+            "other_pending": 100
+          },
+          "published_ratio": 0.1669449081803005
+        },
+        "reconciliation": {
+          "eligible_difference": 0,
+          "primary_difference": 0,
+          "balanced": true,
+          "publication_allowed": false
+        },
+        "outcome_hash": "5b48315d6bc15baac4c660cc2dd088529607e5a9e73ee0a09b453f13aa70d251",
+        "batches": 6,
+        "qualification": {
+          "batched_seconds": 0.22004769928753376,
+          "individual_seconds": 0.289163900539279,
+          "matches": 1000
+        },
+        "filter_times": {
+          "joint_filter_seconds": 0.2773151993751526,
+          "product_union_seconds": 0.3189170006662607,
+          "historical_seconds": 0.24302140064537525,
+          "joint_filter_distinct": 100,
+          "formal_counts": null
+        },
+        "build": {
+          "csv_generation_s": 0.0029585957527160645,
+          "csv_import_s": 0.9992301035672426,
+          "m05_review_seconds": 0.25079699978232384,
+          "draft_seconds": 0.0044046007096767426,
+          "first_segment_seconds": 0.7237417995929718,
+          "registry_and_scope_mapping_seconds": 0.010746201500296593,
+          "second_segment_and_proposals_seconds": 0.6420163009315729,
+          "product_review_seconds": 0.4403381012380123,
+          "pre_segments": {
+            "database_bytes": 2338816,
+            "wal_bytes": 0
+          },
+          "version_sizes": [
+            {
+              "database_bytes": 3563520,
+              "wal_bytes": 0,
+              "active_wal_bytes": 1326672,
+              "version": "segments-1"
+            },
+            {
+              "database_bytes": 3563520,
+              "wal_bytes": 0,
+              "active_wal_bytes": 127752,
+              "version": "registry-2"
+            },
+            {
+              "database_bytes": 5074944,
+              "wal_bytes": 0,
+              "active_wal_bytes": 1709832,
+              "version": "segments-2"
+            },
+            {
+              "database_bytes": 5836800,
+              "wal_bytes": 0,
+              "active_wal_bytes": 918792,
+              "version": "product-review"
+            }
+          ],
+          "provenance": "Rebuilt via M04 import, M05 review and M06-C3 production paths"
+        },
+        "static_query_plans": {
+          "single_qualification": [
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH excluded USING COVERING INDEX corpus_review_excluded",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "batch_qualification": [
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_2 (batch_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH excluded USING AUTOMATIC PARTIAL COVERING INDEX (decision=?)",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "segment_supports": [
+            "SEARCH s USING COVERING INDEX sqlite_autoindex_m06_support_1 (study_id=? AND segment_revision=?)",
+            "SEARCH e USING INDEX sqlite_autoindex_m06_evidence_1 (study_id=? AND evidence_id=?)"
+          ]
+        },
+        "queries": {
+          "batch": {
+            "first_seconds": 0.27882579900324345,
+            "hot_seconds": [
+              0.2840905003249645,
+              0.2891971990466118,
+              0.24048770032823086,
+              0.2294846996665001,
+              0.23367800004780293
+            ],
+            "hot_median": 0.24048770032823086,
+            "hot_sample_p95": 0.28817585930228234,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 213,
+              "ROLLBACK": 1
+            }
+          },
+          "individual": {
+            "first_seconds": 0.2935768999159336,
+            "hot_seconds": [
+              0.3007669001817703,
+              0.28102320060133934,
+              0.31576010026037693,
+              0.23486549966037273,
+              0.2898389995098114
+            ],
+            "hot_median": 0.2898389995098114,
+            "hot_sample_p95": 0.3127614602446556,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 1111,
+              "ROLLBACK": 1
+            }
+          }
+        },
+        "recovery": {
+          "live_before_backup": {
+            "database_bytes": 5836800,
+            "wal_bytes": 16512
+          },
+          "restored": {
+            "database_bytes": 5836800,
+            "wal_bytes": 0
+          },
+          "backup_seconds": 0.06940290145576,
+          "reopen_seconds": 0.0063064005225896835,
+          "integrity_and_foreign_keys_seconds": 0.04279769957065582,
+          "reconciled_read_seconds": 0.2996747996658087,
+          "post_recovery_counts": {
+            "N_discovered_urls": null,
+            "N_accessible_pages": null,
+            "N_extracted_mentions": 700,
+            "N_eligible_dedup": 598,
+            "N_published_classified": 100,
+            "N_excluded": 102,
+            "buckets": {
+              "published_classified": 100,
+              "none_unknown": 100,
+              "review_pending": 99,
+              "partial_or_schema_gap": 99,
+              "pending_parent": 100,
+              "other_pending": 100
+            },
+            "published_ratio": 0.16722408026755853
+          },
+          "process_exit_status": 1,
+          "concurrency": {
+            "lock_held_while_writer_pending_seconds": 0.1007022000849247,
+            "writer_seconds": 0.12709570117294788,
+            "query_seconds": 0.7252219989895821,
+            "snapshots_read": 2
+          },
+          "live_integrity_and_foreign_keys_seconds": 0.04104430042207241
+        },
+        "peak_process_working_set_bytes": 186478592
+      },
+      "candidate": {
+        "raw_records": 1000,
+        "counts": {
+          "N_discovered_urls": null,
+          "N_accessible_pages": null,
+          "N_extracted_mentions": 700,
+          "N_eligible_dedup": 599,
+          "N_published_classified": 100,
+          "N_excluded": 101,
+          "buckets": {
+            "published_classified": 100,
+            "none_unknown": 100,
+            "review_pending": 99,
+            "partial_or_schema_gap": 100,
+            "pending_parent": 100,
+            "other_pending": 100
+          },
+          "published_ratio": 0.1669449081803005
+        },
+        "reconciliation": {
+          "eligible_difference": 0,
+          "primary_difference": 0,
+          "balanced": true,
+          "publication_allowed": false
+        },
+        "outcome_hash": "5b48315d6bc15baac4c660cc2dd088529607e5a9e73ee0a09b453f13aa70d251",
+        "batches": 6,
+        "qualification": {
+          "batched_seconds": 0.23483270034193993,
+          "individual_seconds": 0.20531849935650826,
+          "matches": 1000
+        },
+        "filter_times": {
+          "joint_filter_seconds": 0.24518150091171265,
+          "product_union_seconds": 0.23943519964814186,
+          "historical_seconds": 0.20209799893200397,
+          "joint_filter_distinct": 100,
+          "formal_counts": null
+        },
+        "build": {
+          "csv_generation_s": 0.0029585957527160645,
+          "csv_import_s": 0.9992301035672426,
+          "m05_review_seconds": 0.25079699978232384,
+          "draft_seconds": 0.0044046007096767426,
+          "first_segment_seconds": 0.7237417995929718,
+          "registry_and_scope_mapping_seconds": 0.010746201500296593,
+          "second_segment_and_proposals_seconds": 0.6420163009315729,
+          "product_review_seconds": 0.4403381012380123,
+          "pre_segments": {
+            "database_bytes": 2338816,
+            "wal_bytes": 0
+          },
+          "version_sizes": [
+            {
+              "database_bytes": 3563520,
+              "wal_bytes": 0,
+              "active_wal_bytes": 1326672,
+              "version": "segments-1"
+            },
+            {
+              "database_bytes": 3563520,
+              "wal_bytes": 0,
+              "active_wal_bytes": 127752,
+              "version": "registry-2"
+            },
+            {
+              "database_bytes": 5074944,
+              "wal_bytes": 0,
+              "active_wal_bytes": 1709832,
+              "version": "segments-2"
+            },
+            {
+              "database_bytes": 5836800,
+              "wal_bytes": 0,
+              "active_wal_bytes": 918792,
+              "version": "product-review"
+            }
+          ],
+          "provenance": "Rebuilt via M04 import, M05 review and M06-C3 production paths"
+        },
+        "static_query_plans": {
+          "single_qualification": [
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH excluded USING COVERING INDEX corpus_review_excluded",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "legacy_batch_qualification": [
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_2 (batch_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH excluded USING AUTOMATIC PARTIAL COVERING INDEX (decision=?)",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "batch_qualification": [
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SCAN requested VIRTUAL TABLE INDEX 1:",
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH excluded USING AUTOMATIC PARTIAL COVERING INDEX (decision=?)",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "segment_supports": [
+            "SEARCH s USING COVERING INDEX sqlite_autoindex_m06_support_1 (study_id=? AND segment_revision=?)",
+            "SEARCH e USING INDEX sqlite_autoindex_m06_evidence_1 (study_id=? AND evidence_id=?)"
+          ]
+        },
+        "queries": {
+          "batch": {
+            "first_seconds": 0.22935719974339008,
+            "hot_seconds": [
+              0.2254135999828577,
+              0.19513949938118458,
+              0.18224790133535862,
+              0.18895320035517216,
+              0.17596760019659996
+            ],
+            "hot_median": 0.18895320035517216,
+            "hot_sample_p95": 0.21935877986252308,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 213,
+              "ROLLBACK": 1
+            },
+            "instrumentation": {
+              "profiled_query_seconds": 0.1851499006152153,
+              "phase_seconds": {
+                "_latest_reviews": 0.00356450118124485,
+                "_discovery": 7.760152220726013e-05,
+                "_rows_without_support": 0.0025864001363515854,
+                "statistics_inputs": 0.15625109896063805,
+                "_dependencies_for": 0.0038126055151224136,
+                "_catalog_mappings": 6.50063157081604e-06,
+                "_decisions": 0.0006685089319944382,
+                "_discovery_state": 8.096545934677124e-05
+              },
+              "phase_calls": {
+                "_latest_reviews": 1,
+                "_discovery": 1,
+                "_rows_without_support": 1,
+                "statistics_inputs": 1,
+                "_dependencies_for": 700,
+                "_catalog_mappings": 1,
+                "_decisions": 599,
+                "_discovery_state": 599
+              },
+              "uninstrumented_seconds": 0.01810171827673912
+            }
+          },
+          "individual": {
+            "first_seconds": 0.19552860036492348,
+            "hot_seconds": [
+              0.23117429949343204,
+              0.1941788997501135,
+              0.20336630009114742,
+              0.21810569986701012,
+              0.21190830133855343
+            ],
+            "hot_median": 0.21190830133855343,
+            "hot_sample_p95": 0.22856057956814765,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 1111,
+              "ROLLBACK": 1
+            }
+          }
+        },
+        "recovery": {
+          "live_before_backup": {
+            "database_bytes": 5836800,
+            "wal_bytes": 16512
+          },
+          "restored": {
+            "database_bytes": 5836800,
+            "wal_bytes": 0
+          },
+          "backup_seconds": 0.05367650091648102,
+          "reopen_seconds": 0.007002599537372589,
+          "integrity_and_foreign_keys_seconds": 0.04044339992105961,
+          "reconciled_read_seconds": 0.23892899975180626,
+          "post_recovery_counts": {
+            "N_discovered_urls": null,
+            "N_accessible_pages": null,
+            "N_extracted_mentions": 700,
+            "N_eligible_dedup": 598,
+            "N_published_classified": 100,
+            "N_excluded": 102,
+            "buckets": {
+              "published_classified": 100,
+              "none_unknown": 100,
+              "review_pending": 99,
+              "partial_or_schema_gap": 99,
+              "pending_parent": 100,
+              "other_pending": 100
+            },
+            "published_ratio": 0.16722408026755853
+          },
+          "process_exit_status": 1,
+          "concurrency": {
+            "lock_held_while_writer_pending_seconds": 0.10060800053179264,
+            "writer_seconds": 0.11478460021317005,
+            "query_seconds": 0.5635970011353493,
+            "snapshots_read": 2
+          },
+          "live_integrity_and_foreign_keys_seconds": 0.032408999279141426
+        },
+        "peak_process_working_set_bytes": 186769408
+      }
+    },
+    {
+      "raw_records": 10000,
+      "equal_response_excluding_as_of_utc": true,
+      "exploratory_target_seconds": 3,
+      "candidate_batch_p95_meets_target": true,
+      "batch_median_change_percent_reduction": 33.99,
+      "batch_p95_change_percent_reduction": 36.2,
+      "baseline": {
+        "raw_records": 10000,
+        "counts": {
+          "N_discovered_urls": null,
+          "N_accessible_pages": null,
+          "N_extracted_mentions": 7000,
+          "N_eligible_dedup": 5999,
+          "N_published_classified": 1000,
+          "N_excluded": 1001,
+          "buckets": {
+            "published_classified": 1000,
+            "none_unknown": 1000,
+            "review_pending": 999,
+            "partial_or_schema_gap": 1000,
+            "pending_parent": 1000,
+            "other_pending": 1000
+          },
+          "published_ratio": 0.16669444907484582
+        },
+        "reconciliation": {
+          "eligible_difference": 0,
+          "primary_difference": 0,
+          "balanced": true,
+          "publication_allowed": false
+        },
+        "outcome_hash": "32696c486425a45ce4ec80a36967b5d729102a2ed30b5c3e9f1577ceff6be6a1",
+        "batches": 6,
+        "qualification": {
+          "batched_seconds": 2.805750699713826,
+          "individual_seconds": 2.384730000048876,
+          "matches": 10000
+        },
+        "filter_times": {
+          "joint_filter_seconds": 3.868699399754405,
+          "product_union_seconds": 3.328277200460434,
+          "historical_seconds": 3.9682778008282185,
+          "joint_filter_distinct": 1000,
+          "formal_counts": null
+        },
+        "build": {
+          "csv_generation_s": 0.03196750022470951,
+          "csv_import_s": 3.182158399373293,
+          "m05_review_seconds": 2.3854143004864454,
+          "draft_seconds": 0.02984839864075184,
+          "first_segment_seconds": 6.829464798793197,
+          "registry_and_scope_mapping_seconds": 0.009339500218629837,
+          "second_segment_and_proposals_seconds": 7.946520401164889,
+          "product_review_seconds": 5.613680299371481,
+          "pre_segments": {
+            "database_bytes": 18735104,
+            "wal_bytes": 0
+          },
+          "version_sizes": [
+            {
+              "database_bytes": 31088640,
+              "wal_bytes": 0,
+              "active_wal_bytes": 12520712,
+              "version": "segments-1"
+            },
+            {
+              "database_bytes": 31088640,
+              "wal_bytes": 0,
+              "active_wal_bytes": 127752,
+              "version": "registry-2"
+            },
+            {
+              "database_bytes": 46247936,
+              "wal_bytes": 0,
+              "active_wal_bytes": 16080392,
+              "version": "segments-2"
+            },
+            {
+              "database_bytes": 53821440,
+              "wal_bytes": 0,
+              "active_wal_bytes": 8919832,
+              "version": "product-review"
+            }
+          ],
+          "provenance": "Rebuilt via M04 import, M05 review and M06-C3 production paths"
+        },
+        "static_query_plans": {
+          "single_qualification": [
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH excluded USING COVERING INDEX corpus_review_excluded",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "batch_qualification": [
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_2 (batch_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH excluded USING AUTOMATIC PARTIAL COVERING INDEX (decision=?)",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "segment_supports": [
+            "SEARCH s USING COVERING INDEX sqlite_autoindex_m06_support_1 (study_id=? AND segment_revision=?)",
+            "SEARCH e USING INDEX sqlite_autoindex_m06_evidence_1 (study_id=? AND evidence_id=?)"
+          ]
+        },
+        "queries": {
+          "batch": {
+            "first_seconds": 3.5862651988863945,
+            "hot_seconds": [
+              3.5221598986536264,
+              3.2656302992254496,
+              2.913712900131941,
+              3.401688000187278,
+              2.938612399622798
+            ],
+            "hot_median": 3.2656302992254496,
+            "hot_sample_p95": 3.498065518960357,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 2029,
+              "ROLLBACK": 1
+            }
+          },
+          "individual": {
+            "first_seconds": 3.634018499404192,
+            "hot_seconds": [
+              4.107190400362015,
+              3.8324271999299526,
+              3.787688100710511,
+              3.2073232997208834,
+              3.3557374998927116
+            ],
+            "hot_median": 3.787688100710511,
+            "hot_sample_p95": 4.052237760275602,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 11011,
+              "ROLLBACK": 1
+            }
+          }
+        },
+        "recovery": {
+          "live_before_backup": {
+            "database_bytes": 53821440,
+            "wal_bytes": 16512
+          },
+          "restored": {
+            "database_bytes": 53821440,
+            "wal_bytes": 0
+          },
+          "backup_seconds": 0.6329833995550871,
+          "reopen_seconds": 0.010771701112389565,
+          "integrity_and_foreign_keys_seconds": 0.8795012999325991,
+          "reconciled_read_seconds": 3.786360800266266,
+          "post_recovery_counts": {
+            "N_discovered_urls": null,
+            "N_accessible_pages": null,
+            "N_extracted_mentions": 7000,
+            "N_eligible_dedup": 5998,
+            "N_published_classified": 1000,
+            "N_excluded": 1002,
+            "buckets": {
+              "published_classified": 1000,
+              "none_unknown": 1000,
+              "review_pending": 999,
+              "partial_or_schema_gap": 999,
+              "pending_parent": 1000,
+              "other_pending": 1000
+            },
+            "published_ratio": 0.16672224074691563
+          },
+          "process_exit_status": 1,
+          "concurrency": {
+            "lock_held_while_writer_pending_seconds": 0.10080510005354881,
+            "writer_seconds": 0.14030889980494976,
+            "query_seconds": 8.036464799195528,
+            "snapshots_read": 2
+          },
+          "live_integrity_and_foreign_keys_seconds": 0.4619615990668535
+        },
+        "peak_process_working_set_bytes": 238833664
+      },
+      "candidate": {
+        "raw_records": 10000,
+        "counts": {
+          "N_discovered_urls": null,
+          "N_accessible_pages": null,
+          "N_extracted_mentions": 7000,
+          "N_eligible_dedup": 5999,
+          "N_published_classified": 1000,
+          "N_excluded": 1001,
+          "buckets": {
+            "published_classified": 1000,
+            "none_unknown": 1000,
+            "review_pending": 999,
+            "partial_or_schema_gap": 1000,
+            "pending_parent": 1000,
+            "other_pending": 1000
+          },
+          "published_ratio": 0.16669444907484582
+        },
+        "reconciliation": {
+          "eligible_difference": 0,
+          "primary_difference": 0,
+          "balanced": true,
+          "publication_allowed": false
+        },
+        "outcome_hash": "32696c486425a45ce4ec80a36967b5d729102a2ed30b5c3e9f1577ceff6be6a1",
+        "batches": 6,
+        "qualification": {
+          "batched_seconds": 1.856963200494647,
+          "individual_seconds": 1.9074168000370264,
+          "matches": 10000
+        },
+        "filter_times": {
+          "joint_filter_seconds": 2.114257499575615,
+          "product_union_seconds": 2.0096514001488686,
+          "historical_seconds": 1.953550899401307,
+          "joint_filter_distinct": 1000,
+          "formal_counts": null
+        },
+        "build": {
+          "csv_generation_s": 0.03196750022470951,
+          "csv_import_s": 3.182158399373293,
+          "m05_review_seconds": 2.3854143004864454,
+          "draft_seconds": 0.02984839864075184,
+          "first_segment_seconds": 6.829464798793197,
+          "registry_and_scope_mapping_seconds": 0.009339500218629837,
+          "second_segment_and_proposals_seconds": 7.946520401164889,
+          "product_review_seconds": 5.613680299371481,
+          "pre_segments": {
+            "database_bytes": 18735104,
+            "wal_bytes": 0
+          },
+          "version_sizes": [
+            {
+              "database_bytes": 31088640,
+              "wal_bytes": 0,
+              "active_wal_bytes": 12520712,
+              "version": "segments-1"
+            },
+            {
+              "database_bytes": 31088640,
+              "wal_bytes": 0,
+              "active_wal_bytes": 127752,
+              "version": "registry-2"
+            },
+            {
+              "database_bytes": 46247936,
+              "wal_bytes": 0,
+              "active_wal_bytes": 16080392,
+              "version": "segments-2"
+            },
+            {
+              "database_bytes": 53821440,
+              "wal_bytes": 0,
+              "active_wal_bytes": 8919832,
+              "version": "product-review"
+            }
+          ],
+          "provenance": "Rebuilt via M04 import, M05 review and M06-C3 production paths"
+        },
+        "static_query_plans": {
+          "single_qualification": [
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH excluded USING COVERING INDEX corpus_review_excluded",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "legacy_batch_qualification": [
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_2 (batch_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH excluded USING AUTOMATIC PARTIAL COVERING INDEX (decision=?)",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "batch_qualification": [
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SCAN requested VIRTUAL TABLE INDEX 1:",
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH excluded USING AUTOMATIC PARTIAL COVERING INDEX (decision=?)",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "segment_supports": [
+            "SEARCH s USING COVERING INDEX sqlite_autoindex_m06_support_1 (study_id=? AND segment_revision=?)",
+            "SEARCH e USING INDEX sqlite_autoindex_m06_evidence_1 (study_id=? AND evidence_id=?)"
+          ]
+        },
+        "queries": {
+          "batch": {
+            "first_seconds": 2.249948799610138,
+            "hot_seconds": [
+              2.2386945001780987,
+              2.016109500080347,
+              2.053275501355529,
+              2.155613599345088,
+              2.204136000946164
+            ],
+            "hot_median": 2.155613599345088,
+            "hot_sample_p95": 2.231782800331712,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 2029,
+              "ROLLBACK": 1
+            },
+            "instrumentation": {
+              "profiled_query_seconds": 2.199764398857951,
+              "phase_seconds": {
+                "_latest_reviews": 0.10927759855985641,
+                "_discovery": 0.00012570060789585114,
+                "_rows_without_support": 0.04115329869091511,
+                "statistics_inputs": 1.7535989992320538,
+                "_dependencies_for": 0.05120955966413021,
+                "_catalog_mappings": 6.50063157081604e-06,
+                "_decisions": 0.00865667313337326,
+                "_discovery_state": 0.0009116977453231812
+              },
+              "phase_calls": {
+                "_latest_reviews": 1,
+                "_discovery": 1,
+                "_rows_without_support": 1,
+                "statistics_inputs": 1,
+                "_dependencies_for": 7000,
+                "_catalog_mappings": 1,
+                "_decisions": 5999,
+                "_discovery_state": 5999
+              },
+              "uninstrumented_seconds": 0.23482437059283257
+            }
+          },
+          "individual": {
+            "first_seconds": 2.2191117014735937,
+            "hot_seconds": [
+              2.1392107997089624,
+              2.2212519999593496,
+              2.2524775993078947,
+              2.133202999830246,
+              2.29289960116148
+            ],
+            "hot_median": 2.2212519999593496,
+            "hot_sample_p95": 2.2848152007907627,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 11011,
+              "ROLLBACK": 1
+            }
+          }
+        },
+        "recovery": {
+          "live_before_backup": {
+            "database_bytes": 53821440,
+            "wal_bytes": 16512
+          },
+          "restored": {
+            "database_bytes": 53821440,
+            "wal_bytes": 0
+          },
+          "backup_seconds": 0.4855132009834051,
+          "reopen_seconds": 0.012889301404356956,
+          "integrity_and_foreign_keys_seconds": 0.573514599353075,
+          "reconciled_read_seconds": 2.880680099129677,
+          "post_recovery_counts": {
+            "N_discovered_urls": null,
+            "N_accessible_pages": null,
+            "N_extracted_mentions": 7000,
+            "N_eligible_dedup": 5998,
+            "N_published_classified": 1000,
+            "N_excluded": 1002,
+            "buckets": {
+              "published_classified": 1000,
+              "none_unknown": 1000,
+              "review_pending": 999,
+              "partial_or_schema_gap": 999,
+              "pending_parent": 1000,
+              "other_pending": 1000
+            },
+            "published_ratio": 0.16672224074691563
+          },
+          "process_exit_status": 1,
+          "concurrency": {
+            "lock_held_while_writer_pending_seconds": 0.1010145004838705,
+            "writer_seconds": 0.11790749989449978,
+            "query_seconds": 5.251699298620224,
+            "snapshots_read": 2
+          },
+          "live_integrity_and_foreign_keys_seconds": 0.4187317006289959
+        },
+        "peak_process_working_set_bytes": 239013888
+      }
+    },
+    {
+      "raw_records": 100000,
+      "equal_response_excluding_as_of_utc": true,
+      "exploratory_target_seconds": 15,
+      "candidate_batch_p95_meets_target": false,
+      "batch_median_change_percent_reduction": 44.58,
+      "batch_p95_change_percent_reduction": 37.95,
+      "baseline": {
+        "raw_records": 100000,
+        "counts": {
+          "N_discovered_urls": null,
+          "N_accessible_pages": null,
+          "N_extracted_mentions": 70000,
+          "N_eligible_dedup": 59999,
+          "N_published_classified": 10000,
+          "N_excluded": 10001,
+          "buckets": {
+            "published_classified": 10000,
+            "none_unknown": 10000,
+            "review_pending": 9999,
+            "partial_or_schema_gap": 10000,
+            "pending_parent": 10000,
+            "other_pending": 10000
+          },
+          "published_ratio": 0.1666694444907415
+        },
+        "reconciliation": {
+          "eligible_difference": 0,
+          "primary_difference": 0,
+          "balanced": true,
+          "publication_allowed": false
+        },
+        "outcome_hash": "3b9e3c8553fc5893e230efc8cd118f571e37f3bac3166e8a7f8460032719b68b",
+        "batches": 20,
+        "qualification": {
+          "batched_seconds": 54.52902360074222,
+          "individual_seconds": 25.67362429946661,
+          "matches": 100000
+        },
+        "filter_times": {
+          "joint_filter_seconds": 56.702895099297166,
+          "product_union_seconds": 53.45084900036454,
+          "historical_seconds": 53.713180400431156,
+          "joint_filter_distinct": 10000,
+          "formal_counts": null
+        },
+        "build": {
+          "provenance": "C5 exact verified backup, after first revocation"
+        },
+        "static_query_plans": {
+          "single_qualification": [
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH excluded USING COVERING INDEX corpus_review_excluded",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "batch_qualification": [
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_2 (batch_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH excluded USING AUTOMATIC PARTIAL COVERING INDEX (decision=?)",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "segment_supports": [
+            "SEARCH s USING COVERING INDEX sqlite_autoindex_m06_support_1 (study_id=? AND segment_revision=?)",
+            "SEARCH e USING INDEX sqlite_autoindex_m06_evidence_1 (study_id=? AND evidence_id=?)"
+          ]
+        },
+        "queries": {
+          "batch": {
+            "first_seconds": 59.234611701220274,
+            "hot_seconds": [
+              53.82492730021477,
+              57.11279619857669,
+              64.43129440024495,
+              56.223053401336074,
+              54.727526400238276
+            ],
+            "hot_median": 56.223053401336074,
+            "hot_sample_p95": 62.9675947599113,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 20191,
+              "ROLLBACK": 1
+            }
+          },
+          "individual": {
+            "first_seconds": 41.60046299919486,
+            "hot_seconds": [
+              48.058354299515486,
+              46.33068700134754,
+              36.146052999421954,
+              34.53321849927306,
+              33.145501900464296
+            ],
+            "hot_median": 36.146052999421954,
+            "hot_sample_p95": 47.7128208398819,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 110011,
+              "ROLLBACK": 1
+            }
+          }
+        },
+        "recovery": {
+          "live_before_backup": {
+            "database_bytes": 542248960,
+            "wal_bytes": 16512
+          },
+          "restored": {
+            "database_bytes": 542248960,
+            "wal_bytes": 0
+          },
+          "backup_seconds": 7.467478999868035,
+          "reopen_seconds": 0.007744699716567993,
+          "integrity_and_foreign_keys_seconds": 17.84669349901378,
+          "reconciled_read_seconds": 59.71065700054169,
+          "post_recovery_counts": {
+            "N_discovered_urls": null,
+            "N_accessible_pages": null,
+            "N_extracted_mentions": 70000,
+            "N_eligible_dedup": 59998,
+            "N_published_classified": 10000,
+            "N_excluded": 10002,
+            "buckets": {
+              "published_classified": 10000,
+              "none_unknown": 10000,
+              "review_pending": 9999,
+              "partial_or_schema_gap": 9999,
+              "pending_parent": 10000,
+              "other_pending": 10000
+            },
+            "published_ratio": 0.16667222240741358
+          },
+          "process_exit_status": 1,
+          "concurrency": {
+            "lock_held_while_writer_pending_seconds": 0.10111569985747337,
+            "writer_seconds": 0.12398209981620312,
+            "query_seconds": 128.93955649994314,
+            "snapshots_read": 2
+          },
+          "live_integrity_and_foreign_keys_seconds": 11.272935898974538
+        },
+        "peak_process_working_set_bytes": 730636288
+      },
+      "candidate": {
+        "raw_records": 100000,
+        "counts": {
+          "N_discovered_urls": null,
+          "N_accessible_pages": null,
+          "N_extracted_mentions": 70000,
+          "N_eligible_dedup": 59999,
+          "N_published_classified": 10000,
+          "N_excluded": 10001,
+          "buckets": {
+            "published_classified": 10000,
+            "none_unknown": 10000,
+            "review_pending": 9999,
+            "partial_or_schema_gap": 10000,
+            "pending_parent": 10000,
+            "other_pending": 10000
+          },
+          "published_ratio": 0.1666694444907415
+        },
+        "reconciliation": {
+          "eligible_difference": 0,
+          "primary_difference": 0,
+          "balanced": true,
+          "publication_allowed": false
+        },
+        "outcome_hash": "3b9e3c8553fc5893e230efc8cd118f571e37f3bac3166e8a7f8460032719b68b",
+        "batches": 20,
+        "qualification": {
+          "batched_seconds": 23.110011100769043,
+          "individual_seconds": 19.873370299115777,
+          "matches": 100000
+        },
+        "filter_times": {
+          "joint_filter_seconds": 26.734167501330376,
+          "product_union_seconds": 26.96281509846449,
+          "historical_seconds": 25.41401039995253,
+          "joint_filter_distinct": 10000,
+          "formal_counts": null
+        },
+        "build": {
+          "provenance": "C5 exact verified backup, after first revocation"
+        },
+        "static_query_plans": {
+          "single_qualification": [
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH excluded USING COVERING INDEX corpus_review_excluded",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "legacy_batch_qualification": [
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_2 (batch_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH excluded USING AUTOMATIC PARTIAL COVERING INDEX (decision=?)",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "batch_qualification": [
+            "SEARCH p USING INDEX sqlite_autoindex_study_projects_1 (study_id=?)",
+            "SCAN requested VIRTUAL TABLE INDEX 1:",
+            "SEARCH r USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH f USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH s USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH snap USING INDEX sqlite_autoindex_corpus_snapshots_1 (record_id=?) LEFT-JOIN",
+            "SEARCH v USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 12",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 2",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 1",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 7",
+            "SEARCH restricted_file USING INDEX sqlite_autoindex_import_files_3 (study_id=?)",
+            "SEARCH restricted_batch USING INDEX import_batches_by_file (file_id=?)",
+            "SEARCH restricted_row USING INDEX sqlite_autoindex_import_rows_2 (batch_id=? AND line_number=?)",
+            "SEARCH restricted_scope USING INDEX sqlite_autoindex_study_scopes_3 (study_id=? AND scope_id=?)",
+            "SEARCH restricted_review USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 3",
+            "SEARCH h USING COVERING INDEX corpus_review_history (record_id=?)",
+            "SEARCH restricted_license USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 5",
+            "SEARCH h USING INDEX corpus_review_history (record_id=? AND review_id>?)",
+            "CORRELATED SCALAR SUBQUERY 4",
+            "SEARCH a USING INDEX corpus_review_history (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 6",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 10",
+            "SEARCH b USING INDEX import_batches_by_study (study_id=?)",
+            "SEARCH excluded USING AUTOMATIC PARTIAL COVERING INDEX (decision=?)",
+            "SEARCH r USING INTEGER PRIMARY KEY (rowid=?)",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "CORRELATED SCALAR SUBQUERY 8",
+            "SCAN cell VIRTUAL TABLE INDEX 1:",
+            "CORRELATED SCALAR SUBQUERY 9",
+            "SEARCH origin USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH ob USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH ofile USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH copy USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH cb USING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH cf USING INDEX sqlite_autoindex_import_files_1 (file_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN",
+            "CORRELATED SCALAR SUBQUERY 11",
+            "SEARCH i USING INDEX sqlite_autoindex_import_rows_1 (record_id=?)",
+            "SEARCH b USING COVERING INDEX sqlite_autoindex_import_batches_1 (batch_id=?)",
+            "SEARCH r USING INDEX corpus_review_history (record_id=?)",
+            "SEARCH l USING INTEGER PRIMARY KEY (rowid=?) LEFT-JOIN"
+          ],
+          "segment_supports": [
+            "SEARCH s USING COVERING INDEX sqlite_autoindex_m06_support_1 (study_id=? AND segment_revision=?)",
+            "SEARCH e USING INDEX sqlite_autoindex_m06_evidence_1 (study_id=? AND evidence_id=?)"
+          ]
+        },
+        "queries": {
+          "batch": {
+            "first_seconds": 27.65672860108316,
+            "hot_seconds": [
+              29.291136799380183,
+              31.16069319844246,
+              30.256547398865223,
+              39.291874499991536,
+              38.19637630134821
+            ],
+            "hot_median": 31.16069319844246,
+            "hot_sample_p95": 39.07277486026287,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 20191,
+              "ROLLBACK": 1
+            },
+            "instrumentation": {
+              "profiled_query_seconds": 39.905199801549315,
+              "phase_seconds": {
+                "_latest_reviews": 1.0902946013957262,
+                "_discovery": 0.00020479969680309296,
+                "_rows_without_support": 1.1589909009635448,
+                "statistics_inputs": 32.16443490050733,
+                "_dependencies_for": 0.782616438344121,
+                "_catalog_mappings": 6.800517439842224e-06,
+                "_decisions": 0.1434160303324461,
+                "_discovery_state": 0.012777790427207947
+              },
+              "phase_calls": {
+                "_latest_reviews": 1,
+                "_discovery": 1,
+                "_rows_without_support": 1,
+                "statistics_inputs": 1,
+                "_dependencies_for": 70000,
+                "_catalog_mappings": 1,
+                "_decisions": 59999,
+                "_discovery_state": 59999
+              },
+              "uninstrumented_seconds": 4.5524575393646955
+            }
+          },
+          "individual": {
+            "first_seconds": 32.61680799908936,
+            "hot_seconds": [
+              37.18274919874966,
+              39.57430309988558,
+              31.30252780020237,
+              34.94636509940028,
+              33.7915592007339
+            ],
+            "hot_median": 34.94636509940028,
+            "hot_sample_p95": 39.0959923196584,
+            "statements": {
+              "PRAGMA": 2,
+              "BEGIN": 1,
+              "SELECT": 110011,
+              "ROLLBACK": 1
+            }
+          }
+        },
+        "recovery": {
+          "live_before_backup": {
+            "database_bytes": 542248960,
+            "wal_bytes": 16512
+          },
+          "restored": {
+            "database_bytes": 542248960,
+            "wal_bytes": 0
+          },
+          "backup_seconds": 5.302413798868656,
+          "reopen_seconds": 0.005867399275302887,
+          "integrity_and_foreign_keys_seconds": 14.353449799120426,
+          "reconciled_read_seconds": 44.40399789996445,
+          "post_recovery_counts": {
+            "N_discovered_urls": null,
+            "N_accessible_pages": null,
+            "N_extracted_mentions": 70000,
+            "N_eligible_dedup": 59998,
+            "N_published_classified": 10000,
+            "N_excluded": 10002,
+            "buckets": {
+              "published_classified": 10000,
+              "none_unknown": 10000,
+              "review_pending": 9999,
+              "partial_or_schema_gap": 9999,
+              "pending_parent": 10000,
+              "other_pending": 10000
+            },
+            "published_ratio": 0.16667222240741358
+          },
+          "process_exit_status": 1,
+          "concurrency": {
+            "lock_held_while_writer_pending_seconds": 0.10078839957714081,
+            "writer_seconds": 0.12316739931702614,
+            "query_seconds": 86.67006900161505,
+            "snapshots_read": 2
+          },
+          "live_integrity_and_foreign_keys_seconds": 12.583887800574303
+        },
+        "peak_process_working_set_bytes": 730030080
+      }
+    }
+  ]
+}

@@ -20,3 +20,12 @@ __pycache__/
 .venv/
 node_modules/
 .DS_Store
+runtime/
+*.sqlite3*
+!docs/evidence/p0-0/audit.sqlite3
+!docs/evidence/p0-0/regression/audit.sqlite3
+!docs/evidence/p0-0/api-setup/live-receipt/audit.sqlite3
+!docs/evidence/p0-0/tavily-live/audit.sqlite3
+*.db
+test-results/
+playwright-report/

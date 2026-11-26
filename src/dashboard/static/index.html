@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>连通性检查 · VOC 研究工作台</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/static/app.css" />
+    <script type="module" src="/static/app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">跳至主要内容</a>
+    <div class="shell">
+      <aside class="rail" id="rail" aria-label="工作台导航">
+        <div class="brand">
+          <span class="mark" aria-hidden="true"
+            ><i></i><i></i><i></i><i></i></span
+          ><span>VOC <b>Workbench</b><small>用户原话研究工作台</small></span>
+        </div>
+        <div class="navwrap">
+          <div class="rail-label">工作空间</div>
+          <nav id="nav"></nav>
+        </div>
+        <div class="rail-foot">
+          <div class="local-mark" aria-hidden="true">⌂</div>
+          <div><b>本机工作空间</b><small>SQLite · 本地存储</small></div>
+        </div>
+      </aside>
+      <div class="main-shell">
+        <header class="topbar">
+          <button
+            class="menu-btn quiet"
+            data-action="menu"
+            aria-label="打开导航"
+            aria-controls="rail"
+            aria-expanded="false"
+          >
+            ☰
+          </button>
+          <div class="crumb">
+            <span>研究工作台</span><i>/</i><b id="crumb">连通性检查</b>
+          </div>
+          <div id="top-token" class="top-token" aria-label="Jev 额度状态"></div>
+        </header>
+        <main id="main" tabindex="-1" aria-live="polite">
+          <div class="state-box">正在读取本地验收记录…</div>
+        </main>
+      </div>
+    </div>
+    <dialog id="drawer" aria-labelledby="drawer-title">
+      <div class="drawer-head">
+        <div>
+          <div class="kicker" id="drawer-kicker">验收证据</div>
+          <h2 id="drawer-title"></h2>
+        </div>
+        <button class="close" data-action="close" aria-label="关闭侧栏">
+          ×
+        </button>
+      </div>
+      <div id="drawer-body"></div>
+    </dialog>
+    <div id="toast" role="status"></div>
+  </body>
+</html>

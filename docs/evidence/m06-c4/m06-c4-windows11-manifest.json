@@ -1,0 +1,190 @@
+{
+  "revision": "fce76a06195c7f45638c39b0347301fbb6bfbbae",
+  "source_zip_sha256": "d4416d8595f6979f6d3e1d150c09b6bd4da3f3b9bf2a12f5cd29fb471a4939e3",
+  "platform": {
+    "os": "Windows 11 Enterprise 25H2",
+    "build": "26200.8655",
+    "machine": "AMD64",
+    "elevated": false,
+    "powershell": "7.6.9",
+    "git": "git version 2.55.0.windows.5",
+    "node": "v24.19.0",
+    "python": "3.12.9",
+    "sqlite": "3.45.3",
+    "playwright": "1.65.2",
+    "chromium": "159.0.8154.6",
+    "official_venv": true
+  },
+  "exits": {
+    "c4": 0,
+    "c3": 0,
+    "browser": 0,
+    "c1-constraints": 0,
+    "c2": 0,
+    "c1-migration": 0,
+    "m05-licenses": 0,
+    "m05-corpus": 0,
+    "pre-m06": 0,
+    "node": 0,
+    "python": 0,
+    "cold": 0,
+    "archive-1": 0,
+    "dpapi": 0,
+    "archive-2": 0,
+    "archive-3": 0,
+    "archive-4": 0,
+    "scan": 0,
+    "launcher": 0
+  },
+  "python_suites": {
+    "python": {
+      "tests": 247,
+      "passed": 247,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 155.56
+    },
+    "c4": {
+      "tests": 32,
+      "passed": 32,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 36.922
+    },
+    "c3": {
+      "tests": 25,
+      "passed": 25,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 21.203
+    },
+    "c2": {
+      "tests": 17,
+      "passed": 17,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 10.958
+    },
+    "c1-constraints": {
+      "tests": 22,
+      "passed": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 2.048
+    },
+    "c1-migration": {
+      "tests": 11,
+      "passed": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 16.645
+    },
+    "m05-licenses": {
+      "tests": 10,
+      "passed": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 11.473
+    },
+    "m05-corpus": {
+      "tests": 16,
+      "passed": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 12.776
+    },
+    "pre-m06": {
+      "tests": 16,
+      "passed": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 11.601
+    }
+  },
+  "node": {
+    "tests": 2,
+    "pass": 2,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0,
+    "todo": 0
+  },
+  "cold_starts": 3,
+  "browser_groups": [
+    "API setup",
+    "M01 connectivity",
+    "M03 project",
+    "M04 import",
+    "M05 corpus",
+    "C4 localhost HTTP",
+    "C4 Chromium scope",
+    "C4 Chromium",
+    "M03 restart",
+    "M04 restart",
+    "M05 corpus restart"
+  ],
+  "launcher_cycles": 6,
+  "historical_archives": [
+    {
+      "file": "archive-1",
+      "records": 20,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    },
+    {
+      "file": "archive-2",
+      "records": 10,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    },
+    {
+      "file": "archive-3",
+      "records": 10,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    },
+    {
+      "file": "archive-4",
+      "records": 10,
+      "sqlite_integrity": "ok",
+      "G-1": "BLOCKED"
+    }
+  ],
+  "screenshots": {
+    "screenshots/c4-relations.png": "8a2b99a3b2cb8466bec0f380286bdfa0a7c68a1ee82b664d3d6e394f6e9e650a",
+    "screenshots/c4-evidence.png": "144d7f6bf27671998175d0b79ceebc399f62071c29d3ad3e4b97026d4fb15133",
+    "screenshots/c4-mobile-320.png": "40b3d51f24a5caf32908487e1f94b86cc8de9447245eb72602421b5994643fe4",
+    "screenshots/c4-mobile-390.png": "183647df9ca80c3a1ca8cb1c75e6969c1d560af6ec6a05109ca56d260ea5e582",
+    "screenshots/c4-revoked.png": "a230f8ba6e5ca62739a3f9bebf681b51f0dc34806fa1fa4175d15431252a0a53",
+    "screenshots/c4-unresolved-scope.png": "86a31377926f9cb9974b392b5d074076f34b25480888198bf478ef860b423c55"
+  },
+  "git_tree": "9edcf48197ddfd17ddea18415f4a600d22fcf323",
+  "dependencies": {
+    "pip_check": "PASS",
+    "offline_wheel_count": 24
+  },
+  "launcher_checks": [
+    "ordinary/1 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "ordinary/2 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "chinese/1 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "chinese/2 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "spaces/1 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released",
+    "spaces/2 PASS, launch exit=3, homepage/health/workspace=200, schema=7, integrity_check=ok, foreign_key_check=0, graceful shutdown, port released"
+  ],
+  "dpapi_checks": [
+    "Win32 DPAPI CurrentUser round-trip PASS",
+    "Credential vault encrypted storage, read after service restart, delete and restart PASS",
+    "Browser DOM, storage, console, HTTP responses and validation error, service logs and runtime files: no plaintext marker"
+  ],
+  "secret_scan": "OK: Git-bound content and staged files checked",
+  "data_scope": "The browser used synthetic fixtures and the local loopback service. G-1 remained BLOCKED."
+}

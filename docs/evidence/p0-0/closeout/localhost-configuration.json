@@ -1,0 +1,69 @@
+{
+  "path": "/api/workspace",
+  "http_status": 200,
+  "config": {
+    "provider": "jevmodel",
+    "review": false,
+    "key_names": {
+      "TYPESAFE_API_KEY": false,
+      "JEVMODEL_API_KEY": false,
+      "TAVILY_API_KEY": false,
+      "BRAVE_API_KEY": false
+    },
+    "connections": [
+      {
+        "id": "typesafe",
+        "label": "TypeSafe",
+        "signup": "https://console.typesafe.ai/login",
+        "env_var": "TYPESAFE_API_KEY",
+        "configured": false,
+        "selected_for_jev": false,
+        "review": null,
+        "connection": "NOT_TESTED",
+        "capability": "NOT_TESTED",
+        "http_status": null,
+        "checked_at": null
+      },
+      {
+        "id": "jevmodel",
+        "label": "JevModel",
+        "signup": "https://jevmodel.org/zh/dashboard/",
+        "env_var": "JEVMODEL_API_KEY",
+        "configured": false,
+        "selected_for_jev": true,
+        "review": "PENDING",
+        "connection": "NOT_TESTED",
+        "capability": "NOT_TESTED",
+        "http_status": null,
+        "checked_at": null
+      },
+      {
+        "id": "tavily",
+        "label": "Tavily",
+        "signup": "https://app.tavily.com/home",
+        "env_var": "TAVILY_API_KEY",
+        "configured": false,
+        "selected_for_jev": false,
+        "review": null,
+        "connection": "NOT_TESTED",
+        "capability": "NOT_TESTED",
+        "http_status": null,
+        "checked_at": null
+      },
+      {
+        "id": "brave",
+        "label": "Brave",
+        "signup": "https://api-dashboard.search.brave.com/register",
+        "env_var": "BRAVE_API_KEY",
+        "configured": false,
+        "selected_for_jev": false,
+        "review": null,
+        "connection": "NOT_TESTED",
+        "capability": "NOT_TESTED",
+        "http_status": null,
+        "checked_at": null
+      }
+    ],
+    "acceptance": "NOT_TESTED"
+  }
+}
