@@ -714,7 +714,11 @@ document.addEventListener("click", async (event) => {
       el("drawer").close();
       return;
     }
-    if (a === "refresh" || a === "retry-load") {
+    if (a === "retry-load") {
+      await startWorkspace();
+      return;
+    }
+    if (a === "refresh") {
       if (!(await refresh())) return;
       if (el("drawer").open) el("drawer").close();
       tell("已刷新本地记录");
@@ -848,7 +852,40 @@ function loadError(error) {
   el("main").innerHTML =
     `<div class="panel state-box"><b>无法读取本地工作台</b><p>${esc(error.message)}</p>${act("retry-load", "重新读取")}</div>`;
 }
-nav();
-refresh(null).then((loaded) => {
+function renderEdition(data) {
+  const personal = data.edition === "PERSONAL";
+  const local = data.deployment === "LOCAL";
+  el("nav").innerHTML = '<a class="navlink" href="#edition" aria-current="page">版本与研究准入</a>';
+  el("crumb").textContent = "版本与研究准入";
+  document.title = "版本与研究准入 · VOC 研究工作台";
+  el("top-token").textContent = "供应商调用关闭";
+  const metrics = [
+    ["产品版本", personal ? "个人研究版" : "商用研究版", data.edition],
+    ["部署方式", local ? "本机" : "云端", data.deployment],
+    ["个人准入", data.gates.personal.id, data.gates.personal.status],
+    ["商用准入", data.gates.business.id, data.gates.business.status],
+  ];
+  el("main").innerHTML = head("", "版本与研究准入", esc(data.reason)) +
+    `<div class="metrics">${metrics.map(([label, value, detail]) =>
+      `<div class="metric"><span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small></div>`).join("")}</div>` +
+    shellPanel("本机操作权限", data.operations.scoped_local_workspace
+      ? "经本机 Owner 验证后，可在授予的项目和冻结范围内读取、导入或复核。"
+      : "当前部署只提供状态查询。", data.operations.scoped_local_workspace
+      ? '<p><a class="btn quiet" href="/api/edition/projects">核对已授权项目</a></p>' : "") +
+    '<p class="state-box">正式采集、外部模型、正式编码和发布关闭。</p>';
+}
+
+async function startWorkspace() {
+  const edition = await api("/api/edition");
+  if (edition.workspace !== "BUSINESS_LOCAL") {
+    renderEdition(edition);
+    return;
+  }
+  el("crumb").title =
+    `商用研究版 · 本机 · ${edition.gates.business.id} ${edition.gates.business.status}`;
+  nav();
+  const loaded = await refresh(null);
   if (loaded && state?.setup && !state.setup.wizard_seen && !state.setup.error) showWizard(0);
-}).catch(loadError);
+}
+
+startWorkspace().catch(loadError);

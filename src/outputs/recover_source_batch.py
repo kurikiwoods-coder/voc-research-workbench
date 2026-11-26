@@ -6,6 +6,7 @@ from pathlib import Path
 import sqlite3
 
 from src.config import ROOT, Settings
+from src.edition_policy import Edition, legacy_execution_allowed
 from src.execution.transport import network
 from src.ingestion.public_source import fetch_forum_post, post_id
 from src.outputs.audit_receipt import fingerprint, verify
@@ -17,6 +18,8 @@ RECEIPT_SHA256 = "c9381f28e8b494993327b30b6dd0df5aa29241aba87ee78d47409296142ece
 
 def restore_public_source_batch(settings, store, folder=ROOT / RECEIPT_PATH, *, transport=network):
     """Recover C0-3 from the shipped archive after checking the actual source again."""
+    if not legacy_execution_allowed(settings) or store.edition != Edition.BUSINESS:
+        raise ValueError("当前运行模式不能恢复商用验收归档。")
     if store.diagnostic or (transport is network) == store.fixture:
         raise ValueError("归档恢复须使用匹配的独立数据库和传输方式。")
 
@@ -89,6 +92,9 @@ def restore_public_source_batch(settings, store, folder=ROOT / RECEIPT_PATH, *, 
 
 if __name__ == "__main__":
     try:
+        base = Settings.load_base()
+        if not legacy_execution_allowed(base):
+            raise ValueError("当前运行模式不能恢复商用验收归档。")
         settings = Settings.load()
         result = restore_public_source_batch(settings, Store(settings.directory))
     except (Busy, OSError, sqlite3.Error):

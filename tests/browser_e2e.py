@@ -14,6 +14,7 @@ import time
 from urllib.request import build_opener, ProxyHandler
 from urllib.error import URLError
 from urllib.parse import urljoin
+from uuid import uuid4
 from unittest.mock import patch
 
 from playwright.sync_api import expect, sync_playwright
@@ -26,17 +27,20 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from src.config import Settings
 from src.dashboard.app import create_app
+from src.dashboard.personal_workspace import provision
+from test_edition_policy import fixture_root, owner_environment
 from test_api_setup import review_pair
 from relations_browser import relation_fixture_grants, relations_browser_checks
 from registry_browser import registry_browser_checks, registry_fixture_grants
 
 
-def serve(data, port):
+def serve(data, port, *, personal=False):
     import uvicorn
 
     # Keep the real service and SQLite, and exercise the unavailable-source path without egress.
     with patch("src.execution.transport.build_opener", side_effect=URLError("offline browser regression")):
-        app = create_app(Settings(Path(data)), relation_grants=lambda: (
+        cfg = Settings.load_base() if personal else Settings(Path(data))
+        app = create_app(cfg, relation_grants=lambda: (
             *relation_fixture_grants(data), *registry_fixture_grants(data),
         ))
         uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning", use_colors=False,
@@ -295,8 +299,14 @@ def browser_checks(base, output, directory, studies_only=False, relations_only=F
 
 
 @contextmanager
-def server(directory, port):
-    process = subprocess.Popen([sys.executable, __file__, "--serve", directory, str(port)], cwd=ROOT)
+def server(directory, port, *, personal_environment=None):
+    argv = [sys.executable, __file__, "--serve", directory, str(port)]
+    env = None
+    if personal_environment is not None:
+        argv.append("--personal")
+        env = os.environ | personal_environment | {"VOC_EDITION": "PERSONAL", "VOC_DEPLOYMENT": "LOCAL",
+                                                   "VOC_DATA_DIR": str(directory)}
+    process = subprocess.Popen(argv, cwd=ROOT, env=env)
     base = f"http://127.0.0.1:{port}/"
     try:
         opener = build_opener(ProxyHandler({}))
@@ -363,9 +373,59 @@ def run_acquisition_browser(output):
             browser.close()
 
 
+def run_edition_browser(output):
+    output.mkdir(parents=True, exist_ok=True)
+    with fixture_root("voc-edition-browser-") as directory, socket.socket() as port_probe:
+        port_probe.bind(("127.0.0.1", 0))
+        port = port_probe.getsockname()[1]
+        port_probe.close()
+        binding = provision(Path(directory), "浏览器合成图书馆项目", "核对冻结范围", uuid4())
+        environment, secret = owner_environment(binding)
+        with server(directory, port, personal_environment=environment) as base, sync_playwright() as pw:
+            browser = pw.chromium.launch(executable_path=os.getenv("VOC_CHROMIUM") or None)
+            for viewport in ({"width": 1440, "height": 960}, {"width": 393, "height": 852}):
+                context = browser.new_context(viewport=viewport, locale="zh-CN", http_credentials={
+                    "username": "owner", "password": secret, "origin": base.rstrip("/"),
+                })
+                page = context.new_page()
+                errors, outbound = [], []
+                page.on("pageerror", lambda error: errors.append(str(error)))
+                page.on("request", lambda request: outbound.append(request.url)
+                        if not request.url.startswith(base) else None)
+                page.route("**/*", lambda route: route.continue_()
+                           if route.request.url.startswith(base) else route.abort())
+                page.goto(base + "#setup")
+                expect(page.get_by_role("heading", name="版本与研究准入", exact=True)).to_be_visible()
+                for label in ("个人研究版", "本机", "G-1-PERSONAL", "NOT_EVALUATED", "BLOCKED"):
+                    expect(page.get_by_text(label, exact=True)).to_be_visible()
+                expect(page.get_by_role("button", name="检查连接")).to_have_count(0)
+                assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+                visible = page.content()
+                for private in (secret, environment["VOC_PERSONAL_OWNER_SHA256"], binding["study_id"]):
+                    assert private not in visible
+                assert page.evaluate("localStorage.length === 0 && sessionStorage.length === 0")
+                variant = "desktop" if viewport["width"] > 400 else "mobile"
+                page.screenshot(path=str(output / f"edition-personal-{variant}.png"))
+                page.get_by_role("link", name="核对已授权项目").click()
+                expect(page).to_have_url(base + "api/edition/projects")
+                response = json.loads(page.locator("body").inner_text())
+                assert response["projects"][0]["scope"]["study_id"] == binding["study_id"]
+                assert response["projects"][0]["actor_ref"] == "local-operator"
+                forbidden = page.request.post(base + "api/acquisition/" + binding["study_id"] + "/collect",
+                                              headers={"Origin": base.rstrip("/"), "X-VOC-Action": "connectivity"})
+                assert forbidden.status == 403
+                assert not errors, errors
+                assert not outbound, outbound
+                context.close()
+            browser.close()
+    print("Chromium Personal edition passed. Desktop and mobile, authenticated scope, 0 external requests.")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--serve", nargs=2, metavar=("DIR", "PORT"))
+    parser.add_argument("--personal", action="store_true")
+    parser.add_argument("--edition-only", action="store_true")
     parser.add_argument("--studies-only", action="store_true")
     parser.add_argument("--relations-only", action="store_true")
     parser.add_argument("--registry-only", action="store_true")
@@ -374,7 +434,10 @@ def main():
     parser.add_argument("--output", type=Path, default=ROOT / "test-results/browser")
     args = parser.parse_args()
     if args.serve:
-        return serve(args.serve[0], int(args.serve[1]))
+        return serve(args.serve[0], int(args.serve[1]), personal=args.personal)
+    if args.edition_only:
+        run_edition_browser(args.output)
+        return
     if args.registry_only:
         run_registry_browser(args.output)
         return
@@ -407,6 +470,7 @@ def main():
         run_registry_browser(args.output)
         run_packycode_browser(args.output)
         run_acquisition_browser(args.output)
+        run_edition_browser(args.output)
     print("Chromium E2E passed. Screenshots:", args.output)
 
 

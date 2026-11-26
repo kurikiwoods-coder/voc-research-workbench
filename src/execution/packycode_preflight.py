@@ -19,6 +19,8 @@ from src.raw_store.store import Busy, Store, dump
 
 PROBE_DIRECTORY = ROOT / "runtime" / "packycode-preflight"
 REQUEST_KEY = "g1-r-b-p-owner-2026-11-25"
+LIVE_AUTHORIZATION_EXHAUSTED = True
+EXHAUSTED = "原 PackyCode 一次性合成预检授权已耗尽。可读取原账本，真实执行及续跑已关闭。"
 INPUT_LIMIT = 100_000
 NEXT_INPUT_ESTIMATE = 65_536
 TOKEN_QUOTA_LIMIT = Decimal("2")
@@ -210,6 +212,8 @@ def first_shard_checkpoint(store, run, asked, proof_hash):
 
 def run_preflight(store, key, evidence_path, *, vault_revision, recheck_vault=None,
                   reconcile=None, resume_second=False, transport=network):
+    if transport is network and LIVE_AUTHORIZATION_EXHAUSTED:
+        raise Denied(EXHAUSTED)
     if not store.diagnostic or (transport is network) == store.fixture:
         raise Denied("预检传输必须使用独立诊断库。")
     if transport is network and (
@@ -362,6 +366,8 @@ def main():
         parser.error("A live action and --account-evidence must be given together")
     try:
         if live:
+            if LIVE_AUTHORIZATION_EXHAUSTED:
+                raise Denied(EXHAUSTED)
             if os.name != "nt":
                 raise Denied("真实预检需要本机 Windows 普通用户会话与 DPAPI 凭证。")
             vault = CredentialVault(Path(os.getenv("VOC_DATA_DIR") or ROOT / "runtime").resolve())

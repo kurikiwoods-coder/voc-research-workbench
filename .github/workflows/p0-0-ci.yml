@@ -2,7 +2,7 @@ name: P0-0 engineering checks
 
 on:
   pull_request:
-    branches: [main]
+    branches: [main, codex/p0-0-connectivity]
   workflow_dispatch:
     inputs:
       browser:

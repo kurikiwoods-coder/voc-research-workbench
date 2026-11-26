@@ -3,6 +3,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from src.config import MODEL, PACKYCODE_LIVE_BLOCK, Settings
 from src.discovery.recall import test_cross_category_recall
+from src.edition_policy import Edition, legacy_execution_allowed
 from src.execution.jev import call_shards, questions, split
 from src.execution.transport import ENDPOINTS, Denied, Response, failure, network, outbound
 from src.ingestion.public_source import discover
@@ -135,9 +136,13 @@ def reuse_paid_source(store, previous):
 def run_checks(settings, store, request_key, resume_id=None, transport=network):
     if store.fixture or store.diagnostic or transport is not network:
         raise ValueError("正式阶段验收仅允许真实后端传输")
+    if store.edition != Edition.BUSINESS:
+        raise Conflict("个人工作库不能运行商用验收。")
     with store.writer():
         if callable(settings):
             settings = settings()
+        if not legacy_execution_allowed(settings):
+            raise Conflict("当前运行模式不能运行或恢复商用验收。")
         if settings.provider == "packycode":
             raise Conflict(PACKYCODE_LIVE_BLOCK)
         run, attempt = store.begin(request_key, settings, resume_id)

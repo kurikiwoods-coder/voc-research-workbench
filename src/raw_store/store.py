@@ -8,6 +8,8 @@ import sqlite3
 import time
 import uuid
 
+from src.edition_policy import Edition
+from src.raw_store.runtime_binding import APPLICATION_IDS, bind_directory
 from src.raw_store.corpus_policy import snapshot_requires_restriction, source_identity, source_permission_revoked
 
 
@@ -42,19 +44,30 @@ class Conflict(ValueError):
 
 
 class Store:
-    def __init__(self, directory, *, fixture=False, diagnostic=False):
-        self.directory = Path(directory) / "api-diagnostics" if diagnostic else Path(directory)
+    def __init__(self, directory, *, fixture=False, diagnostic=False, edition=Edition.BUSINESS):
+        root = bind_directory(directory, Edition(edition))
+        self.edition = Edition(edition)
+        self.directory = root / "api-diagnostics" if diagnostic else root
         self.directory.mkdir(parents=True, exist_ok=True)
         self.fixture = fixture
         self.diagnostic = diagnostic
         self.path = self.directory / (
             "synthetic_contract.sqlite3" if fixture else "connectivity.sqlite3"
         )
-        with closing(self.connect()) as db:
-            self._migrate(db, 1 if fixture or diagnostic else len(MIGRATIONS))
+        if self.edition == Edition.PERSONAL and (
+            self.directory.is_symlink() or self.path.is_symlink()
+        ):
+            raise ValueError("个人工作库不能通过符号链接引用。")
+        connect = self._connect if self.edition == Edition.PERSONAL else self.connect
+        with closing(connect()) as db:
+            self._migrate(db, 1 if fixture or diagnostic else len(MIGRATIONS), self.edition)
 
     @staticmethod
-    def _migrate(db, target):
+    def _migrate(db, target, edition=Edition.BUSINESS):
+        application_id = APPLICATION_IDS[edition]
+        initial_id = db.execute("PRAGMA application_id").fetchone()[0]
+        if initial_id != application_id and not (edition == Edition.PERSONAL and initial_id == 0):
+            raise ValueError("SQLite 工作库的产品版本与运行实例不符。")
         # Journal mode changes happen outside transactions and can return busy
         # immediately when two processes open a brand-new file.
         deadline = time.monotonic() + SQLITE_TIMEOUT
@@ -75,6 +88,12 @@ class Store:
         db.execute("BEGIN IMMEDIATE")
         try:
             version = db.execute("PRAGMA user_version").fetchone()[0]
+            actual_id = db.execute("PRAGMA application_id").fetchone()[0]
+            if actual_id != application_id:
+                if (edition != Edition.PERSONAL or actual_id != 0 or version != 0
+                        or db.execute("SELECT 1 FROM sqlite_schema LIMIT 1").fetchone()):
+                    raise ValueError("SQLite 工作库的产品版本与运行实例不符。")
+                db.execute(f"PRAGMA application_id={application_id}")
             if not 0 <= version <= target:
                 raise ValueError("不支持的数据库版本")
             if version < target:
@@ -97,6 +116,13 @@ class Store:
             raise
 
     def connect(self):
+        db = self._connect()
+        if db.execute("PRAGMA application_id").fetchone()[0] != APPLICATION_IDS[self.edition]:
+            db.close()
+            raise ValueError("SQLite 工作库的产品版本与运行实例不符。")
+        return db
+
+    def _connect(self):
         db = sqlite3.connect(self.path, timeout=SQLITE_TIMEOUT)
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys=ON")

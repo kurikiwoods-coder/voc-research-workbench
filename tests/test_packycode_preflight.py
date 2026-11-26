@@ -209,7 +209,10 @@ class PackyCodePreflightTests(unittest.TestCase):
             stream.headers = {}
             return stream
 
+        # Exercise the historical authorized transaction using the same synthetic opener.
+        # Production retirement is covered separately without overriding the seal.
         with (
+            patch.object(packycode_preflight, "LIVE_AUTHORIZATION_EXHAUSTED", False),
             patch.object(packycode_preflight, "PROBE_DIRECTORY", self.directory / "isolated-cli"),
             patch.object(packycode_preflight, "os", local_os),
             patch.object(packycode_preflight, "CredentialVault") as vault,

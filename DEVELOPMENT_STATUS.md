@@ -1,5 +1,11 @@
 # VOC Research Workbench 开发状态
 
+## G-1-P-B 双版本服务端工程
+
+2026-11-26 从 Phase 1 实际远端 `0e7a3d7ec4909cf43410728045a9bb765b2760da` 接续。**G-1-P-B = CI_PENDING**，`G1_PERSONAL_SERVER_POLICY = IMPLEMENTED`，`G1_PERSONAL_IMPLEMENTATION = PARTIAL`。个人本机 Owner、项目及冻结范围权限、两道门禁与云模式关闭已实现。独立复审无未关闭 P0/P1。在本轮新源码上 Windows 11 实机及部署门禁为 **NOT_TESTED**。[工程证据](docs/evidence/g1-p-b/README.md) · [本机启动](docs/architecture/g1-personal-server-policy.md)
+
+**G-1-PERSONAL = NOT_EVALUATED**，**G-1 = BLOCKED**。SQLite v8，M06 工程基线 FROZEN，核心 39/79。G-1-P-C/D/R、M09–M15 为 **NOT_STARTED**，继续按独立授权接续。真实研究及供应商探针各 **0 次**。[C 接入设计](docs/architecture/g1-personal-gate-contract.md)
+
 ## G-1-PERSONAL Phase 1
 
 2026-11-26，以 M08-V 报告提交 `dd89a14f25ac0dfae3f63dcf1809da2494f1c9dc` 接续，原验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 的 Windows 11 实机及部署均 PASS，当轮新增未关闭 P0/P1/P2/P3 为 0/0/0/0，基线三项 CI 均通过。M06 工程基线 FROZEN，SQLite 工作库 v8，ROADMAP-V2 **39/79**。[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45740807294) · [M08-V](docs/evidence/m08-v/README.md)

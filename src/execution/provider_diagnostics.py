@@ -6,6 +6,7 @@ import json
 import re
 
 from src.config import MODEL, PACKYCODE_LIVE_BLOCK, PROVIDERS
+from src.edition_policy import Edition, legacy_execution_allowed
 from src.execution.jev import call_shards, output_tokens
 from src.execution.transport import failure, network
 from src.ingestion.public_source import DOMAIN, discover
@@ -159,9 +160,11 @@ def diagnostic_report(row):
 def run_probe(settings, store, provider, request_key, transport=network):
     if not store.diagnostic or (transport is network) == store.fixture:
         raise ValueError("诊断与正式验收必须使用独立的记录库")
-    if provider == "packycode" and not store.fixture:
+    policy_block = not legacy_execution_allowed(settings) or store.edition != Edition.BUSINESS
+    if policy_block or (provider == "packycode" and not store.fixture):
+        reason = "当前运行模式尚未开放真实供应商诊断。" if policy_block else PACKYCODE_LIVE_BLOCK
         return outcome(
-            "LIVE_TEST_BLOCKED", PACKYCODE_LIVE_BLOCK, provider=provider, model=MODEL,
+            "LIVE_TEST_BLOCKED", reason, provider=provider, model=MODEL if provider in PROVIDERS else None,
             http_status=None, schema_status="NOT_TESTED", schema_gap=[], evidence_refs=[],
             research_denominator=0,
         )

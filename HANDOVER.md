@@ -1,5 +1,11 @@
 # 开发交接
 
+## G-1-P-B 服务端与 G-1-P-C 接续
+
+个人版通过本机可信启动开启，Owner 按服务端权限、项目、冻结范围和用途进行本机操作。G-1-PERSONAL 为 **NOT_EVALUATED**。原商用 G-1 为 **BLOCKED**。原 PackyCode 执行与续跑授权已耗尽。工作库 SQLite v8，M06 冻结，核心进度 39/79。Windows 11 本轮实机与部署门禁为 **NOT_TESTED**。[启动及接口](docs/architecture/g1-personal-server-policy.md) · [工程证据](docs/evidence/g1-p-b/README.md)
+
+G-1-P-C 获单独授权后接入个人供应商审批事件及脱敏证据引用，绑定实际账户、凭证版、通道、作用域、用途、操作者、依据和撤销时效。保持正式采集、外发、编码、发布及 M09 关闭，个人同批实证留待 D，正式准入留待 R。[拟定 API、表和迁移](docs/architecture/g1-personal-gate-contract.md)
+
 ## G-1-PERSONAL Phase 1 与后续授权
 
 基于已验收的 M08-V `dd89a14`，交付双版产品规划、个人最低准入及两条 PackyCode 费用证据。各阶段按实际授权接续。接续顺序为 G-1-P-B 服务端版本策略、G-1-P-C 个人审批、G-1-P-D 同批实证、G-1-P-R 独立复审。个人版准入及 M09 各自待负责人授权。**G-1-PERSONAL = NOT_EVALUATED**，商用 **G-1 = BLOCKED**，M09 = **NOT_STARTED**。[批准记录](docs/decisions/dual-edition-owner-approval.md) · [下一轮实施与测试](docs/planning/g1-personal-implementation-plan.md)

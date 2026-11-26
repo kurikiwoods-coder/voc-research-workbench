@@ -2,6 +2,7 @@ import math
 import time
 import json
 from src.config import MODEL, PACKYCODE_LIVE_BLOCK, PROVIDERS
+from src.edition_policy import Edition, legacy_execution_allowed
 from src.raw_store.store import Conflict
 from src.execution.transport import outbound, network, number, failure, redact
 
@@ -112,6 +113,8 @@ def validate(asked, obj):
 
 
 def call_shards(settings, store, run, attempt, quote, transport=network, sleep=time.sleep):
+    if not legacy_execution_allowed(settings) or store.edition != Edition.BUSINESS:
+        return [], [], [], "当前运行模式尚未开放 Jev 请求或历史分片消费。"
     if (transport is network) == store.fixture:
         raise ValueError("在线传输和合成测试必须使用独立数据库")
     synthetic_probe = bool(store.diagnostic and quote and quote.get("role") == "synthetic_api_probe")

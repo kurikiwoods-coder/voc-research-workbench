@@ -1,6 +1,6 @@
 # G-1-PERSONAL 最低准入政策
 
-`G1_PERSONAL_POLICY = DOCUMENTED`，`G1_PERSONAL_IMPLEMENTATION = NOT_STARTED`，`G-1-PERSONAL = NOT_EVALUATED`。个人版使用一条独立正式准入记录。G-1-P-D 负责同批六项实证，G-1-P-R 负责独立安全复审与最终准入。通过后，个人版 M09 仍按负责人授权开工。商用版沿用原 G-1，个人版进度由自身准入决定。[负责人批准](../decisions/dual-edition-owner-approval.md) · [实施顺序](../planning/g1-personal-implementation-plan.md)
+`G1_PERSONAL_POLICY = DOCUMENTED`，`G1_PERSONAL_IMPLEMENTATION = PARTIAL`，`G-1-PERSONAL = NOT_EVALUATED`。个人版使用一条独立正式准入记录。G-1-P-D 负责同批六项实证，G-1-P-R 负责独立安全复审与最终准入。通过后，个人版 M09 仍按负责人授权开工。商用版沿用原 G-1，个人版进度由自身准入决定。[负责人批准](../decisions/dual-edition-owner-approval.md) · [实施顺序](../planning/g1-personal-implementation-plan.md)
 
 ## 判定条件
 

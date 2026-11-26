@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 
 from src.dashboard.api_setup import body
+from src.dashboard.edition_access import EditionRoute, scope_id as authorized_scope, transaction_authorizer
 from src.raw_store.store import Conflict
 
 
@@ -46,35 +47,39 @@ def corpus_errors():
 
 
 def register_corpus(app):
-    router = APIRouter(prefix="/api/corpus", tags=["原始语料"])
+    router = APIRouter(route_class=EditionRoute, prefix="/api/corpus", tags=["原始语料"])
     review_form = body(Review, 12_288, label="语料审核")
 
     def store(request: Request):
         return request.app.state.corpus
 
     @router.get("/{study_id}/batches")
-    def batches(study_id: UUID, offset: Offset = 0, db=Depends(store)):
+    def batches(request: Request, study_id: UUID, offset: Offset = 0, db=Depends(store)):
         with corpus_errors():
-            return db.batches(str(study_id), offset)
+            return db.batches(str(study_id), offset, scope_id=authorized_scope(request),
+                              authorize=transaction_authorizer(request))
 
     @router.get("/{study_id}/batches/{batch_id}")
-    def candidates(study_id: UUID, batch_id: UUID, offset: Offset = 0, db=Depends(store)):
+    def candidates(request: Request, study_id: UUID, batch_id: UUID, offset: Offset = 0, db=Depends(store)):
         with corpus_errors():
-            return db.candidates(str(study_id), str(batch_id), offset)
+            return db.candidates(str(study_id), str(batch_id), offset, authorize=transaction_authorizer(request))
 
     @router.get("/{study_id}/records/{record_id}")
-    def detail(study_id: UUID, record_id: RecordId, db=Depends(store)):
+    def detail(request: Request, study_id: UUID, record_id: RecordId, db=Depends(store)):
         with corpus_errors():
-            return db.detail(str(study_id), str(record_id))
+            return db.detail(str(study_id), str(record_id), scope_id=authorized_scope(request),
+                             authorize=transaction_authorizer(request))
 
     @router.get("/{study_id}/records/{record_id}/eligible")
-    def eligible(study_id: UUID, record_id: RecordId, db=Depends(store)):
+    def eligible(request: Request, study_id: UUID, record_id: RecordId, db=Depends(store)):
         with corpus_errors():
-            return db.qualified_record(str(study_id), str(record_id))
+            return db.qualified_record(str(study_id), str(record_id), scope_id=authorized_scope(request),
+                                       authorize=transaction_authorizer(request))
 
     @router.post("/{study_id}/records/{record_id}/review")
-    def review(study_id: UUID, record_id: RecordId, form=Depends(review_form), db=Depends(store)):
+    def review(request: Request, study_id: UUID, record_id: RecordId, form=Depends(review_form), db=Depends(store)):
         with corpus_errors():
-            return db.review(str(study_id), str(record_id), **form.model_dump(mode="json"))
+            return db.review(str(study_id), str(record_id), scope_id=authorized_scope(request),
+                             authorize=transaction_authorizer(request), **form.model_dump(mode="json"))
 
     app.include_router(router)
