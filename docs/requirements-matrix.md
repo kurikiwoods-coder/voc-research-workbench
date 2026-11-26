@@ -12,7 +12,8 @@
 | G-1-P-B | 服务端版本与部署、可信 Owner、精确项目和冻结范围；商用兼容，个人预准入及正式操作关闭 | ENGINEERING_PASS。[工程与安全回归](evidence/g1-p-b/README.md) · [门禁契约](architecture/g1-personal-gate-contract.md) |
 | G-1-P-B-V | 安全接管，原生 Windows 全量、路径、ACL 和 DPAPI 验收 | PASS。[实机证据](evidence/g1-p-b-v/README.md) |
 | G-1-P-C | 可信 Owner 和精确范围权限、必要材料与风险、审批撤销、个人凭证、追加式证据与 SQLite v9 | 已实现，验收绑定固定源码和对应 CI。[证据](evidence/g1-p-c/README.md) · [实现契约](architecture/g1-personal-approval-contract.md) |
-| G-1-P-D/R | 同批正式复验及独立安全评审 | D 准备材料已登记，真实运行待单独批准。R NOT_STARTED，M09 等个人准入及独立开发授权。商用 G-1 另行验收。[D 取证计划](evidence/g1-p-c/d-preparation.md) |
+| G-1-P-D | C0-1 至 C0-6 同批实证，逐次授权、预约、审计及对账 | **BLOCKED**。C0-1 至 C0-6 正式状态均为 BLOCKED，C0-5、C0-6 离线复验通过。待受限执行入口、账本、最终载荷、凭证和预算。真实请求 0。[六项矩阵与复验证据](evidence/g1-p-d/README.md) |
+| G-1-P-R | 全部同批证据完成后的独立准入复审 | **NOT_STARTED**。M09 等个人准入及独立开发授权。商用 G-1 另行验收。[个人最低准入政策](architecture/personal-research-gate.md) |
 
 ## M08-V Windows 11 回归验收
 

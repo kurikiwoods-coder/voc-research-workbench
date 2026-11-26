@@ -4,11 +4,15 @@
 
 2026-11-26，**I18N-PRE = PLANNED**。M09、M10 的语言接口和证据提前约束已登记。M10 验收完成后等待负责人单独授权实施，在 M11 启动前完成专项。G-1-PERSONAL 继续原接续顺序，核心进度为 39/79。[负责人批准](docs/decisions/i18n-pre-owner-approval.md)
 
+## G-1-P-D 个人版正式同批验收准备
+
+**G-1-P-D = BLOCKED**。2026-11-26 以 `5106bb1098ebc706fb3429ba462cd5e82c55b169` 复核 G-1-P-C，三项基线 CI 通过，Windows 11 本机复验完成。C0-5 和 C0-6 的离线工程结果通过。D 尚缺受限个人预准入执行入口、同批预算预约与对账，以及已确认的载荷、凭证和金额上限。C0-1 至 C0-6 的个人正式同批状态均为 `BLOCKED`，真实外部请求、Token、费用及正式历史证据纳入均为 0。[D 复核及预算](docs/evidence/g1-p-d/README.md)
+
 ## G-1-P-C 个人供应商审批中心
 
-**G1_PERSONAL_APPROVAL_CENTER = IMPLEMENTED**，**G1_PERSONAL_IMPLEMENTATION = PARTIAL**。源码 `912ff28e0a10e3329bc49c6e9fdc97e290229a68` 实现可信本机 Owner 的项目和冻结范围审批、必要材料复核、非强制风险登记、凭证绑定及不可变事件，工作库 SQLite v9。该源码 **WINDOWS_11_REAL_MACHINE = PASS**，**WINDOWS_11_DEPLOYMENT_GATE = PASS**。本交付提交的三项 CI 均通过时，**G-1-P-C = ENGINEERING_PASS** 且 **G-1-P-D = READY**。[本轮证据](docs/evidence/g1-p-c/README.md) · [交付检查](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2/checks)
+**G1_PERSONAL_APPROVAL_CENTER = IMPLEMENTED**，**G1_PERSONAL_IMPLEMENTATION = PARTIAL**。源码 `912ff28e0a10e3329bc49c6e9fdc97e290229a68` 实现可信本机 Owner 的项目和冻结范围审批、必要材料复核、非强制风险登记、凭证绑定及不可变事件，工作库 SQLite v9。该源码 **WINDOWS_11_REAL_MACHINE = PASS**，**WINDOWS_11_DEPLOYMENT_GATE = PASS**。C 交付提交的三项 CI 已通过，**G-1-P-C = ENGINEERING_PASS**，具备 D 准备工作的工程接续条件。[C 证据](docs/evidence/g1-p-c/README.md) · [C 交付 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45762882859)
 
-**G-1-PERSONAL = NOT_EVALUATED**，**G-1 = BLOCKED**。M06 工程基线 FROZEN，正式统计继续 `unavailable/null`，核心 39/79。D 仅登记工程接续条件，真实批次需负责人单独授权。R、M09–M15 为 **NOT_STARTED**。真实研究和真实供应商探针分别为 **0 次**。[D 批次准备](docs/evidence/g1-p-c/d-preparation.md)
+**G-1-PERSONAL = NOT_EVALUATED**，**G-1 = BLOCKED**。M06 工程基线 FROZEN，正式统计继续 `unavailable/null`，核心 39/79。R、M09–M15 为 **NOT_STARTED**。C 阶段真实研究和真实供应商探针分别为 **0 次**。[D 批次准备规范](docs/evidence/g1-p-c/d-preparation.md)
 
 ## G-1-P-B-V 网页成果接管
 

@@ -8,7 +8,7 @@
 
 个人版通过本机可信启动开启。Owner 在「版本与研究准入」选择获准项目，按权限配置本机凭证、登记材料和风险、提交申请、批准或撤销。C 工作库 SQLite v9，经隔离验证后接续。G-1-PERSONAL 为 **NOT_EVALUATED**，原商用 G-1 为 **BLOCKED**。原 PackyCode 执行与续跑授权已耗尽。M06 冻结，核心进度 39/79。[可信启动](docs/architecture/g1-personal-server-policy.md) · [C 契约](docs/architecture/g1-personal-approval-contract.md)
 
-D 的真实执行需负责人另行授权。在取证前核实当前账户、凭证、精确通道、逐源许可及批次预算。准备实现受控个人预准入发送前置与账本，复核恢复后材料撤销历史。新鲜证据全链路预计最少 4 次外部请求，详见[批次准备](docs/evidence/g1-p-c/d-preparation.md)。本轮未发出真实请求，R 与 M09 尚未启动。[未结事项](docs/evidence/g1-p-c/bug-register.md)
+**G-1-P-D = BLOCKED**。准备与 Windows 11 离线复验已完成。受限个人预准入入口、同批预算预约与对账，以及恢复后材料撤销的复核是接续前置。真实执行还需核实当前账户、凭证版本、精确通道、逐源许可、最终载荷及费用上限，并取得负责人批次授权。全新取证最低 4 次，实际 0 次。G-1-P-R 与 M09–M15 为 `NOT_STARTED`。[D 复核、六项状态及预算](docs/evidence/g1-p-d/README.md) · [C 未结事项](docs/evidence/g1-p-c/bug-register.md)
 
 ## G-1-PERSONAL Phase 1 与后续授权
 

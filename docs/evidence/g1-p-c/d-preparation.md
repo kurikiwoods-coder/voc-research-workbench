@@ -1,6 +1,6 @@
 # G-1-P-D 最小实证准备
 
-G-1-P-D 待单独授权。个人 G-1 保持 `NOT_EVALUATED`，商用 G-1 保持 `BLOCKED`。本轮准备的真实外部请求和新增外部费用均为 0。C 阶段的供应商审批记录是 D 的一项前置。D 还需要具备批次隔离、发送前核验和账本的个人预准入入口。现有商用 `run_checks` 和 `discover` 只用于原版本路径。[个人门禁](../../architecture/personal-research-gate.md) · [预准入契约](../../architecture/g1-personal-gate-contract.md) · [商用检查](../../../src/execution/checks.py) · [来源发现](../../../src/ingestion/public_source.py)
+本文件记录 C 阶段制定的 D 取证规范。D 准备及离线复验已完成，真实执行 `BLOCKED`，请求和新增外部费用均为 0。个人门禁保持 `NOT_EVALUATED`，商用 G-1 保持 `BLOCKED`。C 的供应商审批是 D 的前置。D 还需要具备批次隔离、发送前核验和账本的个人预准入入口。现有商用 `run_checks` 和 `discover` 只用于原版本路径。[D 最新复核](../g1-p-d/README.md) · [个人门禁](../../architecture/personal-research-gate.md) · [预准入契约](../../architecture/g1-personal-gate-contract.md) · [商用检查](../../../src/execution/checks.py) · [来源发现](../../../src/ingestion/public_source.py)
 
 ## 最低请求数
 
