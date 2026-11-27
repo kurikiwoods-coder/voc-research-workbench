@@ -1,5 +1,11 @@
 # 开发交接
 
+## 当前接续 · M09-A
+
+活动分支 `codex/g1-personal-phase-1`，沿用草稿 PR #2。治理冻结和离线接续独立提交 `1ac1fdb8ddba14e789ae2b9b711c48c3bea01f9f`。M09-A 接口及合成回归已完成。本机缺少可用的 Sentence Transformers 推理栈和获准的模型权重，待离线加载复验。核心 **39/79**。[向量接口、安装及复验](docs/evidence/m09-a/README.md)
+
+获准后使用固定模型版本和中英合成夹具验证尺寸、有限值、归一化和复跑一致性。M09-B 消费 `EmbeddingBatch.rows` 与 `vectors`，按相同顺序使用预处理文本与向量，固定聚类参数。后续证据回读继续经当前资格入口，引用历史 ID 时带精确片段版本。M09-B 尚未启动。
+
 ## G-1-PERSONAL V2 接续
 
 开发分支 `codex/g1-personal-phase-1`，草稿 PR #2。现有 Personal v11 独立验收工作区的原生 Windows 11 部署证据绑定源码 `6d70cd5011a249c83bf6c9df15f3900c2f595994`。在授权设备以可信本机 Owner 复核当前工作库及恢复连续性。在受保护位置准备当前账户、凭证、通道、条款、逐源许可、脱敏、费用和剩余风险材料，按原 G-1-P-D 入口仅签发本批所需操作。[Windows 11 历史部署证据](docs/evidence/g1-p-d/d-l-windows11-deployment.md) · [V2 授权草案](docs/evidence/g1-p-d/personal-v2-authorization-draft.md)
@@ -10,7 +16,7 @@
 
 ## M09 离线隔离开发接续
 
-当前 `M09 = NOT_STARTED`。四槽真实实证因当前 PackyCode 账户的个人用途无法确认而暂停。负责人可单独授权 M09-A 至 M09-D 离线工程，正式运行仍依适用版本门禁。核心进度保持 39/79。[工作单元](docs/planning/ROADMAP-V2.md) · [M08 消费契约](docs/architecture/m08-consumer-handover.md)
+四槽真实实证因当前 PackyCode 账户的个人用途无法确认而暂停。负责人已授权 M09-A 离线工程，当前实现及接续见本页顶部。正式运行依适用版本门禁。[工作单元](docs/planning/ROADMAP-V2.md) · [M08 消费契约](docs/architecture/m08-consumer-handover.md)
 
 1. **M09-A**。在临时 SQLite 和合成夹具中接续 M05 资格、M06 冻结范围与片段版本、M07 精确封版注册表及 M08 追溯。保存预处理、输入摘要、向量模型与维度版本。原话语言、分析语言及输出语言分别传递，保留模型多语言能力配置。用确定性的合成向量验证适配器契约。
 2. **M09-B/C**。使用预装且获准的本地模型和固定 BERTopic 参数验证聚类。在断网环境保存并复跑主题、成员、参数、运行版本、证据引用与差异。回查须重验当前资格和精确片段版本。原话只读，候选与正式注册表分别保存。

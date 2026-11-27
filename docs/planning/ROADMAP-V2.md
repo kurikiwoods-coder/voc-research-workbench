@@ -1,6 +1,6 @@
 # ROADMAP-V2 完整开发路线图
 
-M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。工程单元计数为 **39/79**，商用 G-1 保持 **BLOCKED**。个人版先完成 G-1-PERSONAL 序列，再单独授权 M09。[Windows 11 实机证据](../evidence/m08-v/README.md)
+M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。工程单元计数为 **39/79**，商用 G-1 保持 **BLOCKED**。负责人已批准 M09-A 离线工程先行，实际本机模型待复验。[Windows 11 实机证据](../evidence/m08-v/README.md) · [M09-A](../evidence/m09-a/README.md)
 
 2026-11-25 负责人批准本规划。开发分支 `codex/p0-0-connectivity`，规划基线 `3bd705befb98ee108b77603763c5571ceb7fdc44`。草稿 PR #1 与该基线一致，Ubuntu、Windows Server 2022、Chromium 作业均通过。[负责人批准](../decisions/roadmap-v2-owner-approval.md) · [M06-R 基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45585265229) · [草稿 PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1)
 
@@ -18,7 +18,7 @@ PDT v1.3.1 Word 正文与本机副本的 SHA-256 一致。ROADMAP-V2 已核对�
 
 ## 双版本准入与治理工作单元
 
-EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用核心研究引擎，分别适用 G-1-PERSONAL 及原 G-1。产品版本与本机、云端部署分别管理。个人门禁当前 NOT_EVALUATED，按 G-1-P-B、C、D、R 单独授权；通过前 M09 保持 NOT_STARTED。商用准入继续按原同批和审批标准。两项已交付治理规划、四项接续及 PackyCode 历史费用补证均独立登记。下面 79 项及完成数 39 沿用。[双版本政策](../architecture/edition-policy.md) · [治理单元与接续](g1-personal-implementation-plan.md) · [费用补证](../evidence/g1-rb-f/README.md)
+EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用核心研究引擎，分别适用 G-1-PERSONAL 及原 G-1。产品版本与本机、云端部署分别管理。个人门禁当前 NOT_EVALUATED，按 G-1-P-B、C、D、R 单独授权。M09-A 获独立授权开展合成离线工程，正式研究继续受版本门禁约束。商用准入继续按原同批和审批标准。两项已交付治理规划、四项接续及 PackyCode 历史费用补证均独立登记。下面 79 项及完成数 39 沿用。[双版本政策](../architecture/edition-policy.md) · [治理单元与接续](g1-personal-implementation-plan.md) · [费用补证](../evidence/g1-rb-f/README.md)
 
 ## I18N-PRE 国际化架构预留
 
@@ -132,7 +132,7 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 | M08-B | M08-A、M02 | Tavily 与 Brave 双搜索、URL 发现与许可页面回源 | INGEST、C0-3，区分发现链接、可访问页和真实原话 |
 | M08-C | M08-A/B | 获准论坛、YouTube 适配范围、许可正文通路及备用 Reddit | 依原 INGEST、PDT §4 及 §13.1，至少一条获准论坛、YouTube 或许可页面能回源 |
 | M08-D | M08-B/C、M04/M05 | 采样任务、批次、额度、暂停、重试、跨站去重和 CSV 兜底 | G1/G2/G7、RAW，三批至少 100 条真实语义片段及 30/30 回源抽查 |
-| M09-A | M05-E、M06-C3 | 本地文本预处理、Embedding Adapter 与匿名输入，预留研究语言参数及多语言能力 | DISCOVERY、PRIVACY，向量版本和当前片段资格 |
+| M09-A | M05-E、M06-C3 | 本地文本预处理、Embedding Adapter 与匿名输入，预留研究语言参数及多语言能力 | DISCOVERY、PRIVACY，向量版本和当前片段资格。合成工程已验证，待获准本地模型复验。[证据](../evidence/m09-a/README.md) |
 | M09-B | M09-A | BERTopic 聚类、主题提取和参数记录 | 可回放模型、预处理和参数 |
 | M09-C | M09-B | 主题运行版本、成员、证据、离线复跑与差异 | G3，主题能下钻到合格原话 |
 | M09-D | M09-C | 聚类视图、候选输出与已知/未知盲测 | DISCOVERY、G3，候选进入人审 |
