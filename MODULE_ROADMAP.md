@@ -8,15 +8,15 @@
 
 ## 当前模块
 
-2026-11-26 的 M08-V 已在验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 完成 M01–M08 Windows 11 实机与部署复验，两道门禁均为 **PASS**。M08 A–D P0 工程通过，正式业务待验。M09 的工程接口已备，现有隔离授权继续有效。工程范围与正式准入按研究优先 ADR 接续。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [实机验收证据](docs/evidence/m08-v/README.md)
+2026-11-26 的 M08-V 已在验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 完成 M01–M08 Windows 11 实机与部署复验，两道门禁均为 **PASS**。M08 A–D P0 工程通过，正式业务待验。**M09-A = ENGINEERING_PASS**，**M09 = PARTIAL**。下一获准离线单元为 M09-B。工程范围与正式准入按研究优先 ADR 接续。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [实机验收证据](docs/evidence/m08-v/README.md) · [M09-A 离线证据](docs/evidence/m09-a/README.md)
 
-M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，原始 CSV 已补证两笔实际总扣费 $0.000238，个人 Windows 10 账本待独立复核。[费用证据](docs/evidence/g1-rb-f/README.md)G-1-R-B 为 **BLOCKED**。M08 的 P0 A–D 工程通过，正式业务 **PENDING**，P1 的 M08-E 及 M09–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-C/D 证据](docs/evidence/m08-cd/README.md)
+M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，原始 CSV 已补证两笔实际总扣费 $0.000238，个人 Windows 10 账本待独立复核。G-1-R-B 为 **BLOCKED**。M08 的 P0 A–D 工程通过，正式业务 **PENDING**，P1 的 M08-E 及 M10–M15 为 **NOT_STARTED**。[费用证据](docs/evidence/g1-rb-f/README.md) · [M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-C/D 证据](docs/evidence/m08-cd/README.md)
 
-[ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 39 项，待推进 40 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
+[ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 40 项，待推进 39 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
 
-EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B 和 G-1-P-C 为 ENGINEERING_PASS，G-1-P-B-V 实机复验 PASS。G-1-P-D-E 为 ENGINEERING_PASS，Personal v10 与受限执行已通过隔离 Windows 11 实机及三项 CI。D-L 隔离 v11 和跨批次对账补修已在 Windows 10 验证，真实执行 `BLOCKED`，待部署批准、模型硬预算和逐操作授权。正式同批 0/6，真实请求 0。G-1-P-D `BLOCKED`，G-1-P-R `NOT_STARTED`。个人门禁 `NOT_EVALUATED`，商用 G-1 `BLOCKED`，核心进度 39/79。[D-E 工程证据](docs/evidence/g1-p-d/engineering.md) · [D-L 工程证据](docs/evidence/g1-p-d/d-l-engineering.md)
+EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B 和 G-1-P-C 为 ENGINEERING_PASS，G-1-P-B-V 实机复验 PASS。G-1-P-D-E 为 ENGINEERING_PASS，Personal v10 与受限执行已通过隔离 Windows 11 实机及三项 CI。D-L 隔离 v11 和跨批次对账补修已在 Windows 10 验证，真实执行 `BLOCKED`，待部署批准、模型硬预算和逐操作授权。正式同批 0/6，真实请求 0。G-1-P-D `BLOCKED`，G-1-P-R `NOT_STARTED`。个人门禁 `NOT_EVALUATED`，商用 G-1 `BLOCKED`，核心进度 40/79。[D-E 工程证据](docs/evidence/g1-p-d/engineering.md) · [D-L 工程证据](docs/evidence/g1-p-d/d-l-engineering.md)
 
 ## M01 基础工程与连通性
 
@@ -162,15 +162,15 @@ EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B 和 G-1-P-C 为 
 | 模块职责 | 在合格样本上提取主题、记录聚类和候选复查所需的证据。 |
 | 前置依赖 | M05 可追溯语料、M06 范围与分类、M07 注册表，M11 提供人审。M09-A 已获离线工程授权，正式研究依版本门禁。 |
 | 国际化提前约束 | 预留原始语料、分析和输出语言参数及 Embedding Adapter 多语言模型能力。[负责人批准](docs/decisions/i18n-pre-owner-approval.md) |
-| 工程开发 | M09-A 已实现本机向量适配、证据绑定和版本化缓存，待获准本地模型复验。M09-B 至 D 待授权。 |
-| 工程测试 | M09-A 合成加载与 M05–M08 衔接回归已通过。实际权重待测。 |
+| 工程开发 | **M09 = PARTIAL**。**M09-A = ENGINEERING_PASS**，本机向量适配、证据绑定和版本化缓存已交付。M09-B 按离线授权接续，M09-C/D 待推进。 |
+| 工程测试 | M09-A 合成加载与 M05–M08 衔接回归 81/81；原生 Windows 11 CPU 的获准实际模型复验 3/3，非回环网络尝试 0。 |
 | 正式业务验收 | 待验收。 |
 | 数据库及 API | 待主题运行、聚类成员、版本、差异和运行查询 API。 |
 | 前端页面 | 主题发现与聚类证据页未实现。 |
 | 验收标准 | 按 DISCOVERY 保存单轨与两轨结果、复算差异；盲测与真实小样本确认可提出或驳回候选。 |
 | 最近相关提交 | M09-A 实现 `d10fcf8fd0b03e052c50eae1cfef27c8692db2fa`。 |
 | 测试结果与证据 | [M09-A 实现及 Windows 离线证据](docs/evidence/m09-a/README.md) |
-| 剩余问题 | 获准模型复验、聚类参数、主题复跑、主题样本和盲测。 |
+| 剩余问题 | 聚类参数、主题复跑、主题样本和盲测。 |
 
 ## M10 TopicGPT 与未知意图发现
 

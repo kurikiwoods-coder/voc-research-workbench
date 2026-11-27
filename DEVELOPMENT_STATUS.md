@@ -2,9 +2,9 @@
 
 ## M09-A 离线向量适配
 
-2026-11-27，按负责人授权交付本机 M09-A 接口与合成工程验证。复用 M05 资格、M06 封版片段、M07 精确注册表及 M08 合成回执，输出带稳定行映射的版本化向量矩阵。已批准的实际模型资产与推理运行时待复验，M09-A 暂记 **IMPLEMENTED / MODEL_VALIDATION_PENDING**，核心进度 **39/79**。[实现与测试证据](docs/evidence/m09-a/README.md)
+2026-11-27，按负责人授权完成 M09-A 本机离线工程验收，**M09-A = ENGINEERING_PASS**，**M09 = PARTIAL**，核心进度 **40/79**。复用 M05 资格、M06 封版片段、M07 精确注册表及 M08 合成回执，输出带稳定行映射的版本化向量矩阵。合成及直接上游回归通过 81/81，获准的 MiniLM 实际权重在原生 Windows 11 CPU 上通过 3/3。[实现与测试证据](docs/evidence/m09-a/README.md)
 
-真实研究 API 0 次。M06 **FROZEN**，Personal SQLite v11，Business SQLite v9，G-1-P-D **BLOCKED**，G-1-P-R **NOT_STARTED**，Personal Gate **NOT_EVALUATED**，Business Gate **BLOCKED**。M09-B 等待本地模型复验与负责人授权。
+真实研究 API 及实测进程非回环网络尝试均为 0。M06 **FROZEN**，Personal SQLite v11，Business SQLite v9，G-1-P-D **BLOCKED**，G-1-P-R **NOT_STARTED**，Personal Gate **NOT_EVALUATED**，Business Gate **BLOCKED**。下一获准离线单元为 M09-B，M09-C/D 待推进。
 
 ## PRODUCT-REALIGNMENT-V1 与当前工程状态
 
@@ -30,7 +30,7 @@ Personal V2 的费用风险按已确认不存在、未知、已知存在记录�
 
 ## I18N-PRE 规划登记
 
-2026-11-26，**I18N-PRE = PLANNED**。M09、M10 的语言接口和证据提前约束已登记。M10 验收完成后等待负责人单独授权实施，在 M11 启动前完成专项。G-1 的当前接续见本页顶部，核心进度为 39/79。[负责人批准](docs/decisions/i18n-pre-owner-approval.md)
+2026-11-26，**I18N-PRE = PLANNED**。M09、M10 的语言接口和证据提前约束已登记。M10 验收完成后等待负责人单独授权实施，在 M11 启动前完成专项。登记时核心进度为 39/79，当前进度见本页顶部。[负责人批准](docs/decisions/i18n-pre-owner-approval.md)
 
 ## G-1-P-D 个人版正式同批验收准备
 

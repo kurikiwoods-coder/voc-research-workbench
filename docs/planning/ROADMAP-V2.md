@@ -1,6 +1,6 @@
 # ROADMAP-V2 完整开发路线图
 
-M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。工程单元计数为 **39/79**，商用 G-1 保持 **BLOCKED**。M09-A 已完成合成工程验证，实际本机模型待复验。个人正式研究的准入复验安排见[当前接续顺序](#当前接续顺序)。[Windows 11 实机证据](../evidence/m08-v/README.md) · [M09-A](../evidence/m09-a/README.md)
+M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。M09-A 的合成及实际模型离线工程验收已通过，核心工程单元计数为 **40/79**。商用 G-1 保持 **BLOCKED**，个人正式研究的准入复验安排见当前接续顺序。[Windows 11 实机证据](../evidence/m08-v/README.md) · [M09-A](../evidence/m09-a/README.md) · [当前接续顺序](#当前接续顺序)
 
 2026-11-25 负责人批准本规划。开发分支 `codex/p0-0-connectivity`，规划基线 `3bd705befb98ee108b77603763c5571ceb7fdc44`。草稿 PR #1 与该基线一致，Ubuntu、Windows Server 2022、Chromium 作业均通过。[负责人批准](../decisions/roadmap-v2-owner-approval.md) · [M06-R 基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45585265229) · [草稿 PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1)
 
@@ -9,7 +9,7 @@ M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机
 | 工程验收 | M01–M07 为 `ENGINEERING_PASS`，M06-R 为 `PASS`，M06 工程基线为 `FROZEN`，未关闭 P0/P1 为 0。 |
 | 平台部署 | 原生 Windows 11 实机及部署门禁 PASS，证据归属于源码 `9c27231376fcc32aae39a9b63df6fa9b9b98c4c6`。Python 277/277、Node 2/2、Chromium 11/11 组。 |
 | 正式业务 | 当前 P0-0，`G-1 = BLOCKED`。C0-3、C0-5、C0-6 有既有通过证据。C0-1、C0-2、C0-4 和通道审核待正式复验。 |
-| 后续授权 | M07-A 至 D、M08-A 至 D 已完成隔离工程。PackyCode 合成契约已通过，正式账户审批待完成。G-1-R-B 为 `BLOCKED`，M08-E 及 M09–M15 为 `NOT_STARTED`。 |
+| 基线后续授权 | 基线记录 M07-A 至 D、M08-A 至 D 完成隔离工程，PackyCode 合成契约通过，正式账户审批待完成。G-1-R-B 为 `BLOCKED`，当时 M08-E 及 M09–M15 为 `NOT_STARTED`。 |
 | 十万级查询 | 100K 合成规模热读样本 P95 为 39.073 秒，探索目标 15 秒。资格核验和投影是主要耗时，移交 M13-A。M06-R 复审已关闭。 |
 
 [M06-R 审计](../audits/m06-final-engineering-audit.md) · [实机与回归](../evidence/m06-r/README.md) · [1K/10K/100K 对照](../evidence/m06-r/performance-comparison.md) · [最新开发状态](../../DEVELOPMENT_STATUS.md)
@@ -18,13 +18,13 @@ PDT v1.3.1 Word 正文与本机副本的 SHA-256 一致。ROADMAP-V2 已核对�
 
 ## 双版本准入与治理工作单元
 
-EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用核心研究引擎，分别适用 G-1-PERSONAL 及原 G-1。产品版本与本机、云端部署分别管理。个人门禁当前 NOT_EVALUATED，D 为 BLOCKED，R 为 NOT_STARTED。已交付工程及历史证据继续按原范围保留。商用准入继续按原同批和审批标准。两项已交付治理规划、四项接续及 PackyCode 历史费用补证均独立登记。下面 79 项及完成数 39 沿用。[双版本政策](../architecture/edition-policy.md) · [治理单元与接续](g1-personal-implementation-plan.md) · [费用补证](../evidence/g1-rb-f/README.md)
+EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用核心研究引擎，分别适用 G-1-PERSONAL 及原 G-1。产品版本与本机、云端部署分别管理。个人门禁当前 NOT_EVALUATED，D 为 BLOCKED，R 为 NOT_STARTED。已交付工程及历史证据继续按原范围保留。商用准入继续按原同批和审批标准。两项已交付治理规划、四项接续及 PackyCode 历史费用补证均独立登记。核心工程进度为 40/79。[双版本政策](../architecture/edition-policy.md) · [治理单元与接续](g1-personal-implementation-plan.md) · [费用补证](../evidence/g1-rb-f/README.md)
 
 ## 当前接续顺序
 
 2026-11-27 负责人批准 PRODUCT-REALIGNMENT-V1，优先交付 Personal 的完整研究体验，发现与执行均保留为 P0 核心。采用原三类模型适配器及独立采集连接器，首个正式 Decision 实现用 Jev。继续按实际获准配置、模型及版本运行。此次决策沿用核心 **39/79** 和原分期验收。[正式 ADR](../decisions/product-realignment-v1-owner-approval.md) · [适配器契约](../architecture/ai-model-adapter-contract.md)
 
-1. 按现有授权完成 M09 隔离工程及验收。
+1. M09-A 已完成隔离工程验收。下一获准离线单元为 M09-B，随后推进 M09-C/D。
 2. 实施并验收 M10。确需提前真实调用时，取得该次用途的独立授权，按现有门禁核验必要的技术、安全及使用条件。无法合法放行时沿用隔离工程。
 3. 按单独授权完成 I18N-PRE。
 4. 完成 M11 可独立交付的工程及隔离接口验收。
@@ -39,7 +39,7 @@ EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用�
 
 ## I18N-PRE 国际化架构预留
 
-**I18N-PRE = PLANNED**。M09、M10 按提前约束开发并验收。M10 验收完成后等待负责人单独授权 I18N-PRE，在 M11 启动前完成专项。双方产品版本共用国际化架构，首期规划 `zh-CN` 和 `en-US`。专项独立计入规划记录，核心 79 项和 39 项完成数沿用。[负责人授权及范围](../decisions/i18n-pre-owner-approval.md)
+**I18N-PRE = PLANNED**。M09、M10 按提前约束开发并验收。M10 验收完成后等待负责人单独授权 I18N-PRE，在 M11 启动前完成专项。双方产品版本共用国际化架构，首期规划 `zh-CN` 和 `en-US`。专项独立计入规划记录，核心工程进度为 40/79。[负责人授权及范围](../decisions/i18n-pre-owner-approval.md)
 
 ## 单元计数与分期
 
@@ -47,10 +47,10 @@ EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用�
 |---|---:|---:|---:|---:|---:|
 | 基础及设计 M01–M06 | 30 | 1 | 31 | 31 | 0 |
 | P0-0 正式准入复验 | 0 | 1 | 1 | 0 | 1 |
-| P0 核心研究闭环 | 32 | 1 | 33 | 8 | 25 |
+| P0 核心研究闭环 | 32 | 1 | 33 | 9 | 24 |
 | P1 持续研究 | 6 | 1 | 7 | 0 | 7 |
 | P2 雷达与监控 | 6 | 1 | 7 | 0 | 7 |
-| 核心合计 | 74 | 5 | 79 | 39 | 40 |
+| 核心合计 | 74 | 5 | 79 | 40 | 39 |
 
 | 模块 | 单元数 | 模块 | 单元数 | 模块 | 单元数 |
 |---|---:|---|---:|---|---:|
@@ -60,7 +60,7 @@ EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用�
 | M04 | 5 | M09 | 4 | M14 | 5 |
 | M05 | 5 | M10 | 5 | M15 | 6 |
 
-M01–M05 的字母子编号为对既有成果的回顾性拆分，证据按原模块归档。39 项包括 31 项基础工程及复审、M07-A 至 D、M08-A 至 D。正式 G-1 复验仍待完成。P0 正式验收按原矩阵独立计算。产品化另列 15 项，长期规划合计 94 项。[M07 工程验收](../evidence/m07/README.md) · [M08 工程验收](../evidence/m08-cd/README.md) · [可选产品化](productization-roadmap.md)
+M01–M05 的字母子编号为对既有成果的回顾性拆分，证据按原模块归档。40 项包括 31 项基础工程及复审、M07-A 至 D、M08-A 至 D 和 M09-A。正式 G-1 复验仍待完成。P0 正式验收按原矩阵独立计算。产品化另列 15 项，长期规划合计 94 项。[M07 工程验收](../evidence/m07/README.md) · [M08 工程验收](../evidence/m08-cd/README.md) · [M09-A 工程验收](../evidence/m09-a/README.md) · [可选产品化](productization-roadmap.md)
 
 ## 阶段与模块逻辑树
 
@@ -138,7 +138,7 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 
 ## P0 核心研究闭环
 
-正式工作受适用版本门禁约束，原商用验收沿用 G-1。M07-A 至 D 和 M08-A 至 D 已用隔离数据完成工程验收。M08-E 及 M09–M15 待启动。注册表联合发行需要 M07 的版本契约和 M11 的可信人审共同验收。[M07 证据](../evidence/m07/README.md) · [M08-C/D 证据](../evidence/m08-cd/README.md)
+正式工作受适用版本门禁约束，原商用验收沿用 G-1。M07-A 至 D、M08-A 至 D 和 M09-A 已用隔离数据完成工程验收。M09-B 按离线授权接续，M09-C/D、M08-E 及 M10–M15 待推进。注册表联合发行需要 M07 的版本契约和 M11 的可信人审共同验收。[M07 证据](../evidence/m07/README.md) · [M08-C/D 证据](../evidence/m08-cd/README.md) · [M09-A 证据](../evidence/m09-a/README.md)
 
 | 单元 | 前置 | 职责及交付 | 验收重点 |
 |---|---|---|---|
@@ -150,8 +150,8 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 | M08-B | M08-A、M02 | Tavily 与 Brave 双搜索、URL 发现与许可页面回源 | INGEST、C0-3，区分发现链接、可访问页和真实原话 |
 | M08-C | M08-A/B | 获准论坛、YouTube 适配范围、许可正文通路及备用 Reddit | 依原 INGEST、PDT §4 及 §13.1，至少一条获准论坛、YouTube 或许可页面能回源 |
 | M08-D | M08-B/C、M04/M05 | 采样任务、批次、额度、暂停、重试、跨站去重和 CSV 兜底 | G1/G2/G7、RAW，三批至少 100 条真实语义片段及 30/30 回源抽查 |
-| M09-A | M05-E、M06-C3 | 本地文本预处理、Embedding Adapter 与匿名输入，预留研究语言参数及多语言能力 | DISCOVERY、PRIVACY，向量版本和当前片段资格。合成工程已验证，待获准本地模型复验。[证据](../evidence/m09-a/README.md) |
-| M09-B | M09-A | BERTopic 聚类、主题提取和参数记录 | 可回放模型、预处理和参数 |
+| M09-A | M05-E、M06-C3 | 本地文本预处理、Embedding Adapter 与匿名输入，预留研究语言参数及多语言能力 | **ENGINEERING_PASS**。DISCOVERY、PRIVACY 的本机工程证据涵盖向量版本、当前片段资格与获准模型复验。[证据](../evidence/m09-a/README.md) |
+| M09-B | M09-A | BERTopic 聚类、主题提取和参数记录 | 下一获准离线单元。可回放模型、预处理和参数。 |
 | M09-C | M09-B | 主题运行版本、成员、证据、离线复跑与差异 | G3，主题能下钻到合格原话 |
 | M09-D | M09-C | 聚类视图、候选输出与已知/未知盲测 | DISCOVERY、G3，候选进入人审 |
 | M10-A | M06-C3、M09-A、真实外部调用须有已批准通道 | TopicGPT 四步编排与最小 LLM Adapter，预留多语言 Prompt 和输出语言控制 | MODEL-ADAPTER-01、DISCOVERY、PRIVACY |

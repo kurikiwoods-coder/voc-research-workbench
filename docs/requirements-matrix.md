@@ -2,7 +2,7 @@
 
 ## G-1-PERSONAL 规划及服务端工程映射
 
-商用 G-1 与其历史验收沿用以下原标准，状态 **BLOCKED**。个人 **G-1-PERSONAL = NOT_EVALUATED**。以下条目记录独立个人治理交付，原 C0、PDT、CAT、J 系列和统计口径继续适用。核心工程进度 **39/79**。[负责人批准](decisions/dual-edition-owner-approval.md)
+商用 G-1 与其历史验收沿用以下原标准，状态 **BLOCKED**。个人 **G-1-PERSONAL = NOT_EVALUATED**。以下条目记录独立个人治理交付，原 C0、PDT、CAT、J 系列和统计口径继续适用。核心工程进度 **40/79**。[负责人批准](decisions/dual-edition-owner-approval.md)
 
 | 单元 | 涵盖需求 | 证据及状态 |
 |---|---|---|
@@ -15,7 +15,7 @@
 | G-1-P-D | C0-1 至 C0-6 同批实证，逐次授权、预约、审计及对账 | **BLOCKED**。C0-1 至 C0-6 正式状态均为 BLOCKED，C0-5、C0-6 保留既有离线结果，待当前批次复核。正式历史证据纳入、真实请求及正式研究分母均为 0。[六项矩阵与复验证据](evidence/g1-p-d/README.md) |
 | G-1-P-D-E | D 的受限执行工程补齐，Personal v10、逐操作授权、多维预算、回执与对账、故障恢复及六项关联 | **ENGINEERING_PASS**。隔离库 Personal v9→v10、账本、合成执行及恢复回放通过，原生 Windows 11 和交付 CI 已验。Business v9、诊断及契约 v1。实际部署库未迁移，真实研究请求 0。[迁移批准](decisions/g1-p-d-e-v10-owner-approval.md) · [工程证据](evidence/g1-p-d/engineering.md) |
 | G-1-P-D-L | 最多四个唯一真实操作槽位及同批归档、对账、恢复与证据判定 | 历史 D-L 隔离 v11 与 Windows 10 工程回归通过。Windows 11 定向复验与独立验收工作区部署准备通过。历史严格模式真实执行 **BLOCKED**，当时两片保留 `LIVE_MODEL_HARD_BUDGET_UNVERIFIED`，正式矩阵 0/6，实际请求 0。[工程证据](evidence/g1-p-d/d-l-engineering.md) · [Windows 11 证据](evidence/g1-p-d/d-l-windows11-deployment.md) · [原授权草案](evidence/g1-p-d/d-l-authorization-draft.md) |
-| G-1-P-R | 全部同批证据完成后的独立准入复审 | **NOT_STARTED**。M09-A 已获离线工程授权，个人版正式研究继续依个人准入。商用 G-1 另行验收。[个人最低准入政策](architecture/personal-research-gate.md) |
+| G-1-P-R | 全部同批证据完成后的独立准入复审 | **NOT_STARTED**。M09-A 离线工程已验收，M09-B 按离线授权接续。个人版正式研究继续依个人准入。商用 G-1 另行验收。[个人最低准入政策](architecture/personal-research-gate.md) |
 
 ### Personal V2 在 G-1-P-D 的同批证据
 
@@ -282,15 +282,17 @@ M06-C2 = **ENGINEERING_PASS**。实现提交 `965a4b8` 的[三平台 CI](https:/
 
 | 编号 | 规划归属 | 交付及验收映射 | 状态 |
 |---|---|---|---|
-| MODEL-ADAPTER-01 | P0 接口预留及所属阶段实施，M09-A、M10-A、M12-A/B | Decision、LLM、Embedding 分型。现有 Jev 请求及历史回执兼容，使用隔离适配器证明扩展边界。正式 Jev 依 J-1/4/9、G4。[接口](architecture/ai-model-adapter-contract.md) | M09-A Embedding 已实现并通过合成工程验证，实际模型待复验。其余分型按原阶段执行。[证据](evidence/m09-a/README.md) |
+| MODEL-ADAPTER-01 | P0 接口预留及所属阶段实施，M09-A、M10-A、M12-A/B | Decision、LLM、Embedding 分型。现有 Jev 请求及历史回执兼容，使用隔离适配器证明扩展边界。正式 Jev 依 J-1/4/9、G4。[接口](architecture/ai-model-adapter-contract.md) | M09-A Embedding 为 **ENGINEERING_PASS**。合成回归及获准固定 MiniLM 权重本机 CPU 复验通过。其余分型按原阶段执行。[证据](evidence/m09-a/README.md) |
 | MODEL-CAPABILITY-01 | P0 首套真实验证，M12-A/B/E | 记录固定模型、逐题字段、完整概率、限额、实际用量及供应商重放能力证据。缺项保持未知或 schema_gap。继承 C0-1/2/4、J-4/11/12 | PLANNED |
-| MODEL-VERSION-01 | P0 版本追溯，M07、M09-A、M12-A/C/D | 按精确配置、题组、注册表、索引、回执和校准版回查，升级独立审批，旧版本受控保留。对应 J-9/14 和 M06-B-F.1。[生命周期](architecture/model-lifecycle-and-calibration.md) | PLANNED |
+| MODEL-VERSION-01 | P0 版本追溯，M07、M09-A、M12-A/C/D | 按精确配置、题组、注册表、索引、回执和校准版回查，升级独立审批，旧版本受控保留。对应 J-9/14 和 M06-B-F.1。[生命周期](architecture/model-lifecycle-and-calibration.md) | M09-A 已验证模型修订与资产摘要、运行库、预处理、输入摘要、注册表及精确证据版本的本机追溯。后续模型按原阶段验收。[M09-A 证据](evidence/m09-a/README.md) |
 | MODEL-CALIBRATION-01 | P0 首套及 P1 滚动，M12-D/F | 100–200 条金标准、中文子集、独立盲测、升级后重新校准。继承 J-2/3/14、G4 和 P1-GOLD。[评估](architecture/model-evaluation-protocol.md) | PLANNED |
-| MODEL-SECURITY-01 | P0 单模型和各阶段新增通道 | 输入最小化、当前证据资格、逐通道审查、M02 凭证、受控端点与历史重验。继承 C0-5、G7、PRIVACY、TC-08 | PLANNED |
+| MODEL-SECURITY-01 | P0 单模型和各阶段新增通道 | 输入最小化、当前证据资格、逐通道审查、M02 凭证、受控端点与历史重验。继承 C0-5、G7、PRIVACY、TC-08 | M09-A 本机派生文本输入、当前资格重验及禁外发通过离线工程验证。新增通道继续按原阶段审查。[M09-A 证据](evidence/m09-a/README.md) |
 | MODEL-USAGE-01 | P0 复用 Jev 账本，M02-D、M12-E；扩展单位后续接入 | 用量归属、分片预算、同键防重及未知余额和扣费。继承 C0-4、J-7/8/11、G5、TC-01～TC-08 | PLANNED |
 | MODEL-COMPARE-01 | 可选，P1 或后续专项 | 获准模型同样本独立运行，报告 F1、未知拒绝、校准、使用成本与人审负担。保留独立评估域。 | OPTIONAL |
 | MODEL-ROUTING-01 | P0 单模型，MODE-2 至 4 后续授权 | 单次执行锁定模型。可选对照、主辅复核和备用模式使用独立运行及授权，继承 J-9 和 G-1。 | PLANNED / OPTIONAL |
 | I18N-PRE | 独立专项，M10 验收后单独授权，M11 启动前完成。M09、M10 各自遵守提前约束 | 双版本共用国际化架构。核对语言参数、原话与衍生文本溯源、跨语言合并人工复核和界面切换下统计、权限、稳定 ID 一致性。沿用 M06、G-1 和原模型校准验收。[负责人批准](decisions/i18n-pre-owner-approval.md) | PLANNED |
+
+M09-A 为 DISCOVERY 提供版本化向量与稳定证据行映射，为 PRIVACY 验证本机输入脱敏、现行资格及禁外发。合成与实际模型实测的真实研究 API、非回环网络尝试及正式研究分母均为 0。DISCOVERY 的聚类、主题复跑、盲测及正式验收依后续单元和原标准推进。[M09-A 工程证据](evidence/m09-a/README.md)
 
 ## M03 独立预开发工程映射
 
