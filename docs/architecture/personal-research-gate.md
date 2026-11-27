@@ -19,9 +19,9 @@ C0-5 与 C0-6 按原规范使用隔离夹具并保留可重复检查的结果，
 
 ## 暂停与恢复
 
-负责人于 2026-11-27 暂停 G-1 的后续实证。**G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED，G-1-PERSONAL = NOT_EVALUATED**。保留现有 Personal V2 工程、草案及历史证据。PackyCode 当前账户条款问题仅约束该通道，本轮暂停该问题的调查。M11 完成后，待 M12-A 单独授权才做最小修正。M12 真实研究及校准前，恢复 D 同批六项及 R 独立复审。[当前接续顺序](../planning/ROADMAP-V2.md#当前接续顺序)
+负责人通过 PRODUCT-REALIGNMENT-V1 保留 G-1 主动治理及后续实证的暂停状态。**G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED，G-1-PERSONAL = NOT_EVALUATED**。Personal V2 工程、草案及历史证据照常保留。PackyCode 账户条款待决事项仅约束该通道，额外专项调查停止。M11 独立工程就绪后，M12-A 获单独授权才做最小修正。M12 的真实研究及校准前恢复 D 同批六项与 R 独立复审。[正式 ADR](../decisions/product-realignment-v1-owner-approval.md#personal-最小准入修正) · [当前接续顺序](../planning/ROADMAP-V2.md#当前接续顺序)
 
-未来所选 Personal 通道按实际账户和用途核对 API 权限、模型身份及能力、输出契约、真实用量及费用、数据保护和预算。企业级供应商审计仅在具体条款、法律或安全要求使其成为必要条件时适用。明确禁止当前用途的通道继续关闭。凭证更新后的绑定与变动项核验依 [适配器契约](ai-model-adapter-contract.md#m12-a-最小接入范围)处理，当前运行代码及审批规则维持原样。Business Edition 沿用原严格治理。[商用原门禁](business-research-gate.md)
+未来所选 Personal 通道按实际账户和用途核对 API 权限、模型身份及能力、输出契约、真实用量及费用、数据保护和预算。企业级深度供应商审计及重复行政审批不适用默认流程。具体条款、法律或安全要求有必要时仍须核验。明确禁止当前用途的通道继续关闭。凭证更新后的绑定与变动项核验依 [适配器契约](ai-model-adapter-contract.md#m12-a-最小接入范围)处理，当前运行代码及审批规则维持原样。Business Edition 沿用原严格治理。[商用原门禁](business-research-gate.md)
 
 ## Personal V2 批次治理
 

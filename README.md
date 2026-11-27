@@ -1,16 +1,16 @@
 # VOC 研究工作台
 
-> **当前处于 P0-0，G-1 为 BLOCKED。** Tavily 认证搜索及原帖回源已通过 C0-3。Jev 固定模型、返回契约和真实用量等待供应商留存审查。[Tavily 实测](docs/evidence/p0-0/tavily-live/README.md) · [API 接入实测](docs/evidence/p0-0/api-setup/README.md)
+> **当前工程进度为 39/79，M09 隔离开发获准。** Personal 正式门禁为 `NOT_EVALUATED`，Business G-1 为 `BLOCKED`。本机工作台可运行，正式研究须通过适用的门禁。[当前工程状态](DEVELOPMENT_STATUS.md) · [研究优先产品决策](docs/decisions/product-realignment-v1-owner-approval.md)
 
 [完整路线图](docs/planning/ROADMAP-V2.md) · [主模块](MODULE_ROADMAP.md) · [开发与验收状态](DEVELOPMENT_STATUS.md) · [开发交接](HANDOVER.md)
 
 ## 目的
 
-VOC 工作台用于研究任意产品、服务或跨品类用户需求。一个研究项目可选择多个品类，也可以只指定研究问题。原话、用户任务和意图分别建模。营养秤是历史试点之一。
+VOC 工作台优先服务个人研究者，支持任意产品、服务或跨品类课题。研究从可核验的真实用户原话出发，经未知意图发现、人工审核、智能编码和定量洞察，形成验证问卷并回流结果。发现与执行同属 P0 核心价值。营养秤是历史试点之一。
 
 ## 产品版本与准入
 
-规划中的 **Personal Edition** 提供完整 M01–M15 研究功能。**Business Edition** 共用研究引擎和统计口径，执行企业治理及原商用准入。产品版本独立于 LOCAL/CLOUD 部署，当前工作台仍以本机回环运行。个人门禁 **G-1-PERSONAL = NOT_EVALUATED**，商用 **G-1 = BLOCKED**。两版的逐源许可、模型实测与数据保护按各自获准用途核对。[版本与职责](docs/architecture/edition-policy.md) · [部署矩阵](docs/architecture/edition-deployment-matrix.md) · [后续实施](docs/planning/g1-personal-implementation-plan.md)
+**Personal Edition** 与 **Business Edition** 规划共享完整 M01–M15、研究引擎、数据及模型契约、证据、统计与质量标准。当前先完成 Personal 的完整研究体验，Business 保留已交付能力和原严格治理，企业扩展随实际需要推进。产品版本独立于 LOCAL/CLOUD 部署，当前工作台以本机回环运行。两版按各自授权核对来源、模型和数据保护。[版本与职责](docs/architecture/edition-policy.md) · [部署矩阵](docs/architecture/edition-deployment-matrix.md) · [后续实施](docs/planning/g1-personal-implementation-plan.md)
 
 ## 启动当前版本
 
@@ -25,7 +25,7 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-
 
 首次启动可跟随向导，也可以从「设置 → API 接入」继续。选择 TypeSafe 或 JevModel，配置 Tavily 或 Brave 中的至少一家。粘贴密钥后点「保存密钥」，立即生效。导入所选 Jev 通道的留存审查，再逐服务点「检查连接」。[用户操作说明](docs/connectivity.md#从工作台配置-api) · [供应商注册与取钥](docs/connectivity.md#注册与创建密钥)
 
-点「运行正式验收」执行原有六项检查。可在「运行记录」恢复批次或导出脱敏证据。YouTube 和 Google Forms 当前提供接入资料，分别等待 P0 和 P1。[阶段验收记录](docs/evidence/p0-0/README.md) · [需求与冲突矩阵](docs/requirements-matrix.md)
+「运行正式验收」保留原六项入口，真实取证须在相应阶段获得独立授权。「运行记录」按权限支持批次恢复和脱敏证据导出。YouTube 和 Google Forms 当前提供接入资料，分别等待 P0 和 P1。[阶段验收记录](docs/evidence/p0-0/README.md) · [需求与冲突矩阵](docs/requirements-matrix.md)
 
 ## 本机研究项目
 
@@ -49,12 +49,14 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-
 
 ## 六层架构
 
+下表描述目标能力。已交付功能及正式研究的可用状态见开发记录。[开发与验收状态](DEVELOPMENT_STATUS.md)
+
 | 层 | 职责 | 关键组件 | 输入 → 输出 |
 |---|---|---|---|
 | L1 采集层 Ingestion | 每个来源一个接入器，互不影响；任一来源失效不阻塞 CSV 主路径 | Tavily + Brave 双搜索发现、AI 查询规划器、YouTube Data API、论坛适配器、Reddit 备用适配器（Dialog MCP / Arctic Shift 兜底）、CSV 人工导入 | 研究问题 → URL 候选 → 经许可的原文批次 |
 | L2 原始层 Raw Store | 原文原样落盘，永不覆盖；可重跑 | 原始语料库、采样日志、去重组、许可状态 | 批次 → 可重跑的原始语料库 |
 | L3 发现层 Discovery · P0-1 | 从无标签语料提出清单外新意图候选 | BERTopic 聚类 + TopicGPT 四步（generate → refine → assign with quote → correct）、开放编码、IntentGPT 残差机制（已知意图先 KNN/Jev 召回分掉，残差进候选池）、人工确认 | 原始语料 → 候选意图 → 意图注册表新版本 |
-| L4 执行层 Execution · P0-2（Jev，强制） | 意图给定后规模化编码 | Jev 客户端（`jev-1.14.0`，Choice/Score/Noul，None + Noul 守门）、金标准校准、Token Center（额度条、X-Tokens-Remaining 同步、预算闸门、购买跳转）、低置信复核队列 | 语料 + 注册表 → 带完整概率分布的编码结果 |
+| L4 执行层 Execution · P0-2（Jev 首版） | 意图给定后规模化编码 | Jev 客户端（`jev-1.14.0`，Choice/Score/Noul，None + Noul 守门）、金标准校准、Token Center（额度条、X-Tokens-Remaining 同步、预算闸门、购买跳转）、低置信复核队列 | 语料 + 注册表 → 带完整概率分布的编码结果 |
 | L5 仪表盘层 Dashboard | 情感 / 问题 / 趋势 / 推荐四模块集中一页 | 意图 × 情感矩阵、问题 Top 榜、同口径周趋势、智能推荐（触发条件 + 证据 + 动作 + 验证方法）、待审队列视图、采样漏斗 | 编码结果 → 洞察页面与推荐清单 |
 | L6 输出层 Outputs | 问卷生成器 + 洞察报告 + 回流 | 问卷生成器（发现类型 → 题型映射，ODI 排序，模拟预检 + 2–3 人真人试填）、Google Forms 导出、洞察报告（痛点/机会/风险/行动）、回收回灌 | 发现与洞察 → 问卷/报告 → 回收数据回流到 L2 |
 
@@ -68,14 +70,14 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-
 4. Jev 校准：100–200 条人工金标准，中文单独校准，通过 J-1～J-14 后放量。
 5. 问卷生成器 v1：按发现类型映射出题，模拟预检 → 2–3 人真人试填 → 导出 Google Forms。
 
-## Jev 强制项
+## Jev 首版正式验证
 
 - **模型锁定 `jev-1.14.0`**（2026-10-14），禁止 `jev-latest`；换任何版本必须重跑 100–200 条金标准并重定阈值。
 - **只用 Choice / Score / Noul 三种**；Jev 1.14 新增的 Box（图片框选）明确排除出 P0。
 - **每个 Choice 必须配 None 选项**（「以上都不是」）**+ 一道 Noul 守门**「是否属于现有意图清单」；答否即进发现队列，即使 Choice 第一名概率很高。依据：独立评测（EurekaLeo，2026-10-07 截止，101 项核心研究）显示，即使给了明确的 None 选项，Jev 也只在 7% 的缺失正确答案菜单上拒绝作答。
 - **中文单独校准**：中文与英文金标准分开建、分开报一致率；不要用英文翻译后跑分代替中文原文跑分（Chinese-Jev，arXiv:2609.36965）。
 - **CX 内部客诉绝不进 Jev**：Jev 走 TypeSafe 托管 API，同样算第三方 API；CX 只做本地/人工编码。TypeSafe 由组织管理员在控制台启用并留存 ZDR 凭据。独立第三方服务单独审查。
-- **成本**：官方价输入 $0.042/百万 tokens、输出免费；每条约 300 输入 tokens 时，1,000 条跑一整套问题约 $0.013。P0 真正成本是人工标注与复核。
+- **成本**按实际通道和请求记录实报用量、费率版及实际费用。估算单列，余额未同步时明确标注。
 - 详见 [PDT v1.3.1](docs/pdt/PDT-v1.3.1.docx) §7 与 [docs/checks/jev-pdt-check-2026-11-23.md](docs/checks/jev-pdt-check-2026-11-23.md)。
 
 ## 数据源与口径
@@ -84,7 +86,8 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-
 |---|---|---|
 | Tavily/Brave 搜索发现 + 许可论坛/YouTube 原话 | 条件 A（原话可核验） | 搜索摘要是线索不是原话；每个站点/时间窗分别报 n |
 | Reddit（备用适配器） | 条件 A；来源内独立报告 | 只信快照：RSS 自 2026-11-13 起停止支持；2027-01-12 未注册应用被撤访问权；2027-03 公开 Data API 全面关闭 |
-| 研究期刊与公开调查（IFIC / CDC / KFF） | B | 人群层面证据，不直接证明本品类用户占比 |
+| 讨论声量 | B，趋势信号 | 同来源、同口径比时间变化，各平台分别报告 |
+| 研究期刊与公开调查（IFIC / CDC / KFF） | B，背景与对照 | 记录样本与年份，不能直接推断本品类用户占比 |
 | GitHub 开源生态 | C | 只作领先用户信号，不进漏斗、不推规模与付费意愿 |
 | Amazon 评价 | 初步 | 只走四条窄路（自有后台导出 / 公开页人工采样 / 只取聚合数 / Shulex API）；只用 US verified 评价作产品体验依据 |
 | 内部客诉（CX） | C，只做痛点排序 | 原始表绝不进仓库、不喂任何第三方工具 |
@@ -113,9 +116,9 @@ python -m uvicorn src.dashboard.app:app --host 127.0.0.1 --port 8765 --no-proxy-
 
 ## 开发路线与模型规划
 
-M01–M06 已完成工程验收，M06-R 工程基线已冻结。核心路线图共 79 项，工程或复审完成范围为 31 项。G-1-R 等待单独授权，其后按依赖接续 M07–M15。P2 后另列 15 项可选产品化。[实施顺序及版本目标](docs/planning/development-sequence.md) · [产品化路线](docs/planning/productization-roadmap.md)
+核心路线图共 79 项，工程或复审已完成 **39 项**，包括 M01–M06、M06-R、M07-A 至 D 和 M08-A 至 D。接续 M09、M10、I18N-PRE 和 M11 独立工程。G-1 Personal 与 M02 的最小增量在 M12-A 单独授权后处理。[当前接续顺序](docs/planning/ROADMAP-V2.md#当前接续顺序) · [返工范围](docs/decisions/product-realignment-v1-owner-approval.md#返工范围冻结)
 
-模型治理规划分别接入决策、生成和向量能力。M12 以锁定的 `jev-1.14.0` 作为首个正式决策模型，后续候选须有自己的审批、真实接口证据及校准。通用适配接口处于规划状态。[多模型接口图](docs/architecture/ai-model-adapter-contract.md#接口树)
+API & AI Model Center 规划按用户配置选择获准的供应商与模型，复用 M09 Embedding、M10 LLM 和 M12 Decision 适配器及独立采集连接器。M12 首版正式验证锁定 `jev-1.14.0`。其他模型与通道按实际能力、安全和研究契约验证。研究工作区以项目流程为主，API、用量及必要治理安排在设置区。[模型契约](docs/architecture/ai-model-adapter-contract.md) · [交互方向](docs/decisions/product-realignment-v1-owner-approval.md#研究工作区交互原则)
 
 ## 红线
 

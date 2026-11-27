@@ -51,7 +51,9 @@ flowchart TD
 
 ## M12-A 最小接入范围
 
-M11 验收完成并取得 M12-A 单独授权后，检查并移除 Personal 真实执行路径对 PackyCode、固定账户和固定通道的不必要绑定。兼容 Jev 协议的通道共用 JevAdapter，通过受控配置切换。遇到不同协议或模型能力差异时沿用适配器契约扩展。对 Choice、Score、Noul 及概率语义单独核验。缺失概率保留为缺失，模型自报置信度不充当概率证据。Microsoft Decision 等继续作为候选。[接续顺序](../planning/ROADMAP-V2.md#当前接续顺序)
+[PRODUCT-REALIGNMENT-V1](../decisions/product-realignment-v1-owner-approval.md) 确认 BYOK 与模型可扩展性。按已支持的能力选择供应商和模型，研究引擎、三层数据与证据标准由两版共用。Jev 原契约仍是第一套正式 Decision 验证，Microsoft Decision 等候选接入另行验证。
+
+M11 可独立完成的工程单元验收后，取得 M12-A 单独授权再检查并移除 Personal 真实执行路径对 PackyCode、固定账户和固定通道的不必要绑定。兼容 Jev 协议的通道共用 JevAdapter，通过受控配置切换。遇到不同协议或模型能力差异时沿用适配器契约扩展。对 Choice、Score、Noul 及概率语义单独核验。缺失概率保留为缺失，模型自报置信度不充当概率证据。Microsoft Decision 等继续作为候选。[接续顺序](../planning/ROADMAP-V2.md#当前接续顺序)
 
 复用 M02 的配置中心和安全凭证库。按实际缺口补齐 Provider ID、Model ID、获准 Base URL、API Key 引用及凭证版本、Adapter ID 及版本、接口能力和连接状态、费率与计费单位、可获取的账户余额、项目模型配置及版本。对同一兼容通道内的密钥更新、轮换及续费，重验当前凭证绑定及受影响项，免于重复完整 G-1。更换供应商、端点、模型或协议时按实际影响重新验证技术、安全、使用权限及研究能力。适用的 C0-1 至 C0-6、J-14 和金标准继续有效，首次正式验收仍需原同批证据。[Personal 准入](personal-research-gate.md#暂停与恢复)
 

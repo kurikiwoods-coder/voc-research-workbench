@@ -1,12 +1,12 @@
 # 开发交接
 
-## API 架构确认与当前接续
+## 研究优先策略与当前接续
 
-2026-11-27 负责人确认复用现有 API & AI Model Center、三类模型适配器和独立采集连接器。保留 Jev 作为首个正式 Decision 实现，每次正式运行固定实际模型与配置版本。支持已核验的官方及兼容 API，预留本地模型和 Microsoft Decision 等候选。数据关系和统计口径继续共用。[适配器契约](docs/architecture/ai-model-adapter-contract.md)
+2026-11-27 负责人批准 PRODUCT-REALIGNMENT-V1。先交付 Personal 的完整研究闭环，Business 保留共享核心和原治理标准。API & AI Model Center 复用三类模型适配器与独立采集连接器，首版 Decision 验证仍用 Jev。现有 M09 工程授权、数据契约与证据口径继续适用。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [适配器契约](docs/architecture/ai-model-adapter-contract.md)
 
-按现有隔离工程授权继续 M09，完成后依次实施并验收 M10、按单独授权完成 I18N-PRE、实施并验收 M11。M11 之后，M12-A 获得单独授权时并入 G-1 最小修正和必要的 M02 增量。M12 正式真实研究和模型校准前，先恢复 G-1-P-D 同批验收及 G-1-P-R 独立复审。随后完成 M12 余项，按原阶段推进 M13–M15。若 M10 确需提前调用外部模型，仅按现有门禁核准该次调用所需的技术、安全与使用条件。[当前开发顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)
+继续 M09 隔离工程，之后推进 M10、单独授权的 I18N-PRE 和可独立验收的 M11 单元。M11 先用隔离夹具验证编码复核接口。M12-A 单独授权时实施 G-1 Personal 与 M02 最小增量，在正式真实研究和模型校准前恢复 G-1-P-D/R。完成 M12 校准及余项后执行 M11/M12 原定联调，再按原分期接续。M10 如确需提前调用外部模型，须取得该用途的独立授权并遵守现有门禁。[当前开发顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)
 
-G-1 暂停期间，既有工程和验收证据继续有效于其原范围。PackyCode 账户条款问题留在原通道记录。Personal 正式门禁为 **NOT_EVALUATED**，Business 正式门禁为 **BLOCKED**。以下四槽草案保留供历史追溯。现行隔离工程及正式研究的授权边界以本节和个人门禁政策为准。[个人门禁](docs/architecture/personal-research-gate.md) · [当前仓库状态](DEVELOPMENT_STATUS.md#api-架构确认与-g-1-暂停)
+G-1 暂停期间，既有工程和验收证据继续有效于其原范围。PackyCode 账户条款问题留在原通道记录。Personal 正式门禁为 **NOT_EVALUATED**，Business 正式门禁为 **BLOCKED**。以下四槽草案保留供历史追溯。现行隔离工程及正式研究的授权边界以本节和个人门禁政策为准。[个人门禁](docs/architecture/personal-research-gate.md) · [当前仓库状态](DEVELOPMENT_STATUS.md#product-realignment-v1-与当前工程状态)
 
 ## G-1-PERSONAL V2 既有工程与草案
 

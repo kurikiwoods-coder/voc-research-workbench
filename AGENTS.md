@@ -24,7 +24,7 @@
 ## 双版本与准入
 
 - 定义及实现同时遵守 [EDITION-V1](docs/architecture/edition-policy.md)、[个人门禁](docs/architecture/personal-research-gate.md)和[商用 G-1](docs/architecture/business-research-gate.md)。版本与部署分别从可信服务端解析。权限由当前受信身份、项目、证据和作用范围核定。原商用阻断、C0 六项、M06 五项及统计契约保留。
-- 个人版按 G-1-P-B、C、D、R 逐阶段授权。M09 等个人准入及单独授权。未知的必要证据、过期、撤销、轮换或超预算时按当前职责失败关闭。日常工程测试使用合成输入、隔离库与模拟传输。
+- 按 [研究优先 ADR](docs/decisions/product-realignment-v1-owner-approval.md) 继续已获授权的 M09 等隔离工程。个人正式准入的 D/R 与 M12-A 增量各待独立授权。未知必要证据、过期、撤销、轮换或超预算时按现有执行边界失败关闭。日常工程测试使用合成输入、隔离库与模拟传输。
 - 个人版 V2 的治理与授权以 [个人准入政策](docs/architecture/personal-research-gate.md)为准。个人版与商用版共用 C0-1 至 C0-6 的技术与研究质量标准。V2 允许获准账户的四槽批次授权和 SystemOne 专用预算控制。
 - 费用只入库获准脱敏记录。本机原始账单、真实密钥、DPAPI 和 SQLite 的核验分别记录实际证据。阶段实施前读 [交接与测试](docs/planning/g1-personal-implementation-plan.md)。
 

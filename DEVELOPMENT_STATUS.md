@@ -1,5 +1,11 @@
 # VOC Research Workbench 开发状态
 
+## PRODUCT-REALIGNMENT-V1 与当前工程状态
+
+2026-11-27 负责人决策 **APPROVED**。从本机、远端及草稿 PR #2 一致的 `da045c9f76b095f762efbf42c84190de44b20472` 接续，工作区干净。Personal 工作库 SQLite v11，Business v9，M06 `FROZEN`。核心进度 **39/79**。可见分支仍登记 M09 为 `NOT_STARTED`，已有消费契约及 C0-6 冒烟验证，尚未见已提交的 M09 工程交付。M09 原有隔离开发授权有效。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [当前接续](docs/planning/ROADMAP-V2.md#当前接续顺序)
+
+当前 **G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED，G-1-PERSONAL = NOT_EVALUATED，Business G-1 = BLOCKED**。Product Realignment 仅登记方向和返工边界。G-1 Personal 与 M02 等 M12-A 独立授权，M11 接口先在隔离环境验收，真实联调等 M12 校准与余项完成。本轮真实研究调用、供应商探针、余额查询、真实研究 Token 和费用均为 0。[返工范围](docs/decisions/product-realignment-v1-owner-approval.md#返工范围冻结)
+
 ## API 架构确认与 G-1 暂停
 
 2026-11-27 核对草稿 PR #2 的开发分支 `codex/g1-personal-phase-1`，文档接续基线为 `bee8287359c965286b1fd38005ef9d1852bad3d8`，对应三项 CI 已通过。现行 Personal 工作库为 SQLite v11，Business 工作库为 v9，M06 冻结。核心进度 **39/79**。核对时仓库仍登记 M09–M15 为 **NOT_STARTED**，未发现已提交的 M09 工程成果。M09 的既有隔离开发授权继续有效。I18N-PRE 为 **PLANNED**。[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45932760024) · [当前开发顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)

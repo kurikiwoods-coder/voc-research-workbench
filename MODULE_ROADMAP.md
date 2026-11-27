@@ -8,7 +8,7 @@
 
 ## 当前模块
 
-2026-11-26 的 M08-V 已在验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 完成 M01–M08 Windows 11 实机与部署复验，两道门禁均为 **PASS**。M08 A–D P0 工程通过，正式业务待验。M09 的工程接口已备，个人版先完成自身准入，再单独授权。[实机验收证据](docs/evidence/m08-v/README.md)
+2026-11-26 的 M08-V 已在验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 完成 M01–M08 Windows 11 实机与部署复验，两道门禁均为 **PASS**。M08 A–D P0 工程通过，正式业务待验。M09 的工程接口已备，现有隔离授权继续有效。工程范围与正式准入按研究优先 ADR 接续。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [实机验收证据](docs/evidence/m08-v/README.md)
 
 M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，原始 CSV 已补证两笔实际总扣费 $0.000238，个人 Windows 10 账本待独立复核。[费用证据](docs/evidence/g1-rb-f/README.md)G-1-R-B 为 **BLOCKED**。M08 的 P0 A–D 工程通过，正式业务 **PENDING**，P1 的 M08-E 及 M09–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-C/D 证据](docs/evidence/m08-cd/README.md)
 
@@ -160,7 +160,7 @@ EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B 和 G-1-P-C 为 
 |---|---|
 | PDT 与矩阵编号 | 专案 §5 第三层、PDT §8；DISCOVERY、G3、CAT-4（协作） |
 | 模块职责 | 在合格样本上提取主题、记录聚类和候选复查所需的证据。 |
-| 前置依赖 | M05 可追溯语料、M06 范围与分类、M07 注册表，M11 提供人审。个人版需 G-1-PERSONAL 准入和独立开发授权。 |
+| 前置依赖 | M05 可追溯语料、M06 范围与分类、M07 注册表，M11 提供人审。隔离工程沿用现有授权，正式研究须满足适用门禁。 |
 | 国际化提前约束 | 预留原始语料、分析和输出语言参数及 Embedding Adapter 多语言模型能力。[负责人批准](docs/decisions/i18n-pre-owner-approval.md) |
 | 工程开发 | 仅有发现层说明及通用向量召回冒烟，无 BERTopic 实现。 |
 | 工程测试 | 未测试 BERTopic。 |
@@ -200,7 +200,7 @@ EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B 和 G-1-P-C 为 
 |---|---|
 | PDT 与矩阵编号 | §6.5、§8.1/8.2；CAT-4/5/9、J-5、G3、P1-GOLD |
 | 模块职责 | 人工确认、驳回、合并或拆分候选，联审任务大类及低置信条目。 |
-| 前置依赖 | I18N-PRE 完成、M06 关系校验、M07 版本、M09/M10 候选。低置信复核还依赖 M12。 |
+| 前置依赖 | I18N-PRE 完成、M06 关系校验、M07 版本、M09/M10 候选。M12 复核接口先按契约隔离验收，真实联调在 M12 校准及余项完成后。 |
 | 工程开发 | 无正式候选队列或联审事务。 |
 | 工程测试 | 未测试。 |
 | 正式业务验收 | 待验收。 |
@@ -217,7 +217,7 @@ EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B 和 G-1-P-C 为 
 |---|---|
 | PDT 与矩阵编号 | §7、§13；J-1～J-14、G4/G5、D2/D3/D5、P1-GOLD；C0-1/2/4（前置） |
 | 模块职责 | 提供通用决策接口和模型版本记录。首套正式实施锁定 `jev-1.14.0`，继承 Choice、Score、Noul、8+3 分片、None 守门及全部原 Jev 验收。[模型接口](docs/architecture/ai-model-adapter-contract.md) |
-| 前置依赖 | 适用版本门禁（商用原 G-1、个人 G-1-PERSONAL）、M02 凭证审查、M05 语料、M06/M07 已确认注册表及 M11 复核流程。 |
+| 前置依赖 | M12-A 等 M11 独立工程就绪及单独授权。M12 正式研究使用适用版本门禁、M02 凭证审查、M05 语料、M06/M07 已确认注册表及 M11 复核流程。 |
 | 工程开发 | P0-0 真实请求路径和固定字段校验已有，P0 编码与金标准未实现。 |
 | 工程测试 | 分片、防重和缺概率有工程夹具，正式金标准未测试。 |
 | 正式业务验收 | C0-1/2/4 BLOCKED；J-1～J-14、G4 不作通过。 |
