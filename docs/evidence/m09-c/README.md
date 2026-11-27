@@ -20,6 +20,7 @@
 |---|---|---|
 | Windows 10 build 19045，Python 3.12 | M09-C、M09-A/B 及 M05–M08 直接回归 | 101/101，41.918 秒，非回环 DNS 和 socket 尝试 0 |
 | 同上 | 新增离线用例 | M09-C 集成 12/12，原始诊断与输入观测新增 3/3 |
+| Windows 10 build 19045，普通用户目录隔离回归 | 全套 Python | 613/613，通过，跳过 11 项可选真实模型或非 Windows 路径，非回环 DNS 和 socket 尝试 0；DPAPI 实际用户路径可用 |
 | 同上 | Node 与空库冷启动 | 2/2 与 3/3 |
 | 原生 Windows 11 | M09-C 固定模型、数据库重启、离线重算和逐条原话回查 | NOT_TESTED，待在目标机器复验 |
 | GitHub PR #2 | Ubuntu、Windows Server 2022、Chromium | 查阅 M09-C 提交对应的 PR 检查 |
