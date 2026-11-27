@@ -20,10 +20,12 @@
 |---|---|---|
 | Windows 10 build 19045，Python 3.12 | M09-C、M09-A/B 及 M05–M08 直接回归 | 101/101，41.918 秒，非回环 DNS 和 socket 尝试 0 |
 | 同上 | 新增离线用例 | M09-C 集成 12/12，原始诊断与输入观测新增 3/3 |
-| Windows 10 build 19045，普通用户目录隔离回归 | 全套 Python | 613/613，通过，跳过 11 项可选真实模型或非 Windows 路径，非回环 DNS 和 socket 尝试 0；DPAPI 实际用户路径可用 |
+| Windows 10 build 19045，普通用户目录隔离回归 | 全套 Python | 共 613 项，602 通过、0 失败或错误、11 跳过。152.364 秒，非回环 DNS 和 socket 尝试 0 |
 | 同上 | Node 与空库冷启动 | 2/2 与 3/3 |
 | 原生 Windows 11 | M09-C 固定模型、数据库重启、离线重算和逐条原话回查 | NOT_TESTED，待在目标机器复验 |
-| GitHub PR #2 | Ubuntu、Windows Server 2022、Chromium | 查阅 M09-C 提交对应的 PR 检查 |
+| GitHub PR #2 | Ubuntu、Windows Server 2022、Chromium | 代码提交 cc07435 三项通过。[Actions](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/46012213223) |
+
+沙箱全量回归记录 8 个失败和 67 个错误条目，涉及原有凭证、DPAPI 与用户目录边界。清除供应商环境变量并在普通 Windows 用户目录复测后，全部适用用例通过。11 项跳过包括 10 项需要单独提供固定模型运行时的用例及 1 项非 Windows 平台用例。
 
 定向用例覆盖空输入、全离群、成员与证据完整性、撤销、项目和范围隔离、变更比较、原库不变、失败恢复、SQLite 一致性备份和触发器。实测过程使用合成证据，真实研究 API 调用为 0。[集成测试](../../../tests/test_m09_persistence.py) · [固定模型验收用例](../../../tests/test_m09_actual_topics.py)
 
@@ -36,6 +38,18 @@
 git rev-parse HEAD
 & $m09Python scripts/verify-m09-offline.py $m09ModelDir docs/evidence/m09-a/model-assets.json test_m09_persistence.py test_m09_topics.py test_m09_actual_topics.py --app-site-packages $appSitePackages
 ```
+
+## 全项目可行性检查
+
+| 检查项 | 状态 | 依据 |
+|---|---|---|
+| M09-C 需求与架构兼容 | PASS | 五项功能已实现。本地主题库独立封存，Personal v11、Business v9，M06 核心契约和 M07 消费契约沿用现行版本 |
+| 系统集成、安全与恢复 | PASS | M05–M08 上游和 M09 定向测试验证授权、精确证据、备份恢复、项目隔离及幂等。全套 Windows 10 回归及代码提交的三项 CI 通过 |
+| 目标部署的固定模型运行 | UNKNOWN | 需在原生 Windows 11 对本次代码执行固定模型回查和离线复算 |
+| M09-C 工程验收 | BLOCKED | 待取得原生 Windows 11 实机证据 |
+| M09 研究质量与下一阶段接续 | AT RISK | 原三项纯度诊断保留，正式 G3 及候选视图归属原定接续。M09-D 须负责人单独授权 |
+
+本次检查覆盖 M09-C 对完整研究链路的影响。全项目发布验收依原路线图及业务门禁安排。[路线图](../../planning/ROADMAP-V2.md)
 
 ## 研究质量状态
 
