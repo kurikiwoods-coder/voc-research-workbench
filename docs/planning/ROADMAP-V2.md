@@ -1,6 +1,6 @@
 # ROADMAP-V2 完整开发路线图
 
-M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。M09-A 的合成及实际模型离线工程验收已通过，核心工程单元计数为 **40/79**。商用 G-1 保持 **BLOCKED**，个人正式研究的准入复验安排见当前接续顺序。[Windows 11 实机证据](../evidence/m08-v/README.md) · [M09-A](../evidence/m09-a/README.md) · [当前接续顺序](#当前接续顺序)
+M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。M09-A 和 M09-B 已在本机完成离线工程验收，核心工程单元计数为 **41/79**。M09-B 的三项纯度诊断低于阈值，正式 G3 质量验收待完成。商用 G-1 为 **BLOCKED**，个人正式研究的准入复验安排见当前接续顺序。[Windows 11 实机证据](../evidence/m08-v/README.md) · [M09-A](../evidence/m09-a/README.md) · [M09-B](../evidence/m09-b/README.md) · [当前接续顺序](#当前接续顺序)
 
 2026-11-25 负责人批准本规划。开发分支 `codex/p0-0-connectivity`，规划基线 `3bd705befb98ee108b77603763c5571ceb7fdc44`。草稿 PR #1 与该基线一致，Ubuntu、Windows Server 2022、Chromium 作业均通过。[负责人批准](../decisions/roadmap-v2-owner-approval.md) · [M06-R 基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45585265229) · [草稿 PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1)
 
@@ -24,7 +24,7 @@ EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用�
 
 2026-11-27 负责人批准 PRODUCT-REALIGNMENT-V1，优先交付 Personal 的完整研究体验，发现与执行均保留为 P0 核心。采用原三类模型适配器及独立采集连接器，首个正式 Decision 实现用 Jev。继续按实际获准配置、模型及版本运行。此次决策沿用核心 **39/79** 和原分期验收。[正式 ADR](../decisions/product-realignment-v1-owner-approval.md) · [适配器契约](../architecture/ai-model-adapter-contract.md)
 
-1. M09-A 已完成隔离工程验收。下一获准离线单元为 M09-B，随后推进 M09-C/D。
+1. M09-A 和 M09-B 已完成本机隔离工程验收。M09-C 待负责人单独授权，M09-D 接续候选视图及盲测。
 2. 实施并验收 M10。确需提前真实调用时，取得该次用途的独立授权，按现有门禁核验必要的技术、安全及使用条件。无法合法放行时沿用隔离工程。
 3. 按单独授权完成 I18N-PRE。
 4. 完成 M11 可独立交付的工程及隔离接口验收。
@@ -47,10 +47,10 @@ EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用�
 |---|---:|---:|---:|---:|---:|
 | 基础及设计 M01–M06 | 30 | 1 | 31 | 31 | 0 |
 | P0-0 正式准入复验 | 0 | 1 | 1 | 0 | 1 |
-| P0 核心研究闭环 | 32 | 1 | 33 | 9 | 24 |
+| P0 核心研究闭环 | 32 | 1 | 33 | 10 | 23 |
 | P1 持续研究 | 6 | 1 | 7 | 0 | 7 |
 | P2 雷达与监控 | 6 | 1 | 7 | 0 | 7 |
-| 核心合计 | 74 | 5 | 79 | 40 | 39 |
+| 核心合计 | 74 | 5 | 79 | 41 | 38 |
 
 | 模块 | 单元数 | 模块 | 单元数 | 模块 | 单元数 |
 |---|---:|---|---:|---|---:|
@@ -60,7 +60,7 @@ EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用�
 | M04 | 5 | M09 | 4 | M14 | 5 |
 | M05 | 5 | M10 | 5 | M15 | 6 |
 
-M01–M05 的字母子编号为对既有成果的回顾性拆分，证据按原模块归档。40 项包括 31 项基础工程及复审、M07-A 至 D、M08-A 至 D 和 M09-A。正式 G-1 复验仍待完成。P0 正式验收按原矩阵独立计算。产品化另列 15 项，长期规划合计 94 项。[M07 工程验收](../evidence/m07/README.md) · [M08 工程验收](../evidence/m08-cd/README.md) · [M09-A 工程验收](../evidence/m09-a/README.md) · [可选产品化](productization-roadmap.md)
+M01–M05 的字母子编号为对既有成果的回顾性拆分，证据按原模块归档。41 项包括 31 项基础工程及复审、M07-A 至 D、M08-A 至 D 和 M09-A/B。正式 G-1 复验仍待完成。P0 正式验收按原矩阵独立计算。产品化另列 15 项，长期规划合计 94 项。[M07 工程验收](../evidence/m07/README.md) · [M08 工程验收](../evidence/m08-cd/README.md) · [M09-A 工程验收](../evidence/m09-a/README.md) · [M09-B 工程验收](../evidence/m09-b/README.md) · [可选产品化](productization-roadmap.md)
 
 ## 阶段与模块逻辑树
 
@@ -151,7 +151,7 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 | M08-C | M08-A/B | 获准论坛、YouTube 适配范围、许可正文通路及备用 Reddit | 依原 INGEST、PDT §4 及 §13.1，至少一条获准论坛、YouTube 或许可页面能回源 |
 | M08-D | M08-B/C、M04/M05 | 采样任务、批次、额度、暂停、重试、跨站去重和 CSV 兜底 | G1/G2/G7、RAW，三批至少 100 条真实语义片段及 30/30 回源抽查 |
 | M09-A | M05-E、M06-C3 | 本地文本预处理、Embedding Adapter 与匿名输入，预留研究语言参数及多语言能力 | **ENGINEERING_PASS**。DISCOVERY、PRIVACY 的本机工程证据涵盖向量版本、当前片段资格与获准模型复验。[证据](../evidence/m09-a/README.md) |
-| M09-B | M09-A | BERTopic 聚类、主题提取和参数记录 | 下一获准离线单元。可回放模型、预处理和参数。 |
+| M09-B | M09-A | BERTopic 聚类、主题提取和参数记录 | **ENGINEERING_PASS（本机）**。实际聚类、离群处理和复跑通过，三项合成纯度诊断待接续。[证据](../evidence/m09-b/README.md) |
 | M09-C | M09-B | 主题运行版本、成员、证据、离线复跑与差异 | G3，主题能下钻到合格原话 |
 | M09-D | M09-C | 聚类视图、候选输出与已知/未知盲测 | DISCOVERY、G3，候选进入人审 |
 | M10-A | M06-C3、M09-A、真实外部调用须有已批准通道 | TopicGPT 四步编排与最小 LLM Adapter，预留多语言 Prompt 和输出语言控制 | MODEL-ADAPTER-01、DISCOVERY、PRIVACY |

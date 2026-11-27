@@ -1,10 +1,14 @@
 # VOC Research Workbench 开发状态
 
+## M09-B 离线 BERTopic
+
+2026-11-27，Windows 11 CPU 完成 M09-B 工程验收。**M09-B = ENGINEERING_PASS**，**M09 = PARTIAL**，核心 **41/79**。定向及上游回归 86/86。真实运行专项 6 项，默认夹具、纯离群和空词表通过，三项阈值诊断分别记录 8/11、8/12、8/13 的主题纯度。候选结果仍须人工审核，正式发现质量按原 G3 验收。真实研究 API、费用及正式研究分母增量均为 0。M09-C 待负责人单独授权。[工程证据](docs/evidence/m09-b/README.md)
+
 ## M09-A 离线向量适配
 
 2026-11-27，按负责人授权完成 M09-A 本机离线工程验收，**M09-A = ENGINEERING_PASS**，**M09 = PARTIAL**，核心进度 **40/79**。复用 M05 资格、M06 封版片段、M07 精确注册表及 M08 合成回执，输出带稳定行映射的版本化向量矩阵。合成及直接上游回归通过 81/81，获准的 MiniLM 实际权重在原生 Windows 11 CPU 上通过 3/3。[实现与测试证据](docs/evidence/m09-a/README.md)
 
-真实研究 API 及实测进程非回环网络尝试均为 0。M06 **FROZEN**，Personal SQLite v11，Business SQLite v9，G-1-P-D **BLOCKED**，G-1-P-R **NOT_STARTED**，Personal Gate **NOT_EVALUATED**，Business Gate **BLOCKED**。下一获准离线单元为 M09-B，M09-C/D 待推进。
+真实研究 API 及实测进程非回环网络尝试均为 0。M06 **FROZEN**，Personal SQLite v11，Business SQLite v9，G-1-P-D **BLOCKED**，G-1-P-R **NOT_STARTED**，Personal Gate **NOT_EVALUATED**，Business Gate **BLOCKED**。
 
 ## PRODUCT-REALIGNMENT-V1 与当前工程状态
 

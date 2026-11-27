@@ -15,6 +15,7 @@ def main():
     parser.add_argument("manifest", type=Path)
     parser.add_argument("patterns", nargs="+")
     parser.add_argument("--app-site-packages", type=Path)
+    parser.add_argument("--topic-quality-diagnostics", action="store_true")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     sys.path.insert(0, str(root))
@@ -31,6 +32,8 @@ def main():
         VOC_M09_MODEL_DIR=str(args.model_dir.resolve(strict=True)),
         VOC_M09_MODEL_MANIFEST=str(args.manifest.resolve(strict=True)),
     )
+    if args.topic_quality_diagnostics:
+        os.environ["VOC_RUN_M09_TOPIC_QUALITY_GATE"] = "1"
     attempts = []
 
     def check_network(event, event_args):
