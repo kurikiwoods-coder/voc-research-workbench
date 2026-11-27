@@ -24,7 +24,7 @@ EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用�
 
 2026-11-27 负责人批准 PRODUCT-REALIGNMENT-V1，优先交付 Personal 的完整研究体验，发现与执行均保留为 P0 核心。采用原三类模型适配器及独立采集连接器，首个正式 Decision 实现用 Jev。继续按实际获准配置、模型及版本运行。此次决策沿用核心 **39/79** 和原分期验收。[正式 ADR](../decisions/product-realignment-v1-owner-approval.md) · [适配器契约](../architecture/ai-model-adapter-contract.md)
 
-1. M09-A 和 M09-B 已完成本机隔离工程验收。M09-C 待负责人单独授权，M09-D 接续候选视图及盲测。
+1. M09-A 和 M09-B 已完成本机隔离工程验收。M09-C 已完成代码实施，等待原生 Windows 11 固定模型验收。M09-D 候选视图及盲测待负责人授权。[M09-C 验收记录](../evidence/m09-c/README.md)
 2. 实施并验收 M10。确需提前真实调用时，取得该次用途的独立授权，按现有门禁核验必要的技术、安全及使用条件。无法合法放行时沿用隔离工程。
 3. 按单独授权完成 I18N-PRE。
 4. 完成 M11 可独立交付的工程及隔离接口验收。
@@ -138,7 +138,7 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 
 ## P0 核心研究闭环
 
-正式工作受适用版本门禁约束，原商用验收沿用 G-1。M07-A 至 D、M08-A 至 D 和 M09-A 已用隔离数据完成工程验收。M09-B 按离线授权接续，M09-C/D、M08-E 及 M10–M15 待推进。注册表联合发行需要 M07 的版本契约和 M11 的可信人审共同验收。[M07 证据](../evidence/m07/README.md) · [M08-C/D 证据](../evidence/m08-cd/README.md) · [M09-A 证据](../evidence/m09-a/README.md)
+正式工作受适用版本门禁约束，原商用验收沿用 G-1。M07-A 至 D、M08-A 至 D 和 M09-A/B 已用隔离数据完成工程验收。M09-C 工程验收待完成，M09-D、M08-E 及 M10–M15 待推进。注册表联合发行需要 M07 的版本契约和 M11 的可信人审共同验收。[M07 证据](../evidence/m07/README.md) · [M08-C/D 证据](../evidence/m08-cd/README.md) · [M09-A 证据](../evidence/m09-a/README.md)
 
 | 单元 | 前置 | 职责及交付 | 验收重点 |
 |---|---|---|---|

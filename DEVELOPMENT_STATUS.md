@@ -1,8 +1,12 @@
 # VOC Research Workbench 开发状态
 
+## M09-C 主题快照、溯源与复跑
+
+2026-11-27，M09-C 已实现隔离运行快照、成员与精确证据回查、离线复跑及运行差异比较。独立主题库采用 SQLite v1，Personal 工作库 v11、Business 工作库 v9。原生 Windows 11 固定模型验收待补，**M09-C = PENDING_ACCEPTANCE**，**M09 = PARTIAL**，已验收核心 **41/79**。[M09-C 工程证据](docs/evidence/m09-c/README.md)
+
 ## M09-B 离线 BERTopic
 
-2026-11-27，Windows 11 CPU 完成 M09-B 工程验收。**M09-B = ENGINEERING_PASS**，**M09 = PARTIAL**，核心 **41/79**。定向及上游回归 86/86。真实运行专项 6 项，默认夹具、纯离群和空词表通过，三项阈值诊断分别记录 8/11、8/12、8/13 的主题纯度。候选结果仍须人工审核，正式发现质量按原 G3 验收。真实研究 API、费用及正式研究分母增量均为 0。M09-C 待负责人单独授权。[工程证据](docs/evidence/m09-b/README.md)
+2026-11-27，Windows 11 CPU 完成 M09-B 工程验收。**M09-B = ENGINEERING_PASS**，**M09 = PARTIAL**，核心 **41/79**。定向及上游回归 86/86。真实运行专项 6 项，默认夹具、纯离群和空词表通过，三项阈值诊断分别记录 8/11、8/12、8/13 的主题纯度。候选结果仍须人工审核，正式发现质量按原 G3 验收。真实研究 API、费用及正式研究分母增量均为 0。[工程证据](docs/evidence/m09-b/README.md)
 
 ## M09-A 离线向量适配
 

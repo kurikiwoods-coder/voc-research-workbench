@@ -1,9 +1,12 @@
 """Lightweight M09-B contract checks with temporary M05/M06 fixtures."""
 
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from src.discovery.topics import TopicConfig, _terms, cluster_offline
+import numpy as np
+
+from src.discovery.topics import TopicConfig, _assignment_diagnostics, _terms, cluster_offline
 from src.raw_store.store import Conflict
 import test_m09_embeddings as fixtures
 import test_m06_mentions as mentions
@@ -40,7 +43,7 @@ class TopicContractTest(unittest.TestCase):
         self.assertEqual(result.research_denominator, 0)
 
     def test_revocation_during_clustering_blocks_result(self):
-        def revoke(batch, config):
+        def revoke(batch, config, *, observe_diagnostics=None):
             self.fixture.case.revoke_batch(self.fixture.batch)
             return "no_clusters", (-1, -1), (), None, ()
 
@@ -56,6 +59,45 @@ class TopicContractTest(unittest.TestCase):
             return ("的", "离线")
 
         self.assertEqual(_terms("The WiFi的离线MODE 42", cut, {"the"}), "wifi 离线 mode")
+
+    def test_raw_labels_and_scores_follow_document_order_without_filtering(self):
+        batch = SimpleNamespace(
+            rows=tuple(SimpleNamespace(document_id=f"doc-{index}") for index in range(4)),
+            vectors=np.array([[1, 0], [1, 0], [0, 1], [-1, 0]], dtype=np.float32),
+        )
+        clusterer = SimpleNamespace(
+            labels_=np.array([7, 7, 7, -1]),
+            probabilities_=np.array([1.0, 0.95, 0.6, 0.0]),
+            outlier_scores_=np.array([0.0, 0.25, 0.8, np.nan]),
+        )
+
+        assignments = _assignment_diagnostics(batch, (0, 0, 0, -1), clusterer)
+
+        self.assertEqual([row.document_id for row in assignments], ["doc-0", "doc-1", "doc-2", "doc-3"])
+        self.assertEqual([row.topic_id for row in assignments], [0, 0, 0, -1])
+        self.assertEqual([row.raw_topic_id for row in assignments], [0, 0, 0, -1])
+        self.assertEqual([row.hdbscan_cluster_id for row in assignments], [7, 7, 7, -1])
+        self.assertEqual([row.hdbscan_membership_probability for row in assignments], [1.0, 0.95, 0.6, 0.0])
+        self.assertEqual([row.hdbscan_outlier_score for row in assignments], [0.0, 0.25, 0.8, None])
+        self.assertEqual([row.centroid_cosine for row in assignments], [1.0, 1.0, 0.0, None])
+
+    def test_unavailable_diagnostics_use_null_and_centroid_uses_all_assigned_rows(self):
+        batch = SimpleNamespace(
+            rows=(SimpleNamespace(document_id="left"), SimpleNamespace(document_id="right")),
+            vectors=np.array([[1, 0], [0, 2]], dtype=np.float32),
+        )
+        left, right = _assignment_diagnostics(batch, (0, 0), SimpleNamespace())
+
+        for row in (left, right):
+            self.assertIsNone(row.hdbscan_cluster_id)
+            self.assertIsNone(row.hdbscan_membership_probability)
+            self.assertIsNone(row.hdbscan_outlier_score)
+            self.assertAlmostEqual(row.centroid_cosine, 2 ** -0.5)
+
+    def test_misaligned_backend_diagnostics_are_rejected(self):
+        batch = SimpleNamespace(rows=(SimpleNamespace(document_id="doc"),))
+        with self.assertRaisesRegex(RuntimeError, "m09_topic_diagnostic_alignment"):
+            _assignment_diagnostics(batch, (-1,), SimpleNamespace(probabilities_=[0.5, 0.0]))
 
     def test_invalid_configuration_is_rejected(self):
         for options in ({"random_seed": -1}, {"n_neighbors": 1}, {"n_components": 0}, {"min_dist": float("nan")},

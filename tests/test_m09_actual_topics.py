@@ -10,6 +10,7 @@ from unittest.mock import patch
 from uuid import NAMESPACE_URL, uuid5
 
 from src.discovery.embedding_inputs import FixtureRecord, MentionEvidence, OfflineEvidence
+from src.discovery.topic_runs import TopicRuns
 from src.discovery.topics import TopicConfig, cluster_offline
 from src.raw_store.registry_versions import RegistryVersions
 from src.raw_store.relations import RelationStore
@@ -230,3 +231,44 @@ class HoldoutTopicQualityTest(ApprovedTopicTest):
     @quality_gate
     def test_bilingual_topics_noise_and_replay(self):
         self.check_topics("holdout-pinned", HOLDOUT_CUES, config=PINNED_CONFIG)
+
+
+@unittest.skipUnless(
+    os.environ.get("VOC_M09_MODEL_DIR") and os.environ.get("VOC_M09_MODEL_MANIFEST"),
+    "requires the separately provisioned local model and BERTopic runtime",
+)
+class ApprovedTopicPersistenceTest(unittest.TestCase):
+    def test_native_model_cold_replay_and_exact_evidence(self):
+        fixture = ApprovedTopicTest()
+        self.addCleanup(fixture.doCleanups)
+        fixture.setUp()
+
+        def authorize(study_id):
+            return study_id == fixture.case.study
+
+        producer = TopicRuns(fixture.case.db, fixture.evidence, authorize_project=authorize)
+        first = producer.create(
+            fixture.backend, fixture.refs, request_id="m09-native-first",
+            registry_version=mentions.CATALOG, analysis_language=ZH, output_language=EN,
+        )
+        self.assertEqual(first["status"], "clustered")
+        self.assertEqual(len(first["members"]), len(EXAMPLES))
+        self.assertTrue(any(topic["topic_id"] == -1 for topic in first["topics"]))
+        for member in first["members"]:
+            doc_id = member["document_id"]
+            self.assertEqual(member["raw_topic_id"], member["topic_id"])
+            self.assertIsNotNone(member["hdbscan_cluster_id"])
+            self.assertIsNotNone(member["membership_probability"])
+            self.assertEqual(
+                producer.evidence_for(first["run_id"], doc_id).original_text,
+                fixture.examples_by_id[doc_id].text,
+            )
+        self.assertEqual(first["quality"]["m09_b_synthetic_purity"], [[8, 11], [8, 12], [8, 13]])
+
+        backend = approved_backend()
+        self.addCleanup(backend.close)
+        consumer = TopicRuns(fixture.case.db, fixture.evidence, authorize_project=authorize)
+        replay = consumer.replay(first["run_id"], backend, request_id="m09-native-replay")
+        self.assertNotEqual(replay["run_id"], first["run_id"])
+        self.assertEqual(replay["replay_of"], first["run_id"])
+        self.assertTrue(consumer.compare(first["run_id"], replay["run_id"])["same_result"])

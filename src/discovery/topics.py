@@ -1,12 +1,14 @@
 """Offline candidate topics over the ordered M09-A document and vector batch."""
 
-from collections import Counter
+from collections import Counter, defaultdict
 from dataclasses import asdict, dataclass
 from hashlib import sha256
 from importlib.metadata import version
 from math import isfinite
 import re
 from tempfile import TemporaryDirectory
+
+import numpy as np
 
 from src.discovery.embedding_backend import EmbeddingBackend, EmbeddingProfile
 from src.discovery.embedding_inputs import OfflineEvidence
@@ -16,6 +18,8 @@ from src.raw_store.store import Conflict, dump
 
 TOPIC_PIPELINE_VERSION = "m09-b-bertopic-v1"
 TOKENIZER_VERSION = "m09-b-jieba-dictionary-en-stop-v1"
+TOPIC_DIAGNOSTICS_VERSION = "m09-c-hdbscan-core-centroid-v1"
+_CENTROID_CORE_PROBABILITY = 0.95
 _RUNTIME_PACKAGES = (
     "bertopic", "umap-learn", "hdbscan", "scikit-learn", "jieba",
     "numpy", "scipy", "pandas", "numba", "llvmlite", "pynndescent",
@@ -64,6 +68,11 @@ class TopicKeyword:
 class TopicAssignment:
     document_id: str
     topic_id: int
+    raw_topic_id: int | None = None
+    hdbscan_cluster_id: int | None = None
+    hdbscan_membership_probability: float | None = None
+    hdbscan_outlier_score: float | None = None
+    centroid_cosine: float | None = None
 
 
 @dataclass(frozen=True)
@@ -100,6 +109,7 @@ class TopicRun:
     mode: str = "offline_synthetic"
     research_denominator: int = 0
     outbound_allowed: bool = False
+    diagnostics_version: str = TOPIC_DIAGNOSTICS_VERSION
 
 
 def _terms(text, chinese_cut, english_stop):
@@ -114,7 +124,61 @@ def _terms(text, chinese_cut, english_stop):
     return " ".join(words)
 
 
-def _fit_topics(batch, config):
+def _diagnostic_values(clusterer, name, size):
+    values = getattr(clusterer, name, None)
+    if values is None:
+        return (None,) * size
+    if np.shape(values) != (size,):
+        raise RuntimeError("m09_topic_diagnostic_alignment")
+    return values
+
+
+def _unit_score(value):
+    if value is not None and isfinite(value) and 0.0 <= value <= 1.0:
+        return float(value)
+    return None
+
+
+def _assignment_diagnostics(batch, labels, clusterer):
+    size = len(labels)
+    clusters = _diagnostic_values(clusterer, "labels_", size)
+    memberships = tuple(_unit_score(value) for value in _diagnostic_values(clusterer, "probabilities_", size))
+    outlier_scores = _diagnostic_values(clusterer, "outlier_scores_", size)
+    groups = defaultdict(list)
+    for index, label in enumerate(labels):
+        if label != _OUTLIER:
+            groups[label].append(index)
+
+    similarities = [None] * size
+    for group in groups.values():
+        vectors = batch.vectors[group].astype(np.float64)
+        unit_vectors = vectors / np.linalg.norm(vectors, axis=1, keepdims=True)
+        core = [
+            offset for offset, index in enumerate(group)
+            if memberships[index] is not None and memberships[index] >= _CENTROID_CORE_PROBABILITY
+        ]
+        centroid = (unit_vectors[core] if len(core) >= 2 else unit_vectors).mean(axis=0)
+        norm = np.linalg.norm(centroid)
+        if norm:
+            scores = np.clip(unit_vectors @ (centroid / norm), -1.0, 1.0)
+            for index, score in zip(group, scores, strict=True):
+                similarities[index] = float(score)
+
+    return tuple(
+        TopicAssignment(
+            document_id=row.document_id,
+            topic_id=labels[index],
+            raw_topic_id=labels[index],
+            hdbscan_cluster_id=None if clusters[index] is None else int(clusters[index]),
+            hdbscan_membership_probability=memberships[index],
+            hdbscan_outlier_score=_unit_score(outlier_scores[index]),
+            centroid_cosine=similarities[index],
+        )
+        for index, row in enumerate(batch.rows)
+    )
+
+
+def _fit_topics(batch, config, *, observe_diagnostics=None):
     from bertopic import BERTopic
     from bertopic.vectorizers import ClassTfidfTransformer
     from hdbscan import HDBSCAN
@@ -162,10 +226,12 @@ def _fit_topics(batch, config):
             if term and isfinite(weight) and weight > 0
         )
         topics.append(CandidateTopic(topic_id, count, keywords))
+    if observe_diagnostics is not None:
+        observe_diagnostics(_assignment_diagnostics(batch, labels, model.hdbscan_model))
     return ("clustered" if topics else "no_clusters"), labels, tuple(topics)
 
 
-def _cluster_batch(batch: EmbeddingBatch, config: TopicConfig):
+def _cluster_batch(batch: EmbeddingBatch, config: TopicConfig, *, observe_diagnostics=None):
     size = len(batch.rows)
     if size < max(3, 2 * config.min_cluster_size, config.min_samples + 1):
         return "insufficient_samples", (_OUTLIER,) * size, (), None, ()
@@ -179,27 +245,33 @@ def _cluster_batch(batch: EmbeddingBatch, config: TopicConfig):
         top_n_words=config.top_n_words,
     )
     runtime = tuple((package, version(package)) for package in _RUNTIME_PACKAGES)
-    status, labels, topics = _fit_topics(batch, effective)
+    status, labels, topics = _fit_topics(batch, effective, observe_diagnostics=observe_diagnostics)
     return status, labels, topics, effective, runtime
 
 
 def cluster_offline(evidence: OfflineEvidence, backend: EmbeddingBackend, refs, *,
                     registry_version, analysis_language, output_language,
-                    config: TopicConfig = TopicConfig(), cache_dir=None) -> TopicRun:
-    """Embed approved fixtures and recheck current exact evidence before releasing candidates."""
+                    config: TopicConfig = TopicConfig(), cache_dir=None, observe_rows=None) -> TopicRun:
+    """Embed approved fixtures and recheck current exact evidence before releasing candidates.
+
+    An internal observer can bind the exact revalidated embedding rows to a stored run.
+    """
     refs = tuple(refs)
     if not refs:
         metadata = TopicMetadata(
             None, backend.profile, PREPROCESSING_VERSION, evidence.registry_version(registry_version),
             _language(analysis_language), _language(output_language), (), None, config, None, (),
         )
+        if observe_rows is not None:
+            observe_rows(())
         return TopicRun(sha256(dump(asdict(metadata)).encode()).hexdigest(), "empty", metadata, (), ())
 
     batch = embed_offline(
         evidence, backend, refs, registry_version=registry_version,
         analysis_language=analysis_language, output_language=output_language, cache_dir=cache_dir,
     )
-    status, labels, topics, effective, runtime = _cluster_batch(batch, config)
+    diagnostics = []
+    status, labels, topics, effective, runtime = _cluster_batch(batch, config, observe_diagnostics=diagnostics.extend)
     languages = tuple(_language(tag) for tag in batch.model.supported_languages)
     current_rows = tuple(sorted(
         (_row(evidence.read(ref), languages) for ref in refs), key=lambda row: row.document_id,
@@ -213,7 +285,11 @@ def cluster_offline(evidence: OfflineEvidence, backend: EmbeddingBackend, refs, 
         batch.analysis_language, batch.output_language, tuple(sorted({row.original_language for row in batch.rows})),
         sha256(batch.vectors.tobytes()).hexdigest(), config, effective, runtime,
     )
-    assignments = tuple(
+    assignments = tuple(diagnostics) or tuple(
         TopicAssignment(row.document_id, label) for row, label in zip(batch.rows, labels, strict=True)
     )
+    if len(assignments) != len(batch.rows):
+        raise RuntimeError("m09_topic_diagnostic_alignment")
+    if observe_rows is not None:
+        observe_rows(batch.rows)
     return TopicRun(sha256(dump(asdict(metadata)).encode()).hexdigest(), status, metadata, assignments, topics)
