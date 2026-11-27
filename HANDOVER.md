@@ -10,6 +10,8 @@
 
 2026-11-27 负责人批准 PRODUCT-REALIGNMENT-V1。先交付 Personal 的完整研究闭环，Business 保留共享核心和原治理标准。API & AI Model Center 复用三类模型适配器与独立采集连接器，首版 Decision 验证仍用 Jev。现有 M09 工程授权、数据契约与证据口径继续适用。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [适配器契约](docs/architecture/ai-model-adapter-contract.md)
 
+按模块选择性复用成熟开源组件，先核对依赖许可、兼容性和本地部署条件。M01–M08 只按批准范围增量调整，M06 保持冻结。各模块先完成可用流程与真实数据接入，M15-F 后、P2-R 前在既有交付范围内统一视觉与研究交互。M09-A 复验与 M09-B 接续沿用原授权及前置条件。[增量开发与开源复用](docs/decisions/product-realignment-v1-owner-approval.md#增量开发与开源复用)
+
 继续 M09 隔离工程，之后推进 M10、单独授权的 I18N-PRE 和可独立验收的 M11 单元。M11 先用隔离夹具验证编码复核接口。M12-A 单独授权时实施 G-1 Personal 与 M02 最小增量，在正式真实研究和模型校准前恢复 G-1-P-D/R。完成 M12 校准及余项后执行 M11/M12 原定联调，再按原分期接续。M10 如确需提前调用外部模型，须取得该用途的独立授权并遵守现有门禁。[当前开发顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)
 
 G-1 暂停期间，既有工程和验收证据继续有效于其原范围。PackyCode 账户条款问题留在原通道记录。Personal 正式门禁为 **NOT_EVALUATED**，Business 正式门禁为 **BLOCKED**。以下四槽草案保留供历史追溯。现行隔离工程及正式研究的授权边界以本节和个人门禁政策为准。[个人门禁](docs/architecture/personal-research-gate.md) · [当前仓库状态](DEVELOPMENT_STATUS.md#product-realignment-v1-与当前工程状态)
