@@ -194,8 +194,10 @@ class PersonalLiveAuthority:
     def _current(self, batch, grant=None):
         batch_id, digest = self._batch(batch)
         database = self._database_anchor()
+        record = self._read(f"batch-{batch_id}")
         if (self._read("database") != database
-                or self._read(f"batch-{batch_id}") != {"batch": digest, **database}
+                or not isinstance(record, dict)
+                or {key: value for key, value in record.items() if key != "v2"} != {"batch": digest, **database}
                 or self._read(f"revoked-{batch_id}") is not None):
             return False
         if grant is None:
@@ -281,15 +283,22 @@ class PersonalLiveAuthority:
         except (OSError, ValueError, sqlite3.Error, StopIteration):
             return False
 
-    def register_batch(self, batch):
+    def register_batch(self, batch, *, v2=None):
         batch_id, digest = self._batch(batch)
         key = f"batch-{batch_id}"
         database = self._database_anchor()
         if not self._create("database", database) and self._read("database") != database:
             raise AuthorityError("LIVE_AUTHORITY_DATABASE_CHANGED")
         expected = {"batch": digest, **database}
+        if v2 is not None:
+            expected["v2"] = v2
         if not self._create(key, expected) and self._read(key) != expected:
             raise AuthorityError("LIVE_AUTHORITY_BATCH_CONFLICT")
+
+    def batch_policy(self, batch):
+        if not self._current(batch):
+            raise AuthorityError("LIVE_AUTHORITY_BATCH_NOT_CURRENT")
+        return self._read(f"batch-{batch['batch_id']}").get("v2")
 
     def authorize(self, batch, grant):
         if not self._current(batch):

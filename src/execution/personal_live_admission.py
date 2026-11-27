@@ -16,14 +16,18 @@ from src.config import MODEL, Settings
 from src.dashboard.edition_access import has_scope
 from src.dashboard.personal_governance import governance_decision
 from src.edition_policy import Deployment, Domain, Edition, EditionPolicy, Permission, REFERENCE, utc_timestamp
-from src.execution.personal_admission import digest, model_payloads, search_payload, source_identity
+from src.execution.packycode_preflight import inspect_body
+from src.execution.personal_admission import _c_approval, digest, model_payloads, search_payload, source_identity
+from src.execution.personal_live_batch_policy import BINDING_FIELDS, validate_batch_policy
 from src.execution.personal_live_evidence import evaluate_formal_batch
-from src.execution.personal_live_transport import PersonalLiveTransport
+from src.execution.personal_live_transport import PersonalLiveTransport, SystemOnePolicy
 from src.execution.transport import number, redact
 from src.ingestion.public_source import DOMAIN, LICENSES, SITE, fetch_forum_post, post_id
 from src.raw_store.credentials import VaultError
 from src.raw_store.personal_live_authority import AuthorityError, PersonalLiveAuthority
-from src.raw_store.personal_validation import ACTIVE, BatchContext, Budget, OperationGrant, Receipt, ValidationLedger
+from src.raw_store.personal_validation import (
+    ACTIVE, MAX_INTEGER, REQUEST_QUERY, BatchContext, Budget, OperationGrant, Receipt, ValidationLedger, _budget, _utc,
+)
 from src.raw_store.personal_validation_credentials import validation_binding
 from src.raw_store.runtime_binding import APPLICATION_IDS
 from src.raw_store.store import Conflict, Store
@@ -72,7 +76,20 @@ def _project_reply(operation, payload, reply):
             "license_url": citation["license_url"], "classification": "public_approved",
         }
         return {"items": [projected], "provenance": provenance}, True, None, digest(citation["text"])
-    raise Conflict("LIVE_MODEL_HARD_BUDGET_UNVERIFIED")
+    if operation == "model":
+        projected, gaps = inspect_body(payload["questions"], body)
+        usage = projected["usage"]
+        input_tokens, output_tokens = usage["input_tokens"], usage["output_tokens"]
+        total = input_tokens + output_tokens if input_tokens is not None and output_tokens is not None else None
+        reported = body.get("usage")
+        if total is not None and total <= MAX_INTEGER and (
+                "total_tokens" not in reported or number(reported["total_tokens"]) == total):
+            usage["total_tokens"] = total
+        else:
+            usage["total_tokens"] = None
+        valid = reply.status == 200 and not gaps and usage["total_tokens"] is not None
+        return projected, valid, None, digest(payload["state"])
+    raise Conflict("LIVE_OPERATION_INVALID")
 
 
 class LiveAdmission:
@@ -90,14 +107,17 @@ class LiveAdmission:
         with store.db() as db:
             self.context = self._context(db)
 
-    def _context(self, db):
+    def _decision(self, db):
         decision = self.policy.decide(
             Permission.WRITE_PERSONAL_APPROVALS, Domain.LOCAL_WORKSPACE,
             proof=self._proof, study_id=self.study_id, current_scope=lambda scope: has_scope(db, scope),
         )
         if not decision.allowed:
             raise Conflict("LIVE_OWNER_SCOPE_REQUIRED")
-        bound = governance_decision(decision, self.policy.owner)
+        return governance_decision(decision, self.policy.owner)
+
+    def _context(self, db):
+        bound = self._decision(db)
         return BatchContext(
             bound.scope.study_id, bound.scope.scope_id, bound.scope.scope_version,
             bound.actor_ref, bound.owner_ref, bound.evidence_refs[0], bound.policy_version,
@@ -142,7 +162,7 @@ class LiveAdmission:
             raise Conflict("LIVE_DEPLOYMENT_BINDING_REQUIRED")
 
     def draft(self, approved):
-        if (approved.keys() != {"starts_at", "expires_at", "budget", "currency", "decimals", "single_cost",
+        if (approved.keys() - {"v2"} != {"starts_at", "expires_at", "budget", "currency", "decimals", "single_cost",
                                "evidence_ref", "owner_ref", "study_id", "scope_id", "scope_version"}
                 or any(approved[field] != getattr(self.context, field) for field in
                        ("owner_ref", "study_id", "scope_id", "scope_version"))):
@@ -151,8 +171,12 @@ class LiveAdmission:
             self._require_deployment(db)
         terms = {key: approved[key] for key in
                  ("starts_at", "expires_at", "currency", "decimals", "single_cost", "evidence_ref")}
-        batch = self.ledger.draft(self.context, budget=Budget(**approved["budget"]), recheck=self._owner, **terms)
-        self.authority.register_batch(batch)
+        budget = Budget(**approved["budget"])
+        v2 = approved.get("v2")
+        if "v2" in approved:
+            validate_batch_policy(v2, budget, terms["single_cost"])
+        batch = self.ledger.draft(self.context, budget=budget, recheck=self._owner, **terms)
+        self.authority.register_batch(batch, v2=v2)
         return batch["batch_id"]
 
     def _batch(self, db, batch_id):
@@ -184,6 +208,33 @@ class LiveAdmission:
             return shards[slot - 1], "personal-d-live-v1." + digest([pairs, shards])
         raise Conflict("LIVE_OPERATION_INVALID")
 
+    def _batch_operation(self, db, batch, packet, policy):
+        operation, slot = packet["operation"], packet["slot"]
+        plan = policy["slots"].get(f"{operation}/{slot}")
+        if plan is None or any(packet.get(field) != value for field, value in plan.items()):
+            raise Conflict("LIVE_BATCH_SLOT_MISMATCH")
+        if operation == "search":
+            if packet["payload_sha256"] != policy["search_payload_sha256"]:
+                raise Conflict("LIVE_BATCH_SEARCH_MISMATCH")
+            return packet
+        if _utc(packet["source_expires_at"]) < _utc(packet["expires_at"]):
+            raise Conflict("LIVE_SOURCE_PERMISSION_EXPIRES")
+        if operation == "model" and packet.get("approval_event_id") != policy["systemone"]["approval_event_id"]:
+            raise Conflict("LIVE_SYSTEMONE_APPROVAL_MISMATCH")
+        parent_operation = {"source": "search", "model": "source" if slot == 1 else "model"}[operation]
+        parent = db.execute(REQUEST_QUERY + " WHERE q.batch_id=? AND q.operation=? AND q.slot=1",
+                            (batch["batch_id"], parent_operation)).fetchone()
+        if parent is None or parent["state"] != "settled":
+            raise Conflict("VALIDATION_DEPENDENCY_NOT_CURRENT")
+        receipt = db.execute("SELECT * FROM personal_validation_receipts WHERE request_id=?",
+                             (parent["request_id"],)).fetchone()
+        if receipt is None or not receipt["eligible"]:
+            raise Conflict("VALIDATION_DEPENDENCY_NOT_CURRENT")
+        dependency = {"depends_on": parent["request_id"], "depends_on_sha256": receipt["response_sha256"]}
+        if any(key in packet and packet[key] != value for key, value in dependency.items()):
+            raise Conflict("VALIDATION_DEPENDENCY_NOT_CURRENT")
+        return packet | dependency
+
     def _approved_operation(self, batch_id, packet):
         if packet["batch_id"] != batch_id or packet["owner_ref"] != self.context.owner_ref:
             raise Conflict("LIVE_OPERATION_APPROVAL_MISMATCH")
@@ -197,7 +248,20 @@ class LiveAdmission:
         estimate = Budget(**packet["limit"])
         if digest(payload) != packet["payload_sha256"]:
             raise Conflict("LIVE_PAYLOAD_DIGEST_MISMATCH")
-        prepared = self.transport.prepare(operation, payload, slot=packet["slot"], budget=estimate)
+        with self.store.db() as db:
+            batch = self._batch(db, batch_id)
+            try:
+                policy = self.authority.batch_policy(batch)
+            except AuthorityError as exc:
+                raise Conflict(str(exc)) from None
+            if policy is not None:
+                packet = self._batch_operation(db, batch, packet, policy)
+        model_policy = None
+        if operation == "model" and policy is not None:
+            model_policy = SystemOnePolicy(packet["provider"], packet["payload_sha256"])
+        prepared = self.transport.prepare(
+            operation, payload, slot=packet["slot"], budget=estimate, model_policy=model_policy,
+        )
         approval = OperationGrant(
             operation=operation, provider=packet["provider"], slot=packet["slot"],
             account_ref=packet["account_ref"], channel_ref=packet["channel_ref"],
@@ -209,29 +273,85 @@ class LiveAdmission:
             limit=estimate, account_limit=Budget(**packet["account_limit"]), evidence_ref=packet["evidence_ref"],
             depends_on=packet.get("depends_on"), depends_on_sha256=packet.get("depends_on_sha256"),
         )
-        return approval, payload, prepared
+        return approval, payload, prepared, packet
+
+    def _protected_parent(self, db, batch, grant):
+        if not self.ledger._dependency(db, batch, grant):
+            raise Conflict("VALIDATION_DEPENDENCY_NOT_CURRENT")
+        request, parent_batch, parent_grant = self.ledger._request(db, grant["depends_on"], self.context)
+        if (parent_batch["batch_id"] != batch["batch_id"] or not self.authority.check(db, batch, parent_grant)
+                or not parent_grant["valid_from"] <= self.ledger._now() < parent_grant["expires_at"]):
+            raise Conflict("VALIDATION_DEPENDENCY_NOT_CURRENT")
+        validation_binding(self.store, db, self.context, parent_grant)
+        evidence = self.authority.read_archive(batch, parent_grant, request, grant["depends_on_sha256"])
+        return request, parent_grant, evidence
+
+    def _current_model_input(self, db, batch, grant, payload, packet, parent):
+        source_request, source_grant, source = parent
+        if grant["slot"] == 2:
+            first_request, first_grant, first = parent
+            if (any(grant[field] != first_grant[field] for field in (
+                    *BINDING_FIELDS, "question_version", "approval_event_id"))
+                    or first["request"]["state"] != payload["state"]
+                    or db.execute("SELECT 1 FROM personal_validation_reconciliations WHERE request_id=?",
+                                  (first_request["request_id"],)).fetchone() is None):
+                raise Conflict("LIVE_MODEL_SHARD_BINDING_MISMATCH")
+            source_request, source_grant, source = self._protected_parent(db, batch, first_grant)
+        if (source_grant["source_ref"] != grant["source_ref"]
+                or source_grant["source_sha256"] != grant["source_sha256"]
+                or source["request"]["url"] != packet["target"]
+                or source["response"]["items"][0]["content_license"] != packet["license"]):
+            raise Conflict("LIVE_MODEL_SOURCE_MISMATCH")
+        review = db.execute("""
+            SELECT * FROM personal_validation_evidence WHERE batch_id=? AND requirement='C0-2' AND kind='formal_live'
+            ORDER BY sequence DESC LIMIT 1
+        """, (batch["batch_id"],)).fetchone()
+        if review is None:
+            raise Conflict("LIVE_TRANSFORMATION_REVIEW_REQUIRED")
+        proof = self.authority.read_review(batch, "C0-2", review["evidence_ref"], review["evidence_sha256"])
+        receipt = db.execute("SELECT quote_sha256 FROM personal_validation_receipts WHERE request_id=?",
+                             (source_request["request_id"],)).fetchone()
+        if (proof.get("source_request_id") != source_request["request_id"]
+                or proof.get("source_quote_sha256") != receipt["quote_sha256"]
+                or proof.get("model_input_sha256") != digest(payload["state"])
+                or proof.get("question_version") != grant["question_version"]):
+            raise Conflict("LIVE_TRANSFORMATION_REVIEW_MISMATCH")
+
+    def _require_model_approval(self, db, grant, estimate):
+        if not _c_approval(self.store, db, self._decision(db), grant, utc_timestamp(self.ledger._now()), estimate):
+            raise Conflict("LIVE_SYSTEMONE_APPROVAL_NOT_CURRENT")
 
     def _current_operation(self, db, batch, grant, packet, payload):
         self._require_deployment(db)
         if not self._owner(db, batch, grant) or grant["material_revision"] != digest(packet):
             raise Conflict("LIVE_OPERATION_APPROVAL_MISMATCH")
+        policy = self.authority.batch_policy(batch)
+        if policy is not None and self._batch_operation(db, batch, packet, policy) != packet:
+            raise Conflict("LIVE_BATCH_SLOT_MISMATCH")
         self._verify_reconciled_charges(db, batch)
         if grant["operation"] == "source":
-            parent, parent_batch, parent_grant = self.ledger._request(db, grant["depends_on"], self.context)
-            if (parent_batch["batch_id"] != batch["batch_id"] or not self.authority.check(db, batch, parent_grant)
-                    or not parent_grant["valid_from"] <= self.ledger._now() < parent_grant["expires_at"]):
-                raise Conflict("LIVE_SOURCE_SEARCH_NOT_CURRENT")
-            validation_binding(self.store, db, self.context, parent_grant)
-            evidence = self.authority.read_archive(batch, parent_grant, parent, grant["depends_on_sha256"])
+            _, _, evidence = self._protected_parent(db, batch, grant)
             if not any(hit["url"] == payload["url"] for hit in evidence["response"]["results"]):
                 raise Conflict("LIVE_SOURCE_NOT_IN_APPROVED_SEARCH")
+        if grant["operation"] == "model":
+            if policy is None:
+                raise Conflict("LIVE_MODEL_HARD_BUDGET_UNVERIFIED")
+            self._require_model_approval(db, grant, Budget(**packet["limit"]))
+            self._current_model_input(db, batch, grant, payload, packet, self._protected_parent(db, batch, grant))
         return validation_binding(self.store, db, self.context, grant)
 
     def authorize(self, batch_id, packet):
-        approval, payload, _ = self._approved_operation(batch_id, packet)
+        approval, payload, _, packet = self._approved_operation(batch_id, packet)
 
         def check(db, batch, grant):
             self._current_operation(db, batch, grant, packet, payload)
+            if self.authority.batch_policy(batch) is not None:
+                prior = db.execute("""
+                    SELECT material_revision FROM personal_validation_grants
+                    WHERE batch_id=? AND operation=? AND slot=? ORDER BY rowid DESC LIMIT 1
+                """, (batch_id, approval.operation, approval.slot)).fetchone()
+                if prior is not None and prior["material_revision"] != grant["material_revision"]:
+                    raise Conflict("LIVE_BATCH_SLOT_ALREADY_APPROVED")
             return True
 
         grant = self.ledger.authorize(batch_id, self.context, approval, check)
@@ -240,7 +360,7 @@ class LiveAdmission:
         return grant["grant_id"]
 
     def execute(self, batch_id, grant_id, packet):
-        approval, payload, prepared = self._approved_operation(batch_id, packet)
+        approval, payload, prepared, packet = self._approved_operation(batch_id, packet)
         secret = None
 
         def check(db, batch, grant):
@@ -270,16 +390,18 @@ class LiveAdmission:
                     raise Conflict("LIVE_SEND_RIGHT_UNAVAILABLE")
                 if not self.authority.check(db, batch, grant):
                     raise Conflict("LIVE_SEND_RIGHT_UNAVAILABLE")
-            reply = self.transport.send(prepared, secret=secret)
+            reply = self.transport.send(prepared, secret=secret, model_policy=prepared.model_policy)
             response, valid, credits, quote_sha = _project_reply(approval.operation, payload, reply.response)
             if approval.operation == "source" and valid:
                 valid = response["items"][0]["content_license"] == packet["license"]
                 if not valid:
                     response, quote_sha = {"items": []}, None
+            usage = response["usage"] if approval.operation == "model" else {}
             ref = self.authority.archive(batch, grant, request, payload, response)
             receipt = Receipt(
                 digest(response), reply.response.status, ref, reply.provider_request_id,
-                credits=credits, actual_units=0 if approval.operation == "source" and valid else None,
+                model=(response["model"] or "") if approval.operation == "model" else "",
+                credits=credits, **usage, actual_units=0 if approval.operation == "source" and valid else None,
                 balance_status="not_applicable" if approval.operation == "source" else "unsynced",
                 valid=valid, reason="schema_gap" if reply.response.status == 200 else "http_or_transport_failure",
                 source_sha256=approval.source_sha256, quote_sha256=quote_sha,
@@ -406,14 +528,15 @@ class LiveAdmission:
         return {"request_id": request_id, "actual_units": result["actual_units"]}
 
     def review(self, batch_id, requirement, proof):
-        if requirement == "C0-2" and (
-            proof.keys() != {"source_request_id", "source_quote_sha256", "model_input_sha256", "redaction_ref"}
-            or not _reference(proof["redaction_ref"])
-        ):
-            raise Conflict("LIVE_TRANSFORMATION_REVIEW_MISMATCH")
         with self.store.db() as db:
             batch = self._batch(db, batch_id)
             if requirement == "C0-2":
+                required = {"source_request_id", "source_quote_sha256", "model_input_sha256", "redaction_ref"}
+                if self.authority.batch_policy(batch) is not None:
+                    required.add("question_version")
+                if (proof.keys() != required or not _reference(proof["redaction_ref"])
+                        or ("question_version" in required and not _reference(proof["question_version"]))):
+                    raise Conflict("LIVE_TRANSFORMATION_REVIEW_MISMATCH")
                 request, parent_batch, grant = self.ledger._request(db, proof["source_request_id"], self.context)
                 receipt = db.execute(
                     "SELECT * FROM personal_validation_receipts WHERE request_id=?", (request["request_id"],),
@@ -444,6 +567,8 @@ class LiveAdmission:
                 self.ledger._require_send_authority(db, batch, grant)
                 self.ledger._authorize_operation(db, self.context, batch, grant, self._owner)
                 validation_binding(self.store, db, self.context, grant)
+                if grant["operation"] == "model":
+                    self._require_model_approval(db, grant, _budget(grant))
             except (ValueError, VaultError):
                 continue
             current.add(grant["grant_id"])
@@ -467,6 +592,8 @@ class LiveAdmission:
                         charges[request_id] = {key: proof[key] for key in (
                             "actual_units", "bill_ref", "provider_request_id", "provider", "account_ref",
                         )}
+                        if not receipt["provider_request_id"]:
+                            receipt["provider_request_id"] = proof["provider_request_id"]
                 elif request["operation"] == "source" and receipt["actual_units"] == 0:
                     charges[request_id] = {
                         "actual_units": 0, "bill_ref": receipt["evidence_ref"],
@@ -475,6 +602,8 @@ class LiveAdmission:
             except ValueError:
                 continue
         model_input_sha256 = None
+        model_versions = {grant["question_version"] for grant in view["grants"] if grant["operation"] == "model"}
+        latest_model_review = next((item for item in reversed(view["evidence"]) if item["requirement"] == "C0-2"), None)
         for item in view["evidence"]:
             try:
                 artifact = self.authority.read_review(
@@ -485,6 +614,8 @@ class LiveAdmission:
             if item["requirement"] == "C0-4" and artifact.get("charges") != charges:
                 continue
             if item["requirement"] == "C0-2":
+                if item != latest_model_review or model_versions != {artifact.get("question_version")}:
+                    continue
                 source = receipts.get(artifact.get("source_request_id"))
                 if (source and source["eligible"] and source["evidence_ref"] in archives
                         and artifact.get("source_quote_sha256") == source["quote_sha256"]):

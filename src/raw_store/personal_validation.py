@@ -739,7 +739,9 @@ class ValidationLedger:
                     raise Conflict("VALIDATION_FORMAL_REVIEW_REQUIRED")
             if batch["state"] == state:
                 return batch
-            if state not in CHANGES[batch["state"]]:
+            formal_review_ready = (batch["mode"] == "formal_live" and batch["state"] == "approved"
+                                   and state == "evidence_review")
+            if state not in CHANGES[batch["state"]] and not formal_review_ready:
                 raise Conflict("VALIDATION_INVALID_TRANSITION")
             pending = _one(db, REQUEST_QUERY + " WHERE q.batch_id=? AND state IN ('claimed', 'reconciliation')",
                            (batch_id,))

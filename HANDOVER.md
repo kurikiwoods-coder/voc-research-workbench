@@ -1,5 +1,13 @@
 # 开发交接
 
+## G-1-PERSONAL V2 接续
+
+开发分支 `codex/g1-personal-phase-1`，草稿 PR #2。现有 Personal v11 独立验收工作区的原生 Windows 11 部署证据绑定源码 `6d70cd5011a249c83bf6c9df15f3900c2f595994`。在授权设备以可信本机 Owner 复核当前工作库及恢复连续性。在受保护位置准备当前账户、凭证、通道、条款、逐源许可、脱敏、费用和剩余风险材料，按原 G-1-P-D 入口仅签发本批所需操作。[Windows 11 历史部署证据](docs/evidence/g1-p-d/d-l-windows11-deployment.md) · [V2 授权草案](docs/evidence/g1-p-d/personal-v2-authorization-draft.md)
+
+按四槽草案一次签发账户及预算，依次执行 Tavily、同一命中的官方回源、PackyCode 前 8 题及后 3 题，每槽一次。回源前确认实际命中和许可。两个模型槽共用一份 C0-2 脱敏及题组复核。模型固定为 `typesafe-officially`、`/v1/systemone`、`jev-1.14.0`。本机批准上限与供应商核实的限额各自留证，核对所有可计费请求的实际扣费。核对 C0-5、C0-6 既有证据摘要及覆盖后，登记负责人复核和原证据引用。六项齐备后交 G-1-P-R 独立复审。[个人准入政策](docs/architecture/personal-research-gate.md)
+
+当前草案待签发，正式同批 0/6，真实请求 0。**G-1-PERSONAL = NOT_EVALUATED，G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED**。商用 G-1 **BLOCKED**，M09–M15 **NOT_STARTED**。下列 D-E 与 D-L 条目保留其交付时的状态和证据。
+
 ## G-1-P-B-V 与 G-1-P-C 接续
 
 工作分支 `codex/g1-personal-phase-1`，草稿 PR #2，目标 `codex/p0-0-connectivity`。本机从 `0d43be5f7b707c4ad8a3384dabc5c595b15d0b7b` 接续。B-V 的原生实机及部署门禁和证据提交 `97e942d` 的三项 CI 通过。C 验收源码为 `912ff28e0a10e3329bc49c6e9fdc97e290229a68`。[B-V 证据](docs/evidence/g1-p-b-v/README.md) · [C 验收](docs/evidence/g1-p-c/README.md)

@@ -1,5 +1,11 @@
 # VOC Research Workbench 开发状态
 
+## G-1-PERSONAL V2 本机预准入
+
+2026-11-27，Personal V2 沿用既有 G-1-P-D 受控执行，按当前账户、凭证、固定通道、逐源许可、Owner 费用及剩余风险批准准备一次四槽取证。既有 C0-5、C0-6 离线证据可在复核版本、适用范围及摘要后引用至该批次。历史模型合成回执及两笔费用继续用于原批次审计。C0-1 至 C0-6 的正式标准见原政策。[个人准入政策](docs/architecture/personal-research-gate.md) · [待签发的四槽草案](docs/evidence/g1-p-d/personal-v2-authorization-draft.md)
+
+**G-1-PERSONAL = NOT_EVALUATED，G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED**。正式批次和逐槽授权尚未签发，正式同批 0/6。真实请求、探针、余额查询、实际 Token、费用及正式研究分母增量均为 0。独立复审待六项同批证据齐备。商用 **G-1 = BLOCKED**，M09–M15 为 **NOT_STARTED**，核心进度 **39/79**。
+
 ## I18N-PRE 规划登记
 
 2026-11-26，**I18N-PRE = PLANNED**。M09、M10 的语言接口和证据提前约束已登记。M10 验收完成后等待负责人单独授权实施，在 M11 启动前完成专项。G-1-PERSONAL 继续原接续顺序，核心进度为 39/79。[负责人批准](docs/decisions/i18n-pre-owner-approval.md)

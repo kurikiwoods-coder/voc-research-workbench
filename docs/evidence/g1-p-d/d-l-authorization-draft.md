@@ -1,5 +1,7 @@
 # G-1-P-D-L 真实同批实证授权模板
 
+本文保留 D-L 严格模式的历史草案。当前 Personal V2 批次按 [V2 授权草案](personal-v2-authorization-draft.md) 准备。
+
 **真实执行 `BLOCKED`。** 本草案尚未签发。Windows 11 定向实机及新建独立 Personal v11 工作区的部署准备均通过。PackyCode/SystemOne 缺可执行的逐请求输出硬上限和最坏扣费证明。真实搜索、回源、模型、供应商探针、余额查询、真实研究 Token、费用和正式研究分母均为 0。C0-1 至 C0-6 均为 `BLOCKED`。[Windows 11 与部署证据](d-l-windows11-deployment.md) · [个人准入政策](../../architecture/personal-research-gate.md)
 
 将填妥的材料置于授权设备的受保护目录。下方的「待登记」须由经可信本机会话核验的负责人填写或复核。只向交付证据提供脱敏引用和摘要。真实凭证、原话、未脱敏条款、完整账单和库文件均从本机受控位置核验。未核准的字段保持缺项。

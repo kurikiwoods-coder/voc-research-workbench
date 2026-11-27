@@ -1,5 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
+from copy import deepcopy
 from dataclasses import asdict
 from datetime import UTC, datetime, timedelta
 import json
@@ -12,8 +13,10 @@ from urllib.error import URLError
 from test_personal_admission import OPTIONS, QUOTE, SEARCH, URL
 from test_personal_credentials import synthetic_protection
 import test_personal_governance
+from test_personal_live_evidence import FormalMatrixTests, _answers
 from test_personal_live_transport import BUILD_OPENER, Reply
 
+from src.config import MODEL
 from src.dashboard.edition_access import has_scope
 from src.edition_policy import Domain, Permission
 from src.execution.personal_admission import digest, model_payloads, search_payload
@@ -29,10 +32,13 @@ from src.raw_store.store import Conflict
 
 BATCH_BUDGET = Budget(4, 1, 1600, 800, 2400, 100)
 SHARED_ACCOUNT_BUDGET = Budget(4, 4, 1600, 800, 2400, 100)
+MODEL_ACCOUNT_BUDGET = Budget(2, 0, 1600, 800, 2400, 80)
 LIMITS = {"search": Budget(1, 1, 0, 0, 0, 20), "source": Budget(1, 0, 0, 0, 0, 0),
           "model": Budget(1, 0, 800, 400, 1200, 40)}
 MODEL_FIELDS = {"choices": [[key, value] for key, value in OPTIONS.items()], "text": QUOTE,
                 "model_input_sha256": digest(QUOTE)}
+V2_TEXT = "The synthetic label explains how to measure the syrup."
+V2_USAGE = {1: (120, 60), 2: (90, 30)}
 
 
 class PersonalLiveAdmissionTests(unittest.TestCase):
@@ -71,12 +77,15 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
         }
         self.batch = self.draft_batch()
 
-    def draft_batch(self, evidence_ref="fixture-batch-approval"):
-        return self.engine.draft({
+    def batch_packet(self, evidence_ref="fixture-batch-approval"):
+        return {
             **{field: getattr(self.context, field) for field in ("owner_ref", "study_id", "scope_id", "scope_version")},
             "starts_at": self.start, "expires_at": self.expiry, "budget": asdict(BATCH_BUDGET), "currency": "USD",
             "decimals": 6, "single_cost": 40, "evidence_ref": evidence_ref,
-        })
+        }
+
+    def draft_batch(self, evidence_ref="fixture-batch-approval"):
+        return self.engine.draft(self.batch_packet(evidence_ref))
 
     def open_engine(self):
         return LiveAdmission(
@@ -150,6 +159,224 @@ class PersonalLiveAdmissionTests(unittest.TestCase):
         return {"request_id": result["request_id"], "provider": "tavily", "account_ref": "fixture-tavily-account",
                 "provider_request_id": "fixture-search-id", "currency": "USD", "actual_units": 12,
                 "bill_ref": "fixture-provider-bill"}
+
+    def v2_batch_packet(self):
+        revision = self.fixture.configure(self.client)
+        records = [row | {"budget_limit": BATCH_BUDGET.total_tokens}
+                   for row in self.fixture.development_evidence(revision)]
+        self.fixture.write_evidence(records)
+        pending = self.fixture.submit(self.client, records, budget_limit=BATCH_BUDGET.total_tokens)
+        self.approval = self.fixture.approve(self.client, pending)
+        self.bindings["model"] = put_validation_credential(
+            self.store, authorize=self.credential_permission, operation="model", **self.fixture.identity,
+            api_key=None, evidence_ref="local:fixture-model-binding",
+        )
+        slots = {}
+        for operation, slot in (("search", 1), ("source", 1), ("model", 1), ("model", 2)):
+            binding = self.bindings[operation]
+            account_budget = MODEL_ACCOUNT_BUDGET if operation == "model" else BATCH_BUDGET
+            slots[f"{operation}/{slot}"] = {
+                key: binding[key] for key in ("provider", "account_ref", "channel_ref", "credential_revision")
+            } | {"limit": asdict(LIMITS[operation]), "account_limit": asdict(account_budget)}
+        return self.batch_packet("fixture-v2-batch-approval") | {"v2": {
+            "slots": slots, "search_payload_sha256": digest(search_payload(SEARCH)), "systemone": {
+                "approval_event_id": self.approval["event_id"], "dedicated_token_ref": "local:fixture-dedicated-token",
+                "billing_rules_ref": "local:fixture-billing-rules", "allowance_ref": "local:fixture-allowance",
+                "risk_acceptance_ref": "local:fixture-risk-acceptance", "rate_basis_tokens": 1_000_000,
+                "input_rate_units": 25_000, "output_rate_units": 0, "additional_units_per_request": 1,
+                "allowance_units": 100, "residual_risk_units": 20,
+                "overdraft": False, "auto_recharge": False, "unbounded_charges": False,
+            },
+        }}
+
+    def v2_packet(self, operation, *, slot=1):
+        account_budget = MODEL_ACCOUNT_BUDGET if operation == "model" else BATCH_BUDGET
+        packet = self.packet(operation, slot=slot, account_budget=account_budget)
+        if operation != "search":
+            packet["source_expires_at"] = self.expiry
+        if operation == "model":
+            payload = model_payloads(V2_TEXT, OPTIONS)[slot - 1]
+            packet |= {"text": V2_TEXT, "model_input_sha256": digest(V2_TEXT), "payload_sha256": digest(payload),
+                       "approval_event_id": self.approval["event_id"]}
+        return packet
+
+    def v2_reply(self, request, *, timeout):
+        if request.full_url != ENDPOINTS["packycode"]:
+            return self.reply(request, timeout=timeout)
+        with self.store.db() as db:
+            db.execute("BEGIN IMMEDIATE")
+        payload = json.loads(request.data)
+        slot = {8: 1, 3: 2}[len(payload["questions"])]
+        self.assertEqual(payload, model_payloads(V2_TEXT, OPTIONS)[slot - 1])
+        self.assertEqual(request.get_method(), "POST")
+        self.assertEqual(request.get_header("Authorization"), "Bearer " + test_personal_governance.FIRST)
+        self.assertEqual(timeout, 12)
+        input_tokens, output_tokens = V2_USAGE[slot]
+        response = {"model": MODEL, "answers": _answers(payload["questions"]),
+                    "usage": {"input_tokens": input_tokens, "output_tokens": output_tokens}}
+        return Reply(json.dumps(response).encode(), headers={"X-Request-Id": f"fixture-model-{slot}"})
+
+    def v2_source(self):
+        self.batch = self.engine.draft(self.v2_batch_packet())
+        self.opener.side_effect = self.v2_reply
+        search_packet = self.v2_packet("search")
+        search_grant = self.engine.authorize(self.batch, search_packet)
+        search = self.engine.execute(self.batch, search_grant, search_packet)
+        self.assertTrue(search["eligible"])
+        source_packet = self.v2_packet("source")
+        with self.assertRaises(Conflict):
+            self.engine.authorize(self.batch, source_packet)
+        self.assertEqual(self.engine.reconcile(self.batch, self.search_bill(search))["actual_units"], 12)
+        self.engine.resume(self.batch)
+        source_grant = self.engine.authorize(self.batch, source_packet)
+        source = self.engine.execute(self.batch, source_grant, source_packet)
+        self.assertTrue(source["eligible"])
+        return source
+
+    def v2_review(self, source, **changes):
+        proof = {"source_request_id": source["request_id"], "source_quote_sha256": digest(QUOTE),
+                 "model_input_sha256": digest(V2_TEXT), "redaction_ref": "local:fixture-redaction",
+                 "question_version": "personal-d-live-v1." + digest([MODEL_FIELDS["choices"],
+                                                                       model_payloads(V2_TEXT, OPTIONS)])}
+        return self.engine.review(self.batch, "C0-2", proof | changes)
+
+    def v2_model_bill(self, result, slot):
+        return {"request_id": result["request_id"], "provider": "packycode",
+                "account_ref": self.fixture.identity["account_ref"], "provider_request_id": f"fixture-model-{slot}",
+                "currency": "USD", "actual_units": 4, "bill_ref": f"local:fixture-model-bill-{slot}"}
+
+    def test_v2_four_slots_settle_in_order_and_replay_stays_offline(self):
+        source = self.v2_source()
+        self.v2_review(source)
+        completed = []
+        for slot, usage in V2_USAGE.items():
+            packet = self.v2_packet("model", slot=slot)
+            grant = self.engine.authorize(self.batch, packet)
+            result = self.engine.execute(self.batch, grant, packet)
+            self.assertTrue(result["eligible"])
+            receipt = self.receipt(result["request_id"])
+            self.assertEqual(tuple(receipt[key] for key in ("input_tokens", "output_tokens", "total_tokens")),
+                             (*usage, sum(usage)))
+            self.assertEqual(receipt["model"], MODEL)
+            self.assertEqual(receipt["quote_sha256"], digest(V2_TEXT))
+            self.assertIsNone(receipt["actual_units"])
+            self.assertEqual(receipt["estimated_units"], LIMITS["model"].units)
+            self.assertEqual(self.view()["requests"][-1]["state"], "reconciliation")
+            if slot == 1:
+                with self.assertRaises(Conflict):
+                    self.engine.authorize(self.batch, self.v2_packet("model", slot=2))
+            else:
+                with self.assertRaisesRegex(Conflict, "VALIDATION_FORMAL_REVIEW_REQUIRED"):
+                    self.engine.complete(self.batch)
+            proof = self.v2_model_bill(result, slot)
+            self.assertEqual(self.engine.reconcile(self.batch, proof)["actual_units"], proof["actual_units"])
+            self.engine = self.open_engine()
+            self.assertEqual(self.engine.reconcile(self.batch, proof)["actual_units"], proof["actual_units"])
+            self.engine.resume(self.batch)
+            completed.append((packet, grant))
+
+        for packet, grant in completed:
+            self.assertFalse(self.engine.execute(self.batch, grant, packet)["dispatched"])
+        view = self.view()
+        self.assertEqual([(row["operation"], row["slot"], row["state"]) for row in view["requests"]],
+                         [("search", 1, "settled"), ("source", 1, "settled"), ("model", 1, "settled"),
+                          ("model", 2, "settled")])
+        self.assertEqual(len(view["reconciliations"]), 3)
+        self.assertEqual(view["spent"], asdict(Budget(4, 1, 210, 90, 300, 20)))
+        self.assertEqual(view["research_denominator"], 0)
+        for table in ("runs", "shards"):
+            self.assertEqual(self.store.one(f"SELECT COUNT(*) AS count FROM {table}")["count"], 0)
+        self.assertEqual(self.opener.call_count, 4)
+
+        self.assertEqual(view["batch"]["state"], "approved")
+        with self.assertRaisesRegex(Conflict, "VALIDATION_FORMAL_REVIEW_REQUIRED"):
+            self.engine.complete(self.batch)
+        evidence_fixtures = FormalMatrixTests()
+        evidence_fixtures.setUp()
+        for requirement in ("C0-5", "C0-6"):
+            proof = evidence_fixtures.archive[f"{requirement}-proof"].copy()
+            proof.pop("batch_id")
+            self.engine.review(self.batch, requirement, proof)
+        charges = {row["request_id"]: {"actual_units": row["actual_units"], "bill_ref": row["subject_ref"]}
+                   for row in view["reconciliations"]}
+        for receipt in view["receipts"]:
+            request_id = receipt["request_id"]
+            if receipt["provider"] == "stackexchange":
+                charges[request_id] = {"actual_units": 0, "bill_ref": receipt["evidence_ref"]}
+            charges[request_id].update({key: receipt[key] for key in ("provider_request_id", "provider", "account_ref")})
+        with self.store.db() as db:
+            integrity = db.execute("PRAGMA integrity_check").fetchone()[0]
+            foreign_key_violations = len(db.execute("PRAGMA foreign_key_check").fetchall())
+        self.engine.review(self.batch, "C0-4", {
+            "sqlite_reopened": True, "restart_readback": True, "idempotent_readback": True,
+            "duplicate_charge_prevented": True, "currency": "USD", "integrity_check": integrity,
+            "foreign_key_violations": foreign_key_violations, "charges": charges,
+        })
+        matrix = self.engine.matrix(self.batch)
+        self.assertEqual({item["status"] for item in matrix.values()}, {"PASS"}, matrix)
+        self.assertEqual(self.engine.complete(self.batch), "complete")
+        self.assertEqual(self.open_engine().complete(self.batch), "complete")
+        self.assertEqual(self.opener.call_count, 4)
+
+    def test_v2_rejects_allowance_and_risk_mismatches_at_draft(self):
+        approved = self.v2_batch_packet()
+        for changes in ({"allowance_units": 99}, {"input_rate_units": 50_000}, {"auto_recharge": True},
+                        {"overdraft": True}, {"unbounded_charges": True}, {"rate_basis_tokens": 0}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                invalid = deepcopy(approved)
+                invalid["v2"]["systemone"].update(changes)
+                self.engine.draft(invalid)
+        self.opener.assert_not_called()
+
+    def test_v2_invalid_review_grant_and_rotated_model_credential_stop_before_send(self):
+        source = self.v2_source()
+        packet = self.v2_packet("model")
+        with self.assertRaises(Conflict):
+            self.engine.authorize(self.batch, packet)
+        with self.assertRaises(Conflict):
+            self.v2_review(source, source_quote_sha256=digest("Another synthetic quote"))
+        self.v2_review(source)
+        for changes in (
+            {"account_ref": "fixture-other-account"}, {"source_expires_at": self.start},
+            {"depends_on": source["request_id"], "depends_on_sha256": digest("different synthetic receipt")},
+            {"limit": asdict(Budget(1, 0, 800, 400, 1200, 39))},
+        ):
+            with self.subTest(changes=changes), self.assertRaises(Conflict):
+                self.engine.authorize(self.batch, packet | changes)
+        grant = self.engine.authorize(self.batch, packet)
+        self.fixture.configure(self.client, key=test_personal_governance.ROTATED)
+        with self.assertRaises((Conflict, VaultError)):
+            self.engine.execute(self.batch, grant, packet)
+        self.assertEqual(len(self.view()["requests"]), 2)
+        self.assertEqual(self.opener.call_count, 2)
+
+    def test_v2_model_usage_overage_is_preserved_and_stops_remaining_slot(self):
+        source = self.v2_source()
+        self.v2_review(source)
+        packet = self.v2_packet("model")
+        grant = self.engine.authorize(self.batch, packet)
+
+        def overage(request, *, timeout):
+            with self.v2_reply(request, timeout=timeout) as reply:
+                response = json.loads(reply.read())
+                response["usage"]["output_tokens"] = LIMITS["model"].output_tokens + 1
+                return Reply(json.dumps(response).encode(), headers=reply.headers)
+
+        self.opener.side_effect = overage
+        result = self.engine.execute(self.batch, grant, packet)
+        self.assertFalse(result["eligible"])
+        receipt = self.receipt(result["request_id"])
+        self.assertEqual(receipt["output_tokens"], 401)
+        self.assertEqual(receipt["reason"], "usage_over_budget")
+        self.assertIsNone(receipt["actual_units"])
+        self.assertEqual(self.view()["requests"][-1]["state"], "reconciliation")
+        self.engine.reconcile(self.batch, self.v2_model_bill(result, 1))
+        self.engine = self.open_engine()
+        with self.assertRaises(Conflict):
+            self.engine.resume(self.batch)
+        with self.assertRaises(Conflict):
+            self.engine.authorize(self.batch, self.v2_packet("model", slot=2))
+        self.assertEqual(self.opener.call_count, 3)
 
     def test_search_reconciliation_and_reopen_permit_only_the_approved_hit(self):
         packet, grant, search = self.execute_search()

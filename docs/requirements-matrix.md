@@ -14,8 +14,21 @@
 | G-1-P-C | 可信 Owner 和精确范围权限、必要材料与风险、审批撤销、个人凭证、追加式证据与 SQLite v9 | 已实现，验收绑定固定源码和对应 CI。[证据](evidence/g1-p-c/README.md) · [实现契约](architecture/g1-personal-approval-contract.md) |
 | G-1-P-D | C0-1 至 C0-6 同批实证，逐次授权、预约、审计及对账 | **BLOCKED**。C0-1 至 C0-6 正式状态均为 BLOCKED，C0-5、C0-6 保留既有离线结果，待当前批次复核。正式历史证据纳入、真实请求及正式研究分母均为 0。[六项矩阵与复验证据](evidence/g1-p-d/README.md) |
 | G-1-P-D-E | D 的受限执行工程补齐，Personal v10、逐操作授权、多维预算、回执与对账、故障恢复及六项关联 | **ENGINEERING_PASS**。隔离库 Personal v9→v10、账本、合成执行及恢复回放通过，原生 Windows 11 和交付 CI 已验。Business v9、诊断及契约 v1。实际部署库未迁移，真实研究请求 0。[迁移批准](decisions/g1-p-d-e-v10-owner-approval.md) · [工程证据](evidence/g1-p-d/engineering.md) |
-| G-1-P-D-L | 最多四个唯一真实操作槽位及同批归档、对账、恢复与证据判定 | 隔离 v11 与 Windows 10 工程回归通过。真实执行 **BLOCKED**，待实际部署、模型硬预算和逐操作批准。正式矩阵 0/6，实际请求 0。Windows 11 实机待验。[工程证据](evidence/g1-p-d/d-l-engineering.md) · [授权申请](evidence/g1-p-d/d-l-authorization-draft.md) |
+| G-1-P-D-L | 最多四个唯一真实操作槽位及同批归档、对账、恢复与证据判定 | 历史 D-L 隔离 v11 与 Windows 10 工程回归通过。Windows 11 定向复验与独立验收工作区部署准备通过。历史严格模式真实执行 **BLOCKED**，当时两片保留 `LIVE_MODEL_HARD_BUDGET_UNVERIFIED`，正式矩阵 0/6，实际请求 0。[工程证据](evidence/g1-p-d/d-l-engineering.md) · [Windows 11 证据](evidence/g1-p-d/d-l-windows11-deployment.md) · [原授权草案](evidence/g1-p-d/d-l-authorization-draft.md) |
 | G-1-P-R | 全部同批证据完成后的独立准入复审 | **NOT_STARTED**。M09 等个人准入及独立开发授权。商用 G-1 另行验收。[个人最低准入政策](architecture/personal-research-gate.md) |
+
+### Personal V2 在 G-1-P-D 的同批证据
+
+正式批次及逐槽授权待签发，六项正式同批 **0/6**。本机 Owner 须按当前账户、凭证、范围、通道、载荷、UTC、费用及剩余风险签发限制。完整取证后由 G-1-P-R 独立复审。以下是个人批次取证映射，C0 条款以原验收表为准。[原验收条款](#可机读的需求映射) · [待签发授权草案](evidence/g1-p-d/personal-v2-authorization-draft.md)
+
+| 原验收 | 本批待核证据 |
+|---|---|
+| C0-1 | PackyCode `typesafe-officially`、`/v1/systemone`、`jev-1.14.0` 两片真实回执，固定 8+3、题号归属及合并可核。 |
+| C0-2 | 同一批次两片的 Choice、Score、Noul 完整实际响应及脱敏的证据链。 |
+| C0-3 | 真实搜索和同一获准来源的官方回源、逐源许可及可追溯真实用户原话。 |
+| C0-4 | 实际分片用量、预约及实际扣费对账，余额状态、SQLite 重启回读及幂等证据。估算和实际扣费分别登记。 |
+| C0-5 | 可复用经适用性复核的隔离及故障实测产物。当前批次登记原始引用、摘要、覆盖及复核人。 |
+| C0-6 | 可复用经适用性复核的三层及全局召回产物。当前批次登记原始引用、摘要、注册表／索引版本、覆盖及复核人。 |
 
 ## M08-V Windows 11 回归验收
 

@@ -1,10 +1,12 @@
 # G-1-P-D 个人研究版同批验收准备
 
+当前 Personal V2 的政策和拟签发四槽操作见 [个人准入政策](../../architecture/personal-research-gate.md) 及 [V2 授权草案](personal-v2-authorization-draft.md)。正式批次与逐槽授权待签发，正式同批 0/6。下文记录 D-E 和 D-L 的历史范围和证据。D-L 后续的 Windows 11 定向复验和独立部署见 [实机及部署证据](d-l-windows11-deployment.md)。
+
 D-E Phase 0 复现了 v9 账本缺口。经负责人批准，Personal 工作库 v9→v10 受控迁移工程和 D 受限执行达到 **ENGINEERING_PASS**。以下将 D-E 历史证据和 D-L 当前进展分开记录。[Phase 0 复验与风险](phase-0.md) · [D-E 负责人批准](../../decisions/g1-p-d-e-v10-owner-approval.md) · [D-E 工程证据](engineering.md)
 
 **G-1-P-D-L 真实执行 `BLOCKED`。** 隔离实现和 Windows 10 回归已交付，Windows 11 实机待验。正式批次尚未建立，实际部署库未操作。**G-1-P-D = BLOCKED，正式矩阵 0/6**。个人门禁 `NOT_EVALUATED`，商用 G-1 `BLOCKED`，R 及 M09–M15 `NOT_STARTED`。M06 冻结，I18N-PRE 为 `PLANNED`，核心路线图 39/79。[个人准入](../../architecture/personal-research-gate.md) · [D-L 工程证据](d-l-engineering.md) · [D-L 授权申请](d-l-authorization-draft.md)
 
-## D-L 当前风险及核验
+## D-L 历史风险及核验
 
 | 项目 | 当前状态及停机条件 |
 | --- | --- |
