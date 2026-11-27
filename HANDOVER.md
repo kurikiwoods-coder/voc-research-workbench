@@ -2,15 +2,23 @@
 
 ## 当前接续 · M09-A
 
-活动分支 `codex/g1-personal-phase-1`，沿用草稿 PR #2。治理冻结和离线接续独立提交 `1ac1fdb8ddba14e789ae2b9b711c48c3bea01f9f`。M09-A 接口及合成回归已完成。本机缺少可用的 Sentence Transformers 推理栈和获准的模型权重，待离线加载复验。核心 **39/79**。[向量接口、安装及复验](docs/evidence/m09-a/README.md)
+活动分支 `codex/g1-personal-phase-1`，沿用草稿 PR #2。治理冻结和离线接续独立提交 `f6e18961396d30e36d6719b306ef8f9c35f74b47`。M09-A 接口及合成回归已完成。本机缺少可用的 Sentence Transformers 推理栈和获准的模型权重，待离线加载复验。核心 **39/79**。[向量接口、安装及复验](docs/evidence/m09-a/README.md)
 
 获准后使用固定模型版本和中英合成夹具验证尺寸、有限值、归一化和复跑一致性。M09-B 消费 `EmbeddingBatch.rows` 与 `vectors`，按相同顺序使用预处理文本与向量，固定聚类参数。后续证据回读继续经当前资格入口，引用历史 ID 时带精确片段版本。M09-B 尚未启动。
 
-## G-1-PERSONAL V2 接续
+## 研究优先策略与当前接续
 
-开发分支 `codex/g1-personal-phase-1`，草稿 PR #2。现有 Personal v11 独立验收工作区的原生 Windows 11 部署证据绑定源码 `6d70cd5011a249c83bf6c9df15f3900c2f595994`。在授权设备以可信本机 Owner 复核当前工作库及恢复连续性。在受保护位置准备当前账户、凭证、通道、条款、逐源许可、脱敏、费用和剩余风险材料，按原 G-1-P-D 入口仅签发本批所需操作。[Windows 11 历史部署证据](docs/evidence/g1-p-d/d-l-windows11-deployment.md) · [V2 授权草案](docs/evidence/g1-p-d/personal-v2-authorization-draft.md)
+2026-11-27 负责人批准 PRODUCT-REALIGNMENT-V1。先交付 Personal 的完整研究闭环，Business 保留共享核心和原治理标准。API & AI Model Center 复用三类模型适配器与独立采集连接器，首版 Decision 验证仍用 Jev。现有 M09 工程授权、数据契约与证据口径继续适用。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [适配器契约](docs/architecture/ai-model-adapter-contract.md)
 
-按四槽草案一次签发账户及预算，依次执行 Tavily、同一命中的官方回源、PackyCode 前 8 题及后 3 题，每槽一次。回源前确认实际命中和许可。两个模型槽共用一份 C0-2 脱敏及题组复核。模型固定为 `typesafe-officially`、`/v1/systemone`、`jev-1.14.0`。本机批准上限与供应商核实的限额各自留证，核对所有可计费请求的实际扣费。核对 C0-5、C0-6 既有证据摘要及覆盖后，登记负责人复核和原证据引用。六项齐备后交 G-1-P-R 独立复审。[个人准入政策](docs/architecture/personal-research-gate.md)
+继续 M09 隔离工程，之后推进 M10、单独授权的 I18N-PRE 和可独立验收的 M11 单元。M11 先用隔离夹具验证编码复核接口。M12-A 单独授权时实施 G-1 Personal 与 M02 最小增量，在正式真实研究和模型校准前恢复 G-1-P-D/R。完成 M12 校准及余项后执行 M11/M12 原定联调，再按原分期接续。M10 如确需提前调用外部模型，须取得该用途的独立授权并遵守现有门禁。[当前开发顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)
+
+G-1 暂停期间，既有工程和验收证据继续有效于其原范围。PackyCode 账户条款问题留在原通道记录。Personal 正式门禁为 **NOT_EVALUATED**，Business 正式门禁为 **BLOCKED**。以下四槽草案保留供历史追溯。现行隔离工程及正式研究的授权边界以本节和个人门禁政策为准。[个人门禁](docs/architecture/personal-research-gate.md) · [当前仓库状态](DEVELOPMENT_STATUS.md#product-realignment-v1-与当前工程状态)
+
+## G-1-PERSONAL V2 既有工程与草案
+
+开发分支 `codex/g1-personal-phase-1`，草稿 PR #2。现有 Personal v11 独立验收工作区的原生 Windows 11 部署证据绑定源码 `6d70cd5011a249c83bf6c9df15f3900c2f595994`。既有复验包含可信本机 Owner、工作库及恢复连续性。草案列明当前账户、凭证、通道、条款、逐源许可、脱敏、费用和剩余风险材料。[Windows 11 历史部署证据](docs/evidence/g1-p-d/d-l-windows11-deployment.md) · [V2 授权草案](docs/evidence/g1-p-d/personal-v2-authorization-draft.md)
+
+既有未签发的四槽草案依次登记 Tavily、同一命中的官方回源、PackyCode 前 8 题及后 3 题，每槽一次。两个模型槽固定于 `typesafe-officially`、`/v1/systemone`、`jev-1.14.0`，共用一份 C0-2 脱敏及题组复核。草案中的来源核验、预算、对账与证据复用要求保留。[个人准入政策](docs/architecture/personal-research-gate.md)
 
 在本机批准包保留未知费用风险的区别，以 `null` 记录，并引用 Owner 已签发的风险接受证据和金额。实际账户、凭证与令牌额度须和该批绑定。当前草案待签发，正式同批 0/6，真实请求 0。**G-1-PERSONAL = NOT_EVALUATED，G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED**。商用 G-1 **BLOCKED**，M09–M15 **NOT_STARTED**。下列 D-E 与 D-L 条目保留其交付时的状态和证据。
 
@@ -86,7 +94,7 @@ M08 的 P0 工程通过。M09 获得授权后，按项目、冻结范围、批�
 
 ## ROADMAP-V2 后续开发入口
 
-以 `3bd705b` 的 M06-R 冻结政策及当前远端 HEAD 为接续基线。G-1 = **BLOCKED**。查询 100K 的已知性能债务交 M13-A。在获准的后续模块开发前读取 [完整工作单元](docs/planning/ROADMAP-V2.md)、[关键路径与 G-1-R](docs/planning/development-sequence.md#下一授权入口)、[M06 消费接口](docs/architecture/m06-consumer-handover.md)和[验收矩阵](docs/requirements-matrix.md)。
+以 `3bd705b` 的 M06-R 冻结政策及当前远端 HEAD 为接续基线。G-1 = **BLOCKED**。查询 100K 的已知性能债务交 M13-A。在获准的后续模块开发前读取 [完整工作单元](docs/planning/ROADMAP-V2.md)、[当前接续顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)、[M06 消费接口](docs/architecture/m06-consumer-handover.md)和[验收矩阵](docs/requirements-matrix.md)。
 
 AI 模块同时读取[适配器协议](docs/architecture/ai-model-adapter-contract.md)、[生命周期与版本](docs/architecture/model-lifecycle-and-calibration.md)及[金标准与对照](docs/architecture/model-evaluation-protocol.md)。M09 承接向量边界，M10 承接最小生成式接口，M12 承接通用决策接口及 Jev 首套正式实现。按各阶段授权实施，保留固定版本、实际通道身份、原有 G-1 和正式验收。ROADMAP-V2 已核验本机专案 v2.2 的 27 页原件及原登记指纹，仓库提供摘要供接续阅读。[负责人批准](docs/decisions/roadmap-v2-owner-approval.md)
 

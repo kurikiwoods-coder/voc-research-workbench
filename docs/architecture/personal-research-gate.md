@@ -1,6 +1,6 @@
 # G-1-PERSONAL 最低准入政策
 
-`G1_PERSONAL_POLICY = DOCUMENTED`，`G1_PERSONAL_IMPLEMENTATION = PARTIAL`，`G-1-PERSONAL = NOT_EVALUATED`。个人版使用一条独立正式准入记录。G-1-P-D 负责同批六项实证，G-1-P-R 负责独立安全复审与最终准入。通过后，个人版 M09 仍按负责人授权开工。商用版沿用原 G-1，个人版进度由自身准入决定。[负责人批准](../decisions/dual-edition-owner-approval.md) · [实施顺序](../planning/g1-personal-implementation-plan.md)
+`G1_PERSONAL_POLICY = DOCUMENTED`，`G1_PERSONAL_IMPLEMENTATION = PARTIAL`，`G-1-PERSONAL = NOT_EVALUATED`。个人版使用一条独立正式准入记录。G-1-P-D 负责同批六项实证，G-1-P-R 负责独立安全复审与最终准入。个人正式研究须等这两步完成。M09 等隔离工程按各模块现有授权实施。商用版沿用原 G-1。[负责人批准](../decisions/dual-edition-owner-approval.md) · [当前实施顺序](../planning/ROADMAP-V2.md#当前接续顺序)
 
 ## 判定条件
 
@@ -17,11 +17,17 @@
 
 C0-5 与 C0-6 按原规范使用隔离夹具并保留可重复检查的结果，与真实输入、回执和正式统计分域。C0-6 是召回冒烟，M12 的 J-14 和金标准仍独立验收。其他阶段的真实采样、M12 校准、M13 发布和 M14 问卷验证仍依原标准。[原验收矩阵](../requirements-matrix.md#可机读的需求映射)
 
+## 暂停与恢复
+
+负责人通过 PRODUCT-REALIGNMENT-V1 保留 G-1 主动治理及后续实证的暂停状态。**G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED，G-1-PERSONAL = NOT_EVALUATED**。Personal V2 工程、草案及历史证据照常保留。PackyCode 账户条款待决事项仅约束该通道，额外专项调查停止。M11 独立工程就绪后，M12-A 获单独授权才做最小修正。M12 的真实研究及校准前恢复 D 同批六项与 R 独立复审。[正式 ADR](../decisions/product-realignment-v1-owner-approval.md#personal-最小准入修正) · [当前接续顺序](../planning/ROADMAP-V2.md#当前接续顺序)
+
+未来所选 Personal 通道按实际账户和用途核对 API 权限、模型身份及能力、输出契约、真实用量及费用、数据保护和预算。企业级深度供应商审计及重复行政审批不适用默认流程。具体条款、法律或安全要求有必要时仍须核验。明确禁止当前用途的通道继续关闭。凭证更新后的绑定与变动项核验依 [适配器契约](ai-model-adapter-contract.md#m12-a-最小接入范围)处理，当前运行代码及审批规则维持原样。Business Edition 沿用原严格治理。[商用原门禁](business-research-gate.md)
+
 ## Personal V2 批次治理
 
 Personal V2 沿用 `G-1-PERSONAL` 正式门禁和 C0-1 至 C0-6 的原有判定。负责人通过当前可信本机 Owner 会话签发受限预准入批次，绑定冻结研究范围、用途、实际账户、凭证版本、供应商通道及 UTC 窗口。现有 G-1-P-D 服务负责逐槽授权、预算预约、唯一发送权、档案及对账。批次只为准入取证，数据和计量保留在验证域。商用 G-1 使用其既有审批及验收政策。[商用原门禁](business-research-gate.md) · [Personal V2 授权草案](../evidence/g1-p-d/personal-v2-authorization-draft.md)
 
-模型路径固定为 PackyCode `typesafe-officially`、`/v1/systemone`、`jev-1.14.0`。负责人须独立核准当前账户 API 权利、通道及条款、可处理数据、逐源许可、最小脱敏载荷、费用和适用的剩余风险。必要条件缺失、禁止、失效或与当前账户和凭证版本不匹配时执行关闭。非强制未知事项按个人版审批规则记录其影响、保护措施、责任人及复核期限。[审批与风险](personal-approval-workflow.md)
+现有四槽草案的模型路径固定为 PackyCode `typesafe-officially`、`/v1/systemone`、`jev-1.14.0`。负责人须独立核准当前账户 API 权利、通道及条款、可处理数据、逐源许可、最小脱敏载荷、费用和适用的剩余风险。必要条件缺失、禁止、失效或与当前账户和凭证版本不匹配时执行关闭。非强制未知事项按个人版审批规则记录其影响、保护措施、责任人及复核期限。[审批与风险](personal-approval-workflow.md)
 
 2026-11-27 负责人冻结 Personal Edition 的 G-1 供应商治理范围。现有账户信息、适用的公开条款和可信本机 Owner 基础核验即可作为账户及用途证据。Owner 在现有证据注册表记录条款版本、适用账户和用途、核验结果及有效期。额外的供应商书面审批为可选材料。账户或用途无法确认时保留实际状态，适用条款明确禁止时阻断。Owner 的费用风险接受仅适用于已批准的费用风险。来源许可、脱敏、凭证安全、预算和实际费用对账继续按原标准核验。[审批与风险](personal-approval-workflow.md)
 
@@ -39,7 +45,7 @@ Personal V2 沿用 `G-1-PERSONAL` 正式门禁和 C0-1 至 C0-6 的原有判定�
 
 ## 预准入验收与最终放行
 
-G-1-P-D 在验证专用审计域收集证据。确需补测时按现有四槽顺序申请一批，依次为 Tavily 搜索、同一合格命中的官方回源、PackyCode 前 8 题、PackyCode 后 3 题。每槽最多一次，按实际证据核准后续槽。额外请求须由负责人另行批准。六项均有合格同批记录后交 G-1-P-R 独立复审。复审应逐项核对原验收标准、复用证据适用性、账户和凭证、授权及费用对账、许可及脱敏、异常与暂停记录，最终记录适用范围内的 `PASS` 或实际阻塞项。准入前正式编码、发布回执和业务分母保持关闭。M09 依负责人另行授权开工。
+G-1-P-D 在验证专用审计域收集证据。现有四槽草案依次登记 Tavily 搜索、同一合格命中的官方回源、PackyCode 前 8 题、PackyCode 后 3 题。每槽最多一次，按实际证据核准后续槽。恢复时以经授权的实际模型及通道为准，调整必要的执行配置，仍按同批六项原标准验收。额外请求须由负责人另行批准。六项均有合格同批记录后交 G-1-P-R 独立复审。复审应逐项核对原验收标准、复用证据适用性、账户和凭证、授权及费用对账、许可及脱敏、异常与暂停记录，最终记录适用范围内的 `PASS` 或实际阻塞项。准入前正式编码、发布回执和业务分母保持关闭。
 
 | 个人版门禁记录 | 必须保存 |
 |---|---|

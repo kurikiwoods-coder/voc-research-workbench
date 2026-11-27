@@ -6,6 +6,10 @@
 > 和问卷回流。主要修正四项：产品品类/任务大类/意图三层关系；候选意图与候选大类的
 > 原子确认；超过 20 个意图时的全局向量召回与 Jev 候选重排；正式统计分母与排除项目。
 
+## 现行产品接续
+
+[PRODUCT-REALIGNMENT-V1](../decisions/product-realignment-v1-owner-approval.md) 确认 Personal 优先交付全功能研究体验，两版共享核心与验收。发现和执行同是 P0 核心。Jev 仍以 `jev-1.14.0` 作为首个正式验证，后续通道及模型按适配契约择用。隔离工程按授权推进，正式研究仍须满足原 C0-1 至 C0-6、J-14、金标准及逐源许可。下文为 2026-11-23 规格摘要，现行开发顺序见 ROADMAP-V2。[适配器契约](../architecture/ai-model-adapter-contract.md) · [现行路线](../planning/ROADMAP-V2.md#当前接续顺序)
+
 ## 目的
 
 用站外真实用户原话发现清单外的新意图，用 Jev（强制，`jev-1.14.0`）规模化编码，

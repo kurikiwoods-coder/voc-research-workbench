@@ -1,6 +1,6 @@
 # ROADMAP-V2 完整开发路线图
 
-M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。工程单元计数为 **39/79**，商用 G-1 保持 **BLOCKED**。负责人已批准 M09-A 离线工程先行，实际本机模型待复验。[Windows 11 实机证据](../evidence/m08-v/README.md) · [M09-A](../evidence/m09-a/README.md)
+M08-V 在 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 上完成 Windows 11 实机与部署门禁复验。工程单元计数为 **39/79**，商用 G-1 保持 **BLOCKED**。M09-A 已完成合成工程验证，实际本机模型待复验。个人正式研究的准入复验安排见[当前接续顺序](#当前接续顺序)。[Windows 11 实机证据](../evidence/m08-v/README.md) · [M09-A](../evidence/m09-a/README.md)
 
 2026-11-25 负责人批准本规划。开发分支 `codex/p0-0-connectivity`，规划基线 `3bd705befb98ee108b77603763c5571ceb7fdc44`。草稿 PR #1 与该基线一致，Ubuntu、Windows Server 2022、Chromium 作业均通过。[负责人批准](../decisions/roadmap-v2-owner-approval.md) · [M06-R 基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45585265229) · [草稿 PR #1](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/1)
 
@@ -18,7 +18,24 @@ PDT v1.3.1 Word 正文与本机副本的 SHA-256 一致。ROADMAP-V2 已核对�
 
 ## 双版本准入与治理工作单元
 
-EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用核心研究引擎，分别适用 G-1-PERSONAL 及原 G-1。产品版本与本机、云端部署分别管理。个人门禁当前 NOT_EVALUATED，按 G-1-P-B、C、D、R 单独授权。M09-A 获独立授权开展合成离线工程，正式研究继续受版本门禁约束。商用准入继续按原同批和审批标准。两项已交付治理规划、四项接续及 PackyCode 历史费用补证均独立登记。下面 79 项及完成数 39 沿用。[双版本政策](../architecture/edition-policy.md) · [治理单元与接续](g1-personal-implementation-plan.md) · [费用补证](../evidence/g1-rb-f/README.md)
+EDITION-V1 规划完整 **Personal Edition** 与 **Business Edition**，共用核心研究引擎，分别适用 G-1-PERSONAL 及原 G-1。产品版本与本机、云端部署分别管理。个人门禁当前 NOT_EVALUATED，D 为 BLOCKED，R 为 NOT_STARTED。已交付工程及历史证据继续按原范围保留。商用准入继续按原同批和审批标准。两项已交付治理规划、四项接续及 PackyCode 历史费用补证均独立登记。下面 79 项及完成数 39 沿用。[双版本政策](../architecture/edition-policy.md) · [治理单元与接续](g1-personal-implementation-plan.md) · [费用补证](../evidence/g1-rb-f/README.md)
+
+## 当前接续顺序
+
+2026-11-27 负责人批准 PRODUCT-REALIGNMENT-V1，优先交付 Personal 的完整研究体验，发现与执行均保留为 P0 核心。采用原三类模型适配器及独立采集连接器，首个正式 Decision 实现用 Jev。继续按实际获准配置、模型及版本运行。此次决策沿用核心 **39/79** 和原分期验收。[正式 ADR](../decisions/product-realignment-v1-owner-approval.md) · [适配器契约](../architecture/ai-model-adapter-contract.md)
+
+1. 按现有授权完成 M09 隔离工程及验收。
+2. 实施并验收 M10。确需提前真实调用时，取得该次用途的独立授权，按现有门禁核验必要的技术、安全及使用条件。无法合法放行时沿用隔离工程。
+3. 按单独授权完成 I18N-PRE。
+4. 完成 M11 可独立交付的工程及隔离接口验收。
+5. M12-A 经单独授权后，同步实施 G-1 Personal 最小修正及必要 M02 增量。
+6. 在 M12 真实研究及模型校准前，恢复 G-1-P-D 的正式同批验收和 G-1-P-R 的独立复审。
+7. 完成 M12 正式模型校准及剩余任务。
+8. 完成 M11 与 M12 的原定真实联调验收。
+9. 按原分期推进 M13–M15、M08-E 及其他既有任务。
+10. 完成原 P0、P1、P2 正式验收。
+
+已获授权的隔离工程可在 G-1 暂停期间继续。PackyCode 账户条款留在原通道记录。M11-D 的真实联调验收跟在 M12 校准及余项之后，M12-A 以前只验收 M11 的独立工程及接口。
 
 ## I18N-PRE 国际化架构预留
 
@@ -61,8 +78,9 @@ flowchart TD
     P0 --> Register["M07 注册表 · M08-A 至 D 采集"]
     P0 --> Discovery["M09 和 M10 双轨发现"]
     Discovery --> I18N["I18N-PRE 独立专项 · 待单独授权"]
-    I18N --> HumanReview["M11 审核"]
-    P0 --> Apply["M12-A 至 E 决策编码"]
+    I18N --> HumanReview["M11 独立工程"]
+    HumanReview --> Apply["M12-A 与 G-1 最小修正 · M12 正式准入及编码"]
+    Apply --> Joint["M11 与 M12 原定联调验收"]
     P0 --> Output["M13-A 至 C 洞察 · M14-A 至 C 问卷"]
     P0 --> P0R["P0-R 核心验收"]
     P1 --> Expand["M08-E 来源 · M12-F 滚动校准"]
@@ -76,7 +94,7 @@ flowchart TD
     classDef blocked fill:#FCE5E2,stroke:#A24943,color:#592B29
     class Base,Review done
     class Gate blocked
-    class P0,P1,P2,Register,Discovery,I18N,HumanReview,Apply,Output,P0R,Expand,Trend,Feedback,P1R,Radar,P2R pending
+    class P0,P1,P2,Register,Discovery,I18N,HumanReview,Apply,Joint,Output,P0R,Expand,Trend,Feedback,P1R,Radar,P2R pending
 ```
 
 ## 基础工程与设计单元
@@ -136,7 +154,7 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 | M09-B | M09-A | BERTopic 聚类、主题提取和参数记录 | 可回放模型、预处理和参数 |
 | M09-C | M09-B | 主题运行版本、成员、证据、离线复跑与差异 | G3，主题能下钻到合格原话 |
 | M09-D | M09-C | 聚类视图、候选输出与已知/未知盲测 | DISCOVERY、G3，候选进入人审 |
-| M10-A | M06-C3、M09-A、已批准通道 | TopicGPT 四步编排与最小 LLM Adapter，预留多语言 Prompt 和输出语言控制 | MODEL-ADAPTER-01、DISCOVERY、PRIVACY |
+| M10-A | M06-C3、M09-A、真实外部调用须有已批准通道 | TopicGPT 四步编排与最小 LLM Adapter，预留多语言 Prompt 和输出语言控制 | MODEL-ADAPTER-01、DISCOVERY、PRIVACY |
 | M10-B | M10-A | 主题生成、精炼、分配、修正及每步留痕 | DISCOVERY，同范围复跑及证据核验 |
 | M10-C | M10-B、M07-A | 未知、低相似和残差候选及证据 | G3、J-10，保留已确认定义与待审输入 |
 | M10-D | M09-D、M10-C | BERTopic 与 TopicGPT 同样本、同版本对照 | DISCOVERY，单轨覆盖与双轨差异可复查 |
@@ -144,11 +162,11 @@ M01–M06 共 30 项。表中证据是原模块和原阶段已有的验收记录
 | M11-A | I18N-PRE、M06-C4、M07-A、M09/M10 候选 | 候选、未知与低置信队列，后接 M12 | CAT-4/5、J-5/10，输入版本和项目授权明确 |
 | M11-B | M11-A | 确认、驳回、合并、拆分及人工理由 | CAT-4/5，保留原模型结果和审计历史 |
 | M11-C | M07-C、M11-B、M06-C4 | 候选意图与任务大类联合审核、组合事务和版本发行 | CAT-9，现行资格、原子性、版本竞争和幂等重放 |
-| M11-D | M11-C、M12 联调 | 审核 UI、查询历史、编码复核接入 | J-5/6、PRIVACY，低置信必经队列 |
-| M12-A | M02、M06/M07 | 通用 Decision Adapter、版本配置和能力协议，Jev 首个正式适配，隔离合成适配用于工程测试 | MODEL-ADAPTER-01、MODEL-CAPABILITY-01、MODEL-VERSION-01，冻结原 Jev 行为 |
+| M11-D | M11-C、M12 接续契约 | 审核 UI、查询历史，使用隔离夹具验收编码复核接口 | J-5/6、PRIVACY，低置信必经队列。M12 校准及余项完成后做原定真实联调 |
+| M12-A | M02、M06/M07、M11 独立工程就绪及 M12-A 单独授权 | 通用 Decision Adapter、版本配置和能力协议，Jev 首个正式适配。同步进行 G-1 最小修正和必要的 M02 增量，复用隔离合成适配测试 | MODEL-ADAPTER-01、MODEL-CAPABILITY-01、MODEL-VERSION-01，保留原 Jev 验收与 SQLite v11 冻结基线 |
 | M12-B | M12-A、适用版本正式门禁、获准语料 | 固定 `jev-1.14.0` 的 Choice、Score、Noul 与完整概率落库 | J-1/4/9/12/13，缺字段记 `schema_gap` |
 | M12-C | M07-C、M09-A、M12-A/B | 全局意图 Top-K、None 与独立 Noul、未知和复核分流 | J-5/10/14，最多 19 个已知意图加 None，盲测 Recall@K ≥95% 才放量 |
-| M12-D | M11、M12-B/C、人工金标准 | 100–200 条金标准、中文子集、概率校准和阈值版 | J-2/3、G4、D2，报告分类 F1、分档一致和问题 F1 |
+| M12-D | M11 独立人审、M12-B/C、人工金标准 | 100–200 条金标准、中文子集、概率校准和阈值版 | J-2/3、G4、D2，报告分类 F1、分档一致和问题 F1 |
 | M12-E | M02-D、M12-A/B | 11 题 8+3、Token 预算、跨分片回执、账本、幂等恢复与故障处理 | J-6/7/8/11、G5/G7、TC-01～TC-08，实际用量、同步状态与输入可回查 |
 | M13-A | M06-C5、M08-D、M12 接续 | 统一指标、版本绑定和分母消费，承接十万级性能债务 | CAT-3/10，按同一证据交集、唯一发生与两条恒等式验算 |
 | M13-B | M13-A、M12 | 基础需求分布、问题分析、基础情感和样本漏斗 | BASIC-DASH、UI-STATES，区分来源和分母 |

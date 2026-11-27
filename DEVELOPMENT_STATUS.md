@@ -6,6 +6,18 @@
 
 真实研究 API 0 次。M06 **FROZEN**，Personal SQLite v11，Business SQLite v9，G-1-P-D **BLOCKED**，G-1-P-R **NOT_STARTED**，Personal Gate **NOT_EVALUATED**，Business Gate **BLOCKED**。M09-B 等待本地模型复验与负责人授权。
 
+## PRODUCT-REALIGNMENT-V1 与当前工程状态
+
+2026-11-27 负责人决策 **APPROVED**。决策登记时的接续基线为本机、远端及草稿 PR #2 一致的 `da045c9f76b095f762efbf42c84190de44b20472`。当时仓库尚无 M09 工程交付。M09 原有隔离开发授权有效，当前实现状态见本页顶部。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [当前接续](docs/planning/ROADMAP-V2.md#当前接续顺序)
+
+当前 **G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED，G-1-PERSONAL = NOT_EVALUATED，Business G-1 = BLOCKED**。Product Realignment 仅登记方向和返工边界。G-1 Personal 与 M02 等 M12-A 独立授权，M11 接口先在隔离环境验收，真实联调等 M12 校准与余项完成。本轮真实研究调用、供应商探针、余额查询、真实研究 Token 和费用均为 0。[返工范围](docs/decisions/product-realignment-v1-owner-approval.md#返工范围冻结)
+
+## API 架构确认与 G-1 暂停
+
+2026-11-27 核对草稿 PR #2 的开发分支 `codex/g1-personal-phase-1`，文档接续基线为 `bee8287359c965286b1fd38005ef9d1852bad3d8`，对应三项 CI 已通过。现行 Personal 工作库为 SQLite v11，Business 工作库为 v9，M06 冻结。核心进度 **39/79**。核对时仓库仍登记 M09–M15 为 **NOT_STARTED**，未发现已提交的 M09 工程成果。M09 的既有隔离开发授权继续有效。I18N-PRE 为 **PLANNED**。[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45932760024) · [当前开发顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)
+
+**G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED，G-1-PERSONAL = NOT_EVALUATED，商用 G-1 = BLOCKED**。本轮仅登记 API 架构和接续决策。G-1 的最小修正及 M02 增量等 M12-A 单独授权，正式研究及模型校准前复验。Personal V2、原 PackyCode 通道的待决事项及其已有回执继续按原范围保留。本轮真实研究 API、供应商探针、余额查询、研究 Token 和研究费用均为 0。[个人门禁](docs/architecture/personal-research-gate.md) · [适配器契约](docs/architecture/ai-model-adapter-contract.md)
+
 ## G-1-PERSONAL V2 本机预准入
 
 2026-11-27，Personal V2 沿用既有 G-1-P-D 受控执行，按当前账户、凭证、固定通道、逐源许可、Owner 费用及剩余风险批准准备一次四槽取证。既有 C0-5、C0-6 离线证据可在复核版本、适用范围及摘要后引用至该批次。历史模型合成回执及两笔费用继续用于原批次审计。C0-1 至 C0-6 的正式标准见原政策。[个人准入政策](docs/architecture/personal-research-gate.md) · [待签发的四槽草案](docs/evidence/g1-p-d/personal-v2-authorization-draft.md)
@@ -14,11 +26,11 @@ Personal V2 的费用风险按已确认不存在、未知、已知存在记录�
 
 **G-1-PERSONAL = NOT_EVALUATED，G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED**。正式批次和逐槽授权尚未签发，正式同批 0/6。真实请求、探针、余额查询、实际 Token、费用及正式研究分母增量均为 0。独立复审待六项同批证据齐备。商用 **G-1 = BLOCKED**。
 
-2026-11-27，已登记个人版治理冻结。现有账户信息、适用公开条款及 Owner 基础核验可满足账户和用途取证。PackyAPI 发布的商业条款明确排除消费者使用，现有账户材料无法确认该账户有覆盖本次个人本地研究的其他适用条款。原生 Windows 只读预检复核通过 Owner DPAPI、部署绑定、SQLite v11 完整性和外键检查。当前 Tavily 与 PackyCode 凭证可回读，正式批次、发送权及请求均为 0。按负责人决定停止本次真实执行，转交 M09 离线隔离方案，待单独授权。[PackyAPI 商业服务条款](https://docs.packyapi.com/docs/tos/TOS.html) · [M09 接续方案](HANDOVER.md#m09-离线隔离开发接续)
+2026-11-27，已登记个人版治理冻结。现有账户信息、适用公开条款及 Owner 基础核验可满足账户和用途取证。PackyAPI 发布的商业条款明确排除消费者使用，现有账户材料无法确认该账户有覆盖本次个人本地研究的其他适用条款。原生 Windows 只读预检复核通过 Owner DPAPI、部署绑定、SQLite v11 完整性和外键检查。当时 Tavily 与 PackyCode 凭证可回读，正式批次、发送权及请求均为 0。按负责人决定暂停真实执行。[PackyAPI 商业服务条款](https://docs.packyapi.com/docs/tos/TOS.html) · [M09 接续](HANDOVER.md#当前接续--m09-a)
 
 ## I18N-PRE 规划登记
 
-2026-11-26，**I18N-PRE = PLANNED**。M09、M10 的语言接口和证据提前约束已登记。M10 验收完成后等待负责人单独授权实施，在 M11 启动前完成专项。G-1-PERSONAL 继续原接续顺序，核心进度为 39/79。[负责人批准](docs/decisions/i18n-pre-owner-approval.md)
+2026-11-26，**I18N-PRE = PLANNED**。M09、M10 的语言接口和证据提前约束已登记。M10 验收完成后等待负责人单独授权实施，在 M11 启动前完成专项。G-1 的当前接续见本页顶部，核心进度为 39/79。[负责人批准](docs/decisions/i18n-pre-owner-approval.md)
 
 ## G-1-P-D 个人版正式同批验收准备
 

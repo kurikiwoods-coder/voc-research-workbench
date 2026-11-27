@@ -1,11 +1,13 @@
 # G-1-PERSONAL 实施与验证计划
 
-Phase 1 交付资料、两版架构和最低准入。后续按 **G-1-P-B → G-1-P-C → G-1-P-D → G-1-P-R** 单独授权，完成个人准入后再决定 M09。正式个人版与商用版分别出具结论。[负责人批准](../decisions/dual-edition-owner-approval.md) · [双版本政策](../architecture/edition-policy.md)
+Phase 1 交付双版本架构与最低准入。后续形成服务端策略、审批中心、D-E 工程以及 Personal V2 四槽取证草案。Personal 工作库 v11、Business v9。正式个人版与商用版分别验收。[Phase 1 记录](../decisions/dual-edition-owner-approval.md) · [双版本政策](../architecture/edition-policy.md)
+
+[PRODUCT-REALIGNMENT-V1](../decisions/product-realignment-v1-owner-approval.md) 暂停 G-1 主动治理，允许当前已授权的 M09 隔离开发继续。完成 M11 可独立交付的工程后，M12-A 单独授权时处理 G-1 Personal 与 M02 最小增量。D/R 在 M12 真实研究及校准前按独立授权恢复，M11 与 M12 原联调留在 M12 校准和余项完成后。PackyCode 条款待决事项仅适用于原通道。
 
 | 归属 | 单元 | 当前及验收 |
 |---|---|---|
 | 个人版治理 | EDITION-V1、G-1-P-A | 2 项政策和设计已交付。服务端策略已实现 |
-| 后续个人版治理 | G-1-P-B、G-1-P-C、G-1-P-D、G-1-P-R | B ENGINEERING_PASS，B-V 原生 Windows 11 实机及部署门禁 PASS。C 已实现，验收以实际证据为准。D/R 另行授权。[B-V 证据](../evidence/g1-p-b-v/README.md) · [C 证据](../evidence/g1-p-c/README.md) |
+| 后续个人版治理 | G-1-P-B、G-1-P-C、G-1-P-D、G-1-P-R | B、C、D-E ENGINEERING_PASS，B-V 原生 Windows 11 实机及部署门禁 PASS。D BLOCKED、R NOT_STARTED，恢复待独立授权。[B-V 证据](../evidence/g1-p-b-v/README.md) · [C 证据](../evidence/g1-p-c/README.md) |
 | 配套历史补证 | G-1-R-B-F | 控制台原始 CSV 已核对。个人 Windows 10 的原始 SQLite 及相关材料待本机独立核实 |
 | 原研究路线 | 79 个原核心单元 | 维持 39/79。上述治理与补证独立记录 |
 
@@ -37,6 +39,8 @@ C 的供应商审批是独立前提。暂未评价的 G-1-PERSONAL 继续阻断�
 新增代码位置和 API 签名在下一轮实施设计明确。上表中的 `corpus.py`、`denominators.py` 等为兼容复核对象，优先在调用层补前置，避免改动冻结核心判定。
 
 ## 最小迁移设计
+
+以下为 B/C 的历史迁移设计。现行 SQLite v11 基线冻结，M12-A 只复用现有存储与凭证能力。确需改动核心契约或 Schema 时须先另行批准。[返工范围](../decisions/product-realignment-v1-owner-approval.md#返工范围冻结)
 
 - B 先实现策略与旧路径兼容，保持 SQLite v8。未配置个人策略时没有有效个人准入事件，数据及旧结果继续按原规则访问。
 - C 需要持久化时，提议在工作库追加最少的治理表，使用下一可用 schema 号。首表记录供应商审批事件及版本化撤销，以版本、项目、用途、通道和凭证引用关联，现行视图从事件求有效记录。D 的正式批次与结论用独立版本域追加；B/C 不提前生成六项业务通过记录。具体表、索引和字段先按下一轮授权审定。凭证与审批材料留在受控本机存储，SQLite 保存最小引用与必要摘要。

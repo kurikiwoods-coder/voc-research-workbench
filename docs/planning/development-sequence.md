@@ -2,17 +2,17 @@
 
 冻结基线为 `3bd705befb98ee108b77603763c5571ceb7fdc44`。M01–M06 工程验收通过，M06-R 复审通过并冻结。G-1 保持 BLOCKED。M07 及 M08 P0 A–D 的隔离工程验收通过，P1 的 M08-E 及 M09–M15 待启动。G-1-R-A 已实现，PackyCode 合成契约通过，正式 G-1-R-B 待补供应商审核和同批验收。箭头表示依赖。联合验收另列为里程碑。[工作单元](ROADMAP-V2.md) · [M07 工程证据](../evidence/m07/README.md) · [M08 工程证据](../evidence/m08-cd/README.md) · [G-1-R-A 接续](../packycode.md) · [基线审计](../audits/m06-final-engineering-audit.md)
 
-个人版下一授权为 **G-1-P-B → G-1-P-C → G-1-P-D → G-1-P-R**。个人准入通过后，再按权限另行授权 M09。商用 G-1 独立验收。M08-V 本机验收继续绑定其原源码，当前核心工程 39/79。[实施设计](g1-personal-implementation-plan.md) · [M08-V 证据](../evidence/m08-v/README.md)
+当前按已有授权接续 M09 隔离工程。M11 独立工程就绪后再单独授权 M12-A 的 G-1 Personal 与 M02 最小增量，正式准入及联调按各自阶段核验。商用 G-1 独立验收。M08-V 继续绑定其原源码，当前核心工程 39/79。[研究优先 ADR](../decisions/product-realignment-v1-owner-approval.md) · [现行顺序](ROADMAP-V2.md#当前接续顺序)
 
 ## M01–M15 模块依赖图
+
+下图中 M08 至 M11 包含隔离工程。实际采集、模型调用与正式研究各自需要相应数据许可及准入。
 
 ```mermaid
 flowchart TD
     M01["M01 基础工程"] --> M02["M02 API 配置中心"]
     M01 --> M03["M03 研究项目与范围"]
     M02 --> G1["Business G-1 阻塞"]
-    M02 --> Personal["G-1-PERSONAL 待评价"]
-    Personal -->|个人准入后另行授权| M09
     M03 --> M04["M04 CSV 和 Excel 导入"]
     M04 --> M05["M05 原始语料治理"]
     M05 --> M06["M06 三层数据与统计"]
@@ -26,13 +26,14 @@ flowchart TD
     I18N --> M11["M11 候选审核"]
     M07 --> Joint["注册表与审核联验"]
     M11 --> Joint
-    Joint --> M12["M12 决策编码与校准"]
-    G1 -->|商用正式采集| M08
-    Personal -->|个人正式采集| M08
+    Joint --> M12A["M12-A 接口与最小修正"]
+    M12A --> Personal["G-1-PERSONAL 同批与复审"]
+    M12A --> M12["M12 决策编码与校准"]
     G1 -->|商用正式编码| M12
     Personal -->|个人正式编码| M12
     M06 --> M13["M13 洞察与报告"]
-    M12 --> M13
+    M12 --> ModelReview["M11 与 M12 原定联调"]
+    ModelReview --> M13
     M13 --> M14["M14 问卷与回流"]
     M14 --> P1R["P1-R 运营验收"]
     M13 --> P1R
@@ -43,7 +44,7 @@ flowchart TD
     class M01,M02,M03,M04,M05,M06 done
     class M07 done
     class M08 done
-    class Personal,M09,M10,I18N,M11,Joint,M12,M13,M14,P1R,M15 pending
+    class Personal,M09,M10,I18N,M11,Joint,M12A,M12,ModelReview,M13,M14,P1R,M15 pending
     class G1 blocked
 ```
 
@@ -51,7 +52,7 @@ M07 先交稳定 ID、版本结构、候选态、共享定义及查询契约。M
 
 ## M06-R 至 P0-R 关键路径
 
-下图记录原商用准入和 P0 正式闭环。共用研究模块的个人版接续依 G-1-PERSONAL 和独立授权。
+下图记录原商用准入和 P0 正式闭环。个人隔离工程的顺序及正式研究边界依[现行路线](ROADMAP-V2.md#当前接续顺序)。
 
 ```mermaid
 flowchart TD
@@ -110,7 +111,7 @@ flowchart TD
 
 ## 下一授权入口
 
-个人阶段先等待负责人授权 G-1-P-B/C，完成版本判定、可信权限及审批。G-1-P-D 的个人正式同批实测及 G-1-P-R 的独立复审各等单独授权。PackyCode 原合成调用授权已用尽。个人供应商强制项、风险接受、正式和合成证据复用规则见[个人门禁](../architecture/personal-research-gate.md)及[实施计划](g1-personal-implementation-plan.md)。
+继续已授权 M09。M12-A 需在 M11 独立工程就绪后获单独授权。M12 正式研究及校准前，由单独授权恢复 G-1-P-D 同批实测及 G-1-P-R 独立复审。PackyCode 原合成授权已用尽。个人供应商强制项、风险接受、正式和合成证据复用规则见[个人门禁](../architecture/personal-research-gate.md)及[实施计划](g1-personal-implementation-plan.md)。
 
 商用 G-1-R 需负责人单独授权。拿到授权后，先核对实际所选提供商及调用通道的留存政策、地区、分处理商、公开语料处理范围和组织审核。TypeSafe 的 ZDR 以实际组织证据为准，JevModel 及中转通道分别审查。检查既有脱敏回执能否按原规则纳入同一验收批次，并按最小必要调用量执行所缺步骤。若所选通道存在 Score 等字段缺口，保留 schema_gap，按原流程独立审查可能合格的其他 Jev 通道。齐全后记录同批次 C0-1～C0-6、后端回读、余额同步或未同步状态及审查凭据。任何缺项保留 BLOCKED，正式 P0 仍等 G-1。工作台已有连通性中心、恢复入口及专用凭证界面。[连通性操作](../connectivity.md) · [G-1 矩阵](../requirements-matrix.md#当前验收快照) · [既有 Tavily 回执](../evidence/p0-0/tavily-live/README.md)
 
@@ -123,8 +124,8 @@ flowchart TD
 | M09 | A–D 合并为完整离线主题试点 | 向量/索引版本、聚类复跑及盲测。预留语言参数和 Embedding 多语言能力 |
 | M10 | A–C 生成流程和残差，D/E 双轨及审核交接 | 同样本比较、无新意图和新类盲测，离线验证候选交接。预留多语言 Prompt 和输出控制 |
 | I18N-PRE | M10 验收后单独授权，M11 启动前完成 | 双版本共用 Locale 与衍生证据契约，切换语言时统计、权限、稳定 ID 一致。[专项范围](../decisions/i18n-pre-owner-approval.md) |
-| M11 | A–D 合并候选、组合事务和审核 UI | 与 M07 联合发行，与 M12 连通复核入口 |
-| M12 | A 接口与兼容层，B/C 真实编码和召回，D/E 校准、分片及账本按风险分批 | 单独复审版本、概率、幂等和校准。F 延续到 P1 |
+| M11 | 候选、组合事务和审核 UI 可独立交付，M12 复核接口使用隔离夹具 | 与 M07 联合发行，M12 校准及余项完成后执行原定真实联调 |
+| M12 | A 接口、G-1 Personal 与 M02 最小增量，B/C 真实编码和召回，D/E 校准、分片及账本按风险分批 | 单独复审版本、概率、幂等和校准。F 延续到 P1 |
 | M13 | A–C 基础洞察和报告，D/E 高级视图和四周基线 | 两条对账、真实数据及历史读取。100K 技术债在 A 登记 |
 | M14 | A–C 草稿与试填，D 发布回收，E 分析回写 | P0 实操与完整 G6 分阶段验收 |
 | M15 | A–C 竞品与来源，D Radar，E/F 调度与历史报告 | P2-R 跨模块回归与正式验收 |
