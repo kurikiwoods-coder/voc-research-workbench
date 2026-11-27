@@ -66,3 +66,42 @@ C0-1 至 C0-6、J-14、金标准、模型准确性与概率校准、真实原话
 | 状态与交付 | 缺真实数据时使用明确空态。各模块先交必要功能界面，M13 增量完善体验，P2-R 执行原端到端可用性和视觉一致性验收 |
 
 以上为获批准的产品方向。现有界面及未实施能力按工程状态登记，UI 工作计入原模块及 P2-R。
+
+## 增量开发与开源复用
+
+2026-11-27 负责人批准长期采用 **Research First**（研究能力优先）、**Selective Open-Source Reuse**（选择性复用）、**Minimal Rework**（最小必要返工）、**Progressive Delivery**（渐进交付）和 **Unified UI Design**（统一视觉与交互）。沿用 ROADMAP-V2 的 79 个核心工作单元及原验收标准。
+
+VOC Research Workbench 面向全品类、跨平台、跨语言的 AI 用户需求研究与情报分析。研究闭环覆盖用户声音采集 → 原始语料与证据管理 → 双轨意图发现 → 人工审核 → 意图注册 → AI 概率编码 → 数据分析 → 问卷验证 → 研究回流 → 竞品持续监测。Personal Edition 与 Business Edition 共享完整核心研究能力及证据标准，按各自准入、审批和治理规则运行。
+
+### 按需参考与引入
+
+仅为当前模块按需参考算法、实现、研究方法、交互和测试经验。通用算法或组件可作为正式依赖引入，也可经适配器或按兼容许可复用。引入前核对精确版本、许可证、兼容性、安全性、维护情况及本地部署能力。完整平台主要用于参考。禁止大规模 Fork、迁移或替换现有架构。
+
+| 范围 | 候选参考 |
+|---|---|
+| M09 | MaartenGr/BERTopic、Sentence Transformers |
+| M10 | chtmp223/topicGPT |
+| M11 | Taguette、QualCoder、Label Studio |
+| M12 | scikit-learn、Evidently |
+| M13 | Apache ECharts、Cytoscape.js |
+| M14 | Formbricks、Google Forms 官方接口 |
+| M15 | changedetection.io |
+| 整体研究流程 | TextSense、GovCXAnalyzer、Rereflect |
+
+候选按实际需要评估。子任务运行定向测试，模块结项运行该模块完整回归，P0、P1、P2 运行原定阶段验收。优先复用实现、测试和文档，已验收模块按实际问题复查。新增治理或审批须有明确研究用途。
+
+### 已验收成果与自主研究契约
+
+保留 M01 基础工程、M04 数据导入及 M05 原始语料、去重、溯源和证据契约。M06 保持 **FROZEN**。M07 注册表及版本契约只按 M11/M12 联调的实际需要增量优化。M03 在 P0-R 前按实测问题调整流程。M08 在 P0-R、M08-E、M15 按需优化。核心数据关系、数据库迁移及重大架构调整须由负责人单独授权。
+
+项目自主维护产品品类、用户意图与任务大类三层关系、全局意图注册表及版本、BERTopic 与 TopicGPT 双轨编排、全局 Top-K 召回、可切换的 Decision Adapter 及首版 Jev Choice、Score、Noul 契约。原话证据链、人工审核及新意图确认、研究结论、问卷验证与回流继续由本工作台管理。复用组件须遵循既有统计口径和研究质量标准，模型缺失的概率须如实记录。[冻结统计口径](../architecture/m06-statistics-contract.md) · [验收矩阵](../requirements-matrix.md)
+
+Embedding、LLM、Decision 三类适配器及 BYOK 继续适用，Jev 用于首个正式 Decision 验证。按实际供应商、模型、版本及请求记录 Token、费用和运行证据，分别标示实际费用与估算费用，未知余额显示未同步。G-1 Personal 与 M02 在 M12-A 获单独授权后做最小增量，正式研究及模型校准前复验适用门禁。Business 继续按原准入标准验收。[适配契约](../architecture/ai-model-adapter-contract.md) · [Personal 准入](../architecture/personal-research-gate.md)
+
+### 阶段交付与统一界面
+
+按现行路线推进 M09 → M10 → I18N-PRE → M11 → M12-A 最小返工 → G-1 必要验证 → M12 剩余单元及联调 → M13 → M14 P0 单元 → P0-R → P1 → M15 → UI-DESIGN-V1 → P2-R。实际工作单元、前置依赖和正式验收条件以 ROADMAP-V2 为准。现有 M09-A 模型复验及 M09-B 接续按原授权和前置条件推进。[路线图](../planning/ROADMAP-V2.md#当前接续顺序) · [M09-A 证据](../evidence/m09-a/README.md)
+
+M09–M15 优先交付可用流程、真实数据绑定、图表交互、证据下钻、公共组件复用以及中英文布局，保持前端展示与业务逻辑分离。P0、P1 各自执行原定功能及可用性验收。M15-F 完成后、P2-R 前，UI-DESIGN-V1 在既有交付范围内统一 M01–M15 的设计系统、布局、研究交互与可视化。该收尾节点沿用既有工作单元和 P2-R 验收。
+
+UI/UX Pro Max、Frontend Design、Web Design Guidelines、Playwright、VOC Research UX、VOC Data Visualization 和 VOC UI Orchestrator 登记为届时的协作候选，安装、版本及实施方案在该节点单独审核。
