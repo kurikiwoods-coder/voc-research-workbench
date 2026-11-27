@@ -10,7 +10,9 @@
 
 **G-1-P-D = BLOCKED，G-1-P-D-E = ENGINEERING_PASS**。D-E 交付 `4c7d705b277352af530c59f917f787bcc3a69bfd` 的三项 CI 已通过。隔离 Windows 11 核验 Personal v10 迁移备份、回滚、撤销连续性、Business v9 兼容及合成执行。继续采用草稿 PR #2。[D-E 工程证据](docs/evidence/g1-p-d/engineering.md) · [D-E 交付 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45794168453)
 
-**G-1-P-D-L 真实执行 `BLOCKED`。** 隔离 v11、迁移恢复及 Windows 10 回归通过。对账按供应商、账户与供应商请求 ID 绑定唯一归属。SQLite 结算与受保护费用档案任一侧缺项时停止新发送。恢复原结算须核对原档案和逐笔账单。待批准实际部署库归属、备份、恢复目标和迁移。实际 0 次，正式历史证据纳入 0。PackyCode/SystemOne 缺实际通道可执行的逐请求输出硬上限及最坏扣费证明。各操作须独立批准账户、凭证、来源、载荷、硬上限及 UTC 窗口。G-1-P-R 与 M09–M15 为 `NOT_STARTED`，I18N-PRE 为 `PLANNED`。[D-L 工程证据](docs/evidence/g1-p-d/d-l-engineering.md) · [D-L 授权申请](docs/evidence/g1-p-d/d-l-authorization-draft.md)
+**G-1-P-D-L 真实执行 `BLOCKED`。** Windows 11 定向复验 70/70、原生 DPAPI 3/3。新建 Personal v11 独立验收工作区已验证本机 Owner、ACL、备份、恢复与重启回读。接续使用当前 Windows 用户的 LocalApplicationData 下的专用目录，实际位置及受保护部署材料只在本机使用。核对独立恢复连续性、当前账户与凭证、限额和逐操作授权。两个模型槽位保留 `LIVE_MODEL_HARD_BUDGET_UNVERIFIED`。正式同批 0/6，真实请求 0，正式历史证据纳入 0。G-1-P-R 与 M09–M15 为 `NOT_STARTED`，I18N-PRE 为 `PLANNED`。[Windows 11 与部署证据](docs/evidence/g1-p-d/d-l-windows11-deployment.md) · [D-L 授权草案](docs/evidence/g1-p-d/d-l-authorization-draft.md)
+
+对账按供应商、账户与供应商请求 ID 绑定唯一归属。SQLite 结算与受保护费用档案任一侧缺项时停止新发送。恢复原结算须核对原档案和逐笔账单。各操作须独立批准账户、凭证、来源、载荷、硬上限及 UTC 窗口。[D-L 工程证据](docs/evidence/g1-p-d/d-l-engineering.md)
 
 ## G-1-PERSONAL Phase 1 与后续授权
 

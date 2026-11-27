@@ -1,12 +1,12 @@
 # G-1-P-D-L 真实同批实证授权模板
 
-**真实执行 `BLOCKED`。** 此申请尚未签发。D-L 隔离集成和 Windows 10 工程回归通过，Windows 11 实机仍待验。PackyCode/SystemOne 缺可执行的逐请求输出硬上限和最坏扣费证明。实际部署库未操作。真实搜索、回源、模型、供应商探针、余额查询、真实研究 Token、费用和正式研究分母均为 0。C0-1 至 C0-6 均为 `BLOCKED`。[D-L 工程证据](d-l-engineering.md) · [个人准入政策](../../architecture/personal-research-gate.md)
+**真实执行 `BLOCKED`。** 本草案尚未签发。Windows 11 定向实机及新建独立 Personal v11 工作区的部署准备均通过。PackyCode/SystemOne 缺可执行的逐请求输出硬上限和最坏扣费证明。真实搜索、回源、模型、供应商探针、余额查询、真实研究 Token、费用和正式研究分母均为 0。C0-1 至 C0-6 均为 `BLOCKED`。[Windows 11 与部署证据](d-l-windows11-deployment.md) · [个人准入政策](../../architecture/personal-research-gate.md)
 
 将填妥的材料置于授权设备的受保护目录。下方的「待登记」须由经可信本机会话核验的负责人填写或复核。只向交付证据提供脱敏引用和摘要。真实凭证、原话、未脱敏条款、完整账单和库文件均从本机受控位置核验。未核准的字段保持缺项。
 
-## 实际库部署申请
+## 独立工作区部署记录
 
-请先确认现有 Personal 工作库的绝对路径和所有者，或批准创建独立 Personal 正式验收工作区。审批须覆盖停机、SQLite 一致性备份目标、新目录恢复演练及 v11 迁移，并指定独立 DPAPI 授权档案目录。工作区和档案应仅供受信 Windows 用户访问。确认版本、`application_id`、完整性、稳定 ID 与凭证绑定后，再在同一 Windows 用户上下文登记 `provision`。命令使用本机审批材料路径与交互身份校验。部署批准的作用范围限于本机准备。
+已在受信 Windows 用户的 LocalApplicationData 下建立独立 Personal v11 正式验收工作区。Owner、ACL、DPAPI、SQLite 一致性备份、新目录恢复及重启回读已验证。部署批准的作用范围限于本机准备。正式批次签发前须复核当前工作库身份和独立恢复连续性。工作区路径、Owner 验证材料和运行数据仅在授权设备核验。
 
 ## A 批次与当前授权
 
@@ -46,6 +46,16 @@
 | Owner 决议 | 待登记批次批准引用、签发及到期 UTC、材料版本／摘要、按槽位冻结的限制、批准或保持阻塞及理由。同一命中确定后核准回源，最终脱敏输入与两片载荷确定后核准模型操作。 |
 
 历史合成费用仅供估算参考。两片输入 809、输出 220、合计 1,029 Token，实扣 USD 0.000238。[历史费用证据](../g1-rb-f/README.md)
+
+## SystemOne 硬预算证据及待批准的等效控制
+
+PackyAPI 的分组文档确认 `typesafe-officially` 对应 `/v1/systemone`。TypeSafe 直连公开价为每百万输入 Token USD 0.042、输出免费。直连 API 公开请求契约未提供可核验的逐请求输出硬限制。历史 PackyCode 两片 CSV 对应每百万输入 Token USD 0.294、输出 USD 0，当前实际账户适用的费率、取整、供应商重试与重复收费边界、独立令牌硬额度以及透支和自动充值行为均待证。[PackyAPI 分组](https://docs.packyapi.com/docs/token/2-group.html#typesafe-officially分组) · [TypeSafe 直连计价](https://help.typesafe.ai/articles/5187202169-how-much-does-jev-cost) · [System One 请求契约](https://api.typesafe.ai/redoc)
+
+最小等效方案限固定账号、独立令牌、`typesafe-officially` 和 `jev-1.14.0`。负责人可批准收集一份适用证明，其中列出以下可强制执行的约束。满足约束后再审批逐槽金额、载荷与 UTC 窗口。
+
+1. 对两片冻结题组分别提供供应商执行的输出 Token 硬上限，或提供适用于准确模型版本和题型的确定性响应边界及服务端计数规则，足以计算逐请求输出 Token 上限。
+2. 对每片提供计价、币种、取整、失败请求计费及提供者允许的最大计费尝试次数。将所有允许尝试计入单槽最坏费用，并确保独立令牌有服务端硬扣费上限、无透支且自动充值关闭。禁用新增客户端重试。
+3. 两项证明须都适用。预付钱包、SDK 或本地估算、响应后 Token 回执、历史账单和零输出价格各自保留其证据范围。实际通道证明缺失时，两片继续由 `LIVE_MODEL_HARD_BUDGET_UNVERIFIED` 阻断。
 
 ## 获批后的执行顺序
 

@@ -2,7 +2,9 @@
 
 以 `bfd0af65b8807268ebafad5b053a3c32a6ee963e` 接续。工程源码 `32011552dce73f03d732843cc98d69f61ce6ccb8`。Personal 分支继续由草稿 PR #2 交接。[D-E 基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45800882085) · [Personal PR #2](https://github.com/kurikiwoods-coder/voc-research-workbench/pull/2)
 
-**G-1-P-D-L 工程已交付隔离实现，正式执行 BLOCKED。** 六项正式同批为 **0/6**。未建立实际批次和正式凭证绑定。未操作实际部署库。实际供应商请求、余额查询、费用、历史证据正式复用及新增正式分母均为 0。
+**G-1-P-D-L 工程已交付隔离实现，正式执行 BLOCKED。** 六项正式同批为 **0/6**。未建立实际批次和正式凭证绑定。实际供应商请求、余额查询、费用、历史证据正式复用及新增正式分母均为 0。
+
+2026-11-27 对 `6d70cd5011a249c83bf6c9df15f3900c2f595994` 补验 Windows 11，定向套件 70/70、原生 DPAPI 3/3。负责人已批准新建独立工作区。Personal v11、Owner provision、当前用户 DACL、一致性备份、新目录恢复及重启回读均验证通过。实际历史库保持未操作。正式批次仍需独立恢复连续性、逐项授权及模型硬预算证明。[Windows 11 与部署证据](d-l-windows11-deployment.md)
 
 ## 实现与边界
 
@@ -26,7 +28,6 @@ Windows 10 22H2 Build 19045.6466，Python 3.12.14、SQLite 3.53.1、Node 24.22.3
 | 冷启动 | `scripts/cold_start.py`，3/3。另从工程提交解包，在普通、中文和带空格路径各运行同脚本 3 次，9/9 |
 | 历史归档 | 依 CI 的四条 `src.outputs.audit_receipt --verify` 命令，4/4。正式复用 0 |
 | Git 扫描 | `git diff --cached --check` 与 `scripts/check-no-secrets.sh` 通过。合成电子邮箱探针改为运行时构造 |
-| Windows 11 | D-L 源码待实机验收。D-E 历史实机和 Windows Server 2022 CI 各有独立记录 |
 
 ## 对账复审
 
@@ -43,7 +44,7 @@ Windows 10 22H2 Build 19045.6466，Python 3.12.14、SQLite 3.53.1、Node 24.22.3
 
 | 优先级 | 待核实 |
 | --- | --- |
-| P1 | 实际部署库归属、路径、当前版本、旧客户端停机、一致性备份与新目录恢复演练授权。需要在实际 Windows 用户上下文核对 ACL、DPAPI 锚和重启读取。 |
+| P1 | 独立工作区部署复验已通过。正式批次仍需独立可信的恢复连续性证据，核对批次、当前工作库身份、撤销水位、凭证轮换和请求费用状态。 |
 | P1 | Tavily、Stack Exchange 和 PackyCode 的账户及用途授权，当前条款、费率、额度、风险和逐源许可。包内引用由 Owner 背书，实际材料和失效条件须单独查验。 |
 | P1 | PackyCode SystemOne 逐请求硬输出限额、供应商可能重试和最坏费用的实际证明。 |
 | P1 | 正式 C0-5、C0-6 需对照实际测试产物、源码及数据摘要后纳入，当前批次及对应批准均未创建。 |
