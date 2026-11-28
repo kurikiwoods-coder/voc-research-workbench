@@ -1,0 +1,185 @@
+{
+  "version": "m09d-quality-validation-v1",
+  "rows": [
+    {
+      "id": "V-001",
+      "text": "I'm not trying to freeze a heat setting. I need to stop the stove starting with a single accidental touch.",
+      "language": "en"
+    },
+    {
+      "id": "V-002",
+      "text": "I feed signed forms through once. I need the handwritten notes on the back captured too.",
+      "language": "en"
+    },
+    {
+      "id": "V-003",
+      "text": "Can I wipe the controls with the burner running without changing the timer or switching zones?",
+      "language": "en"
+    },
+    {
+      "id": "V-004",
+      "text": "There's no storage slot for the spare nibs. Mine slide out of the box.",
+      "language": "en"
+    },
+    {
+      "id": "V-005",
+      "text": "灶已经关了，小孩一碰就亮，想把初次启动锁住。",
+      "language": "zh"
+    },
+    {
+      "id": "V-006",
+      "text": "The sorting is fine. I need the duplex feeder to stop dropping the reverse side of the thin sheets.",
+      "language": "en"
+    },
+    {
+      "id": "V-007",
+      "text": "批量扫描时想直接顺序输出正反面，几十页逐张翻太费劲了。",
+      "language": "zh"
+    },
+    {
+      "id": "V-008",
+      "text": "机器把每张白纸都加进文件里，我得逐页删。想保留有手写批注的页。",
+      "language": "zh"
+    },
+    {
+      "id": "V-009",
+      "text": "A visitor leaned against the off cooktop and switched it on. Can it require a long press or another action first?",
+      "language": "en"
+    },
+    {
+      "id": "V-010",
+      "text": "Duplex works. Can it leave out genuinely empty backs without losing a faint note or stamp?",
+      "language": "en"
+    },
+    {
+      "id": "V-011",
+      "text": "离开厨房以后想让它维持关着，别让清洁时误按一次就加热。",
+      "language": "zh"
+    },
+    {
+      "id": "V-012",
+      "text": "关机放着时猫踩一下别把灶打开，开火要有人主动解锁才行。",
+      "language": "zh"
+    },
+    {
+      "id": "V-013",
+      "text": "煮粥时一滴水落到面板上就把档位改了，想有个烹饪中的锁定。",
+      "language": "zh"
+    },
+    {
+      "id": "V-014",
+      "text": "炖汤的时候希望锁住操作键，锅继续煮，小孩摸到也别把火力调掉。",
+      "language": "zh"
+    },
+    {
+      "id": "V-015",
+      "text": "双面扫描不成问题，想让成品少些白页，有章的反面一定要留下。",
+      "language": "zh"
+    },
+    {
+      "id": "V-016",
+      "text": "I don't need a second file. Put the writing on each back side immediately after its front page.",
+      "language": "en"
+    },
+    {
+      "id": "V-017",
+      "text": "保温杯刻度太浅，室外看不出还剩多少水。",
+      "language": "zh"
+    },
+    {
+      "id": "V-018",
+      "text": "自动处理我都开了，偶尔有一页不见了，记不得原来那面有没有字。",
+      "language": "zh"
+    },
+    {
+      "id": "V-019",
+      "text": "The child lock keeps the cooktop off, which is fine. I need a way to protect the settings after I start cooking.",
+      "language": "en"
+    },
+    {
+      "id": "V-020",
+      "text": "Our counter processes receipt packets with blank divider sheets. I want the resulting PDF to exclude those blanks.",
+      "language": "en"
+    },
+    {
+      "id": "V-021",
+      "text": "一叠收据背面有签字，想两面一起扫，不用手翻再排序。",
+      "language": "zh"
+    },
+    {
+      "id": "V-022",
+      "text": "清洁台面时灶具本来没开，一碰就启动，这个动作能多一步确认吗？",
+      "language": "zh"
+    },
+    {
+      "id": "V-023",
+      "text": "扫描成PDF之前能不能把纸张反面的内容也收进去？现在每次少一半。",
+      "language": "zh"
+    },
+    {
+      "id": "V-024",
+      "text": "I wish the manufacturer's label were on the underside rather than the front.",
+      "language": "en"
+    },
+    {
+      "id": "V-025",
+      "text": "The reverse side is often blank. A real mark should remain, but I don't want to remove all the empty images myself.",
+      "language": "en"
+    },
+    {
+      "id": "V-026",
+      "text": "Only every other page appears after I scan folded instructions. Please grab front and back in the same pass.",
+      "language": "en"
+    },
+    {
+      "id": "V-027",
+      "text": "I don't know if it started or just lit up. It was my first time trying the buttons.",
+      "language": "en"
+    },
+    {
+      "id": "V-028",
+      "text": "电源线收纳位置太靠外，入柜的时候会顶住门。",
+      "language": "zh"
+    },
+    {
+      "id": "V-029",
+      "text": "一边炒菜一边擦台面总会碰到触控键，想保留原火力别乱变。",
+      "language": "zh"
+    },
+    {
+      "id": "V-030",
+      "text": "I need the cooktop to keep heating while the panel is locked, so a wet cloth can't turn it down.",
+      "language": "en"
+    },
+    {
+      "id": "V-031",
+      "text": "扫描合同要留有字的背页，全白页希望自动丢掉，不然交上去多几十张。",
+      "language": "zh"
+    },
+    {
+      "id": "V-032",
+      "text": "I only need a lock when the unit is idle so a hand brushing the panel can't fire up a burner.",
+      "language": "en"
+    },
+    {
+      "id": "V-033",
+      "text": "有时锁住太死，有时又容易误碰，做饭前后两种情况我都碰到过。",
+      "language": "zh"
+    },
+    {
+      "id": "V-034",
+      "text": "The pages after lunch came out odd. I changed the paper before I noticed so I don't know which bit failed.",
+      "language": "en"
+    },
+    {
+      "id": "V-035",
+      "text": "能识别完全空白那一面再跳过吗？背面有一点内容的照样保留。",
+      "language": "zh"
+    },
+    {
+      "id": "V-036",
+      "text": "I brush the controls while stirring and the heat jumps. Let me lock the current level while the pan is on.",
+      "language": "en"
+    }
+  ]
+}

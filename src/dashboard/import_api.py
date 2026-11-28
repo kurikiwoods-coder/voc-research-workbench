@@ -18,6 +18,8 @@ from starlette.concurrency import run_in_threadpool
 
 from src.config import ROOT
 from src.dashboard.api_setup import body
+from src.dashboard.edition_access import EditionRoute, permits, scope_id as authorized_scope, transaction_authorizer
+from src.edition_policy import Permission
 from src.ingestion.import_files import ImportProblem, MAX_UPLOAD, file_kind, list_sheets, read_sheet
 from src.ingestion.import_mapping import evaluate, field_catalog, suggestions
 from src.raw_store.store import Conflict, dump
@@ -108,7 +110,7 @@ def issue_csv(batch, rows):
 
 
 def register_imports(app):
-    router = APIRouter(prefix="/api/imports", tags=["数据导入"])
+    router = APIRouter(route_class=EditionRoute, prefix="/api/imports", tags=["数据导入"])
     slots = BoundedSemaphore(MAX_PARSE_JOBS)
 
     @contextmanager
@@ -128,9 +130,10 @@ def register_imports(app):
         return FileResponse(ROOT / "examples" / f"import-template.{kind}", filename=f"voc-import-template.{kind}")
 
     @router.get("/{study_id}/batches")
-    def history(study_id: UUID, db=Depends(store), offset: Offset = 0):
+    def history(request: Request, study_id: UUID, db=Depends(store), offset: Offset = 0):
         with errors():
-            return db.history(str(study_id), offset)
+            return db.history(str(study_id), offset, scope_id=authorized_scope(request),
+                              authorize=transaction_authorizer(request))
 
     @router.post("/{study_id}/scopes/{scope_id}/uploads", status_code=201)
     async def upload(request: Request, study_id: UUID, scope_id: UUID, db=Depends(store)):
@@ -143,7 +146,8 @@ def register_imports(app):
         study, scope = str(study_id), str(scope_id)
 
         def save(data, kind):
-            return db.upload(study, scope, filename, kind, data, list_sheets(data, kind))
+            return db.upload(study, scope, filename, kind, data, list_sheets(data, kind),
+                             authorize=transaction_authorizer(request))
 
         with errors(), parse_slot():
             kind = file_kind(filename)
@@ -158,28 +162,29 @@ def register_imports(app):
             return await run_in_threadpool(save, bytes(buffer), kind)
 
     @router.get("/{study_id}/uploads/{file_id}")
-    def inspect(study_id: UUID, file_id: UUID, db=Depends(store),
+    def inspect(request: Request, study_id: UUID, file_id: UUID, db=Depends(store),
                 sheet_index: Annotated[int, Query(ge=0, lt=40)] = 0):
         with errors(), parse_slot():
-            file, scope = db.get_file(str(study_id), str(file_id), sheet_index)
+            file, scope = db.get_file(str(study_id), str(file_id), sheet_index, authorize=transaction_authorizer(request))
             sheet = read_sheet(file.pop("source_bytes"), file["kind"], sheet_index)
             db.check_preview_sources(str(study_id), sheet)
             return {"file": file, "scope_version": scope["scope_version"], **sheet_preview(sheet)}
 
     @router.delete("/{study_id}/uploads/{file_id}")
-    def discard(study_id: UUID, file_id: UUID, db=Depends(store)):
+    def discard(request: Request, study_id: UUID, file_id: UUID, db=Depends(store)):
         with errors():
-            db.discard(str(study_id), str(file_id))
+            db.discard(str(study_id), str(file_id), authorize=transaction_authorizer(request))
             return {"discarded": True}
 
     @router.post("/{study_id}/uploads/{file_id}/preview")
-    def preview(study_id: UUID, file_id: UUID, plan=Depends(form(Preview)), db=Depends(store)):
+    def preview(request: Request, study_id: UUID, file_id: UUID, plan=Depends(form(Preview)), db=Depends(store)):
         with errors(), parse_slot():
             try:
-                file, scope = db.get_file(str(study_id), str(file_id), plan.sheet_index)
+                file, scope = db.get_file(str(study_id), str(file_id), plan.sheet_index,
+                                          authorize=transaction_authorizer(request))
             except Conflict:
                 receipt = db.revoked_preview_receipt(str(study_id), str(file_id), plan.sheet_index,
-                                                    plan.mapping, plan.privacy)
+                                                    plan.mapping, plan.privacy, authorize=transaction_authorizer(request))
                 if receipt is None:
                     raise
                 return receipt
@@ -198,16 +203,17 @@ def register_imports(app):
             }
 
     @router.post("/{study_id}/uploads/{file_id}/confirm", status_code=201)
-    def confirm(study_id: UUID, file_id: UUID, plan=Depends(form(Confirm)), db=Depends(store)):
+    def confirm(request: Request, study_id: UUID, file_id: UUID, plan=Depends(form(Confirm)), db=Depends(store)):
         study, upload_id = str(study_id), str(file_id)
         with errors():
             receipt = db.confirmation_receipt(
                 study, upload_id, plan.sheet_index, plan.mapping, plan.privacy, plan.preview_token,
+                authorize=transaction_authorizer(request),
             )
             if receipt is not None:
                 return receipt
         with errors(), parse_slot():
-            file, scope = db.get_file(study, upload_id, plan.sheet_index)
+            file, scope = db.get_file(study, upload_id, plan.sheet_index, authorize=transaction_authorizer(request))
             sheet = read_sheet(file.pop("source_bytes"), file["kind"], plan.sheet_index)
             rows, summary, distinct_sources_kept = evaluate(sheet, plan.mapping, scope, plan.privacy)
             signature = preview_signature(file, plan, distinct_sources_kept)
@@ -215,23 +221,26 @@ def register_imports(app):
                 raise Conflict("导入配置已变化，请重新运行质量检查。")
             if not (summary["staged"] or summary["pending_review"]):
                 raise ImportProblem("没有可暂存的记录。请修正文件中的错误后重新上传。")
-            return db.commit(file, sheet, plan.sheet_index, plan.mapping, plan.privacy, signature, rows, summary)
+            return db.commit(file, sheet, plan.sheet_index, plan.mapping, plan.privacy, signature, rows, summary,
+                             authorize=transaction_authorizer(request))
 
     @router.get("/{study_id}/batches/{batch_id}")
-    def detail(study_id: UUID, batch_id: UUID, db=Depends(store), status: RowFilter = "all", offset: Offset = 0):
+    def detail(request: Request, study_id: UUID, batch_id: UUID, db=Depends(store), status: RowFilter = "all", offset: Offset = 0):
         with errors():
-            return db.get_batch(str(study_id), str(batch_id), status, offset)
+            return db.get_batch(str(study_id), str(batch_id), status, offset,
+                                include_corpus=permits(request, Permission.READ_CORPUS),
+                                authorize=transaction_authorizer(request))
 
     @router.get("/{study_id}/batches/{batch_id}/errors.csv")
-    def report(study_id: UUID, batch_id: UUID, db=Depends(store)):
+    def report(request: Request, study_id: UUID, batch_id: UUID, db=Depends(store)):
         with errors():
-            batch, rows = db.report(str(study_id), str(batch_id))
+            batch, rows = db.report(str(study_id), str(batch_id), authorize=transaction_authorizer(request))
             return Response(issue_csv(batch, rows), media_type="text/csv",
                             headers={"Content-Disposition": f'attachment; filename="import-errors-{batch_id}.csv"'})
 
     @router.post("/{study_id}/batches/{batch_id}/revoke")
-    def revoke(study_id: UUID, batch_id: UUID, db=Depends(store)):
+    def revoke(request: Request, study_id: UUID, batch_id: UUID, db=Depends(store)):
         with errors():
-            return db.revoke(str(study_id), str(batch_id))
+            return db.revoke(str(study_id), str(batch_id), authorize=transaction_authorizer(request))
 
     app.include_router(router)

@@ -1,10 +1,72 @@
 # 开发交接
 
+## 当前接续 · M09-C 已签收与 M09-D 工程交付
+
+活动分支 `codex/g1-personal-phase-1`，沿用草稿 PR #2。**M09-A/B = ENGINEERING_PASS**，**M09 = PARTIAL**，已验收核心 **42/79**。M09-A 原生 Windows 11 CPU 的实际模型通过 3/3。M09-B 定向及上游回归通过 86/86，真实运行专项 3 项通过、3 项主题纯度诊断未通过。[向量接口、安装及复验](docs/evidence/m09-a/README.md) · [聚类接口及证据](docs/evidence/m09-b/README.md)
+
+M09-C 的本地发现服务 TopicRuns 提供已封存快照、精确证据回查、离线复跑与比较。2026-11-28，负责人签收 `8a2ee1e3465964112e8f6a132932f35658557839`。原生 Windows 11 26H2 x64（26300.9974）固定模型专项 22 通过、0 失败、3 项 G3 诊断跳过，非回环尝试 0。三项 CI 通过。M09-C 为 **ACCEPTED / ENGINEERING_PASS**。正式 G3 待验收。[接口、备份与复验命令](docs/evidence/m09-c/README.md)
+
+M09-D 本机工作台支持冻结范围选择、主题与离群检查、证据回查、候选审核、指定修订重读及离线重算比较。使用已核验的本地模型与合成证据清单，主题侧库 v2 与工作库配对备份。候选留在发现层供审核。原始盲测及质量缺口见 [M09-D 工程证据](docs/evidence/m09-d/README.md)。
+
+后续交付记录功能完整度、技术验证、质量缺口、Token 效率、成本风险和接续条件，并附 SHA、PR、工作区状态与下一阶段交付条件。以实际执行和可核验证据填写，缺少 Token 数据时填 N/A。[工程交付报告规范](docs/decisions/product-realignment-v1-owner-approval.md#工程交付报告规范)
+
+## 研究优先策略与当前接续
+
+2026-11-27 负责人批准 PRODUCT-REALIGNMENT-V1。先交付 Personal 的完整研究闭环，Business 保留共享核心和原治理标准。API & AI Model Center 复用三类模型适配器与独立采集连接器，首版 Decision 验证仍用 Jev。现有 M09 工程授权、数据契约与证据口径继续适用。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [适配器契约](docs/architecture/ai-model-adapter-contract.md)
+
+按模块选择性复用成熟开源组件，先核对依赖许可、兼容性和本地部署条件。M01–M08 只按批准范围增量调整，M06 保持冻结。各模块先完成可用流程与真实数据接入，M15-F 后、P2-R 前在既有交付范围内统一视觉与研究交互。M09-A 复验与 M09-B 接续沿用原授权及前置条件。[增量开发与开源复用](docs/decisions/product-realignment-v1-owner-approval.md#增量开发与开源复用)
+
+继续 M09 隔离工程，之后推进 M10、单独授权的 I18N-PRE 和可独立验收的 M11 单元。M11 先用隔离夹具验证编码复核接口。M12-A 单独授权时实施 G-1 Personal 与 M02 最小增量，在正式真实研究和模型校准前恢复 G-1-P-D/R。完成 M12 校准及余项后执行 M11/M12 原定联调，再按原分期接续。M10 如确需提前调用外部模型，须取得该用途的独立授权并遵守现有门禁。[当前开发顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)
+
+G-1 暂停期间，既有工程和验收证据继续有效于其原范围。PackyCode 账户条款问题留在原通道记录。Personal 正式门禁为 **NOT_EVALUATED**，Business 正式门禁为 **BLOCKED**。以下四槽草案保留供历史追溯。现行隔离工程及正式研究的授权边界以本节和个人门禁政策为准。[个人门禁](docs/architecture/personal-research-gate.md) · [当前仓库状态](DEVELOPMENT_STATUS.md#product-realignment-v1-与当前工程状态)
+
+## G-1-PERSONAL V2 既有工程与草案
+
+开发分支 `codex/g1-personal-phase-1`，草稿 PR #2。现有 Personal v11 独立验收工作区的原生 Windows 11 部署证据绑定源码 `6d70cd5011a249c83bf6c9df15f3900c2f595994`。既有复验包含可信本机 Owner、工作库及恢复连续性。草案列明当前账户、凭证、通道、条款、逐源许可、脱敏、费用和剩余风险材料。[Windows 11 历史部署证据](docs/evidence/g1-p-d/d-l-windows11-deployment.md) · [V2 授权草案](docs/evidence/g1-p-d/personal-v2-authorization-draft.md)
+
+既有未签发的四槽草案依次登记 Tavily、同一命中的官方回源、PackyCode 前 8 题及后 3 题，每槽一次。两个模型槽固定于 `typesafe-officially`、`/v1/systemone`、`jev-1.14.0`，共用一份 C0-2 脱敏及题组复核。草案中的来源核验、预算、对账与证据复用要求保留。[个人准入政策](docs/architecture/personal-research-gate.md)
+
+在本机批准包保留未知费用风险的区别，以 `null` 记录，并引用 Owner 已签发的风险接受证据和金额。实际账户、凭证与令牌额度须和该批绑定。当前草案待签发，正式同批 0/6，真实请求 0。**G-1-PERSONAL = NOT_EVALUATED，G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED**。商用 G-1 **BLOCKED**。下列 D-E 与 D-L 条目保留其交付时的状态和证据。
+
+## M09 离线隔离开发接续
+
+四槽真实实证因当前 PackyCode 账户的个人用途无法确认而暂停。M09-A/B 已完成本机离线工程验收，M09-C 原生 Windows 11 复验通过并已签收，M09-D 交付采用隔离合成数据。正式运行依适用版本门禁。[工作单元](docs/planning/ROADMAP-V2.md) · [M08 消费契约](docs/architecture/m08-consumer-handover.md)
+
+1. **M09-A**。在临时 SQLite 和合成夹具中接续 M05 资格、M06 冻结范围与片段版本、M07 精确封版注册表及 M08 追溯。保存预处理、输入摘要、向量模型与维度版本。原话语言、分析语言及输出语言分别传递，保留模型多语言能力配置。合成向量验证适配器契约，固定 MiniLM 权重复验中英相似度、向量与缓存复跑。
+2. **M09-B/C**。使用预装且获准的本地模型和固定 BERTopic 参数验证聚类。在断网环境保存并复跑主题、成员、参数、运行版本、证据引用与差异。回查须重验当前资格和精确片段版本。原话只读，候选与正式注册表分别保存。
+3. **M09-D**。用合成已知主题、未知主题、空结果和跨品类样本验证候选交接、证据下钻与盲测。复验跨项目隔离、失效证据拒绝、可重放、正式统计隔离，并记录结果与 GitHub CI。运行测量标明合成或本地模型证据及适用范围；准入、真实语料处理、正式编码和发布由各自门禁判定。
+
+隔离环境使用合成数据和无凭证运行配置，关闭出网，模型和依赖从已有的获准离线资产准备。缺失依赖时先完成本地接口与合成回归，真实模型验证据实挂起。[适配器协议](docs/architecture/ai-model-adapter-contract.md) · [语言接口约束](docs/decisions/i18n-pre-owner-approval.md)
+
+## G-1-P-B-V 与 G-1-P-C 接续
+
+工作分支 `codex/g1-personal-phase-1`，草稿 PR #2，目标 `codex/p0-0-connectivity`。本机从 `0d43be5f7b707c4ad8a3384dabc5c595b15d0b7b` 接续。B-V 的原生实机及部署门禁和证据提交 `97e942d` 的三项 CI 通过。C 验收源码为 `912ff28e0a10e3329bc49c6e9fdc97e290229a68`。[B-V 证据](docs/evidence/g1-p-b-v/README.md) · [C 验收](docs/evidence/g1-p-c/README.md)
+
+**G-1-P-B = ENGINEERING_PASS**，验收源码 `d7c711660843c8c095fccbedd4b67d5303f9226b`。[三项 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749971864)
+
+个人版通过本机可信启动开启。Owner 在「版本与研究准入」选择获准项目，按权限配置本机凭证、登记材料和风险、提交申请、批准或撤销。C 工作库 SQLite v9，经隔离验证后接续。G-1-PERSONAL 为 **NOT_EVALUATED**，原商用 G-1 为 **BLOCKED**。原 PackyCode 执行与续跑授权已耗尽。M06 冻结，核心进度 39/79。[可信启动](docs/architecture/g1-personal-server-policy.md) · [C 契约](docs/architecture/g1-personal-approval-contract.md)
+
+**G-1-P-D = BLOCKED，G-1-P-D-E = ENGINEERING_PASS**。D-E 交付 `4c7d705b277352af530c59f917f787bcc3a69bfd` 的三项 CI 已通过。隔离 Windows 11 核验 Personal v10 迁移备份、回滚、撤销连续性、Business v9 兼容及合成执行。继续采用草稿 PR #2。[D-E 工程证据](docs/evidence/g1-p-d/engineering.md) · [D-E 交付 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45794168453)
+
+**G-1-P-D-L 真实执行 `BLOCKED`。** Windows 11 定向复验 70/70、原生 DPAPI 3/3。新建 Personal v11 独立验收工作区已验证本机 Owner、ACL、备份、恢复与重启回读。接续使用当前 Windows 用户的 LocalApplicationData 下的专用目录，实际位置及受保护部署材料只在本机使用。核对独立恢复连续性、当前账户与凭证、限额和逐操作授权。两个模型槽位保留 `LIVE_MODEL_HARD_BUDGET_UNVERIFIED`。正式同批 0/6，真实请求 0，正式历史证据纳入 0。G-1-P-R 与 M09–M15 为 `NOT_STARTED`，I18N-PRE 为 `PLANNED`。[Windows 11 与部署证据](docs/evidence/g1-p-d/d-l-windows11-deployment.md) · [D-L 授权草案](docs/evidence/g1-p-d/d-l-authorization-draft.md)
+
+对账按供应商、账户与供应商请求 ID 绑定唯一归属。SQLite 结算与受保护费用档案任一侧缺项时停止新发送。恢复原结算须核对原档案和逐笔账单。各操作须独立批准账户、凭证、来源、载荷、硬上限及 UTC 窗口。[D-L 工程证据](docs/evidence/g1-p-d/d-l-engineering.md)
+
+## G-1-PERSONAL Phase 1 与后续授权
+
+接续 M09、M10 时先核对适用准入及独立开发授权，并遵守语言参数、Embedding 能力、TopicGPT 多语言 Prompt、原话证据和稳定 ID 的提前约束。M10 验收完成后，等待负责人单独授权 I18N-PRE，在 M11 开始前完成专项。[授权与约束](docs/decisions/i18n-pre-owner-approval.md)
+
+基于已验收的 M08-V `dd89a14`，交付双版产品规划、个人最低准入及两条 PackyCode 费用证据。各阶段按实际授权接续。接续顺序为 G-1-P-B 服务端版本策略、G-1-P-C 个人审批、G-1-P-D 同批实证、G-1-P-R 独立复审。个人版准入及 M09 各自待负责人授权。**G-1-PERSONAL = NOT_EVALUATED**，商用 **G-1 = BLOCKED**，M09 = **NOT_STARTED**。[批准记录](docs/decisions/dual-edition-owner-approval.md) · [下一轮实施与测试](docs/planning/g1-personal-implementation-plan.md)
+
+后续保留旧 `run_checks`、分片和传输的 PackyCode 真实阻断，个人版由可信服务端作用域独立判定。两版共用全部研究引擎，版本和部署方式独立，保留原关系、可信权限、实时资格及统计口径。[个人门禁](docs/architecture/personal-research-gate.md) · [商用门禁](docs/architecture/business-research-gate.md) · [风险审批](docs/architecture/personal-approval-workflow.md)
+
+历史费用 **$0.000238** 已据原始 CSV 脱敏补证。个人 Windows 10 的原始 SQLite 及相关材料需设备内只读复核，标记 **LOCAL_VERIFICATION_PENDING**。原发送授权已耗尽，复核以原证据为准。M08-V 的 Windows 11 实机与部署 PASS 按原验收源码保留。[费用及本机核对](docs/evidence/g1-rb-f/README.md)
+
 ## M08-V 跨设备接续
 
 `codex/p0-0-connectivity` 在公司 Windows 11 上从 `3bd705b` 安全快进 9 个提交至验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0`。M08-V、Windows 11 实机及部署门禁均通过。后续部署用现有受控迁移及一致性备份升级工作库至 v8，保留诊断、演示、任务及 PackyCode 预检的独立账本。[Windows 11 实机证据](docs/evidence/m08-v/README.md) · [v7→v8 恢复证据](docs/evidence/m08-v/database-migration.md)
 
-M09-A 可在单独授权后接续隔离工程，按项目、冻结范围、记录、精确片段与 M07 封版注册表指针读取当前合格证据。G-1 仍为 BLOCKED，正式准入、外发、供应商审批及同批验收按原矩阵处理。真实研究 API 和真实供应商探针本轮各 0 次。M08-E 与 M09–M15 均尚未启动。[M09 消费契约](docs/architecture/m08-consumer-handover.md)
+M08-V 验收时，M08-E 与 M09–M15 均尚未启动。接续按项目、冻结范围、记录、精确片段与 M07 封版注册表指针读取当前合格证据。G-1 当时为 BLOCKED，正式准入、外发、供应商审批及同批验收按原矩阵处理。该轮真实研究 API 和真实供应商探针各 0 次。当前 M09 状态见本页顶部。[M09 消费契约](docs/architecture/m08-consumer-handover.md)
 
 ## M08-C/D 接续
 
@@ -20,7 +82,7 @@ M08 的 P0 工程通过。M09 获得授权后，按项目、冻结范围、批�
 
 ## G-1-R-B-P 接续
 
-在个人电脑普通 Windows 用户会话运行 `python -m src.execution.packycode_preflight` 查询合成回执。同一账本已有两次预约和两份成功响应，11 题合并回执为 **PASS**，此次发送授权已耗尽。保留原账本和账户证据。供应商的第二片单笔实扣可凭控制台明细补证。正式 G-1 的供应商审核及 C0-1 至 C0-6 同批验收仍适用。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
+在个人电脑普通 Windows 用户会话运行 `python -m src.execution.packycode_preflight` 查询合成回执。同一账本已有两次预约和两份成功响应，11 题合并回执为 **PASS**，此次发送授权已耗尽。保留原账本和账户证据。两片控制台实际费用已由原始 CSV 补证，个人 Windows 10 原始账本待本机复验。[追加证据](docs/evidence/g1-rb-f/README.md)正式 G-1 的供应商审核及 C0-1 至 C0-6 同批验收仍适用。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
 
 ## G-1-R-A 接续
 
@@ -38,7 +100,7 @@ M08 的 P0 工程通过。M09 获得授权后，按项目、冻结范围、批�
 
 ## ROADMAP-V2 后续开发入口
 
-以 `3bd705b` 的 M06-R 冻结政策及当前远端 HEAD 为接续基线。G-1 = **BLOCKED**。查询 100K 的已知性能债务交 M13-A。在获准的后续模块开发前读取 [完整工作单元](docs/planning/ROADMAP-V2.md)、[关键路径与 G-1-R](docs/planning/development-sequence.md#下一授权入口)、[M06 消费接口](docs/architecture/m06-consumer-handover.md)和[验收矩阵](docs/requirements-matrix.md)。
+以 `3bd705b` 的 M06-R 冻结政策及当前远端 HEAD 为接续基线。G-1 = **BLOCKED**。查询 100K 的已知性能债务交 M13-A。在获准的后续模块开发前读取 [完整工作单元](docs/planning/ROADMAP-V2.md)、[当前接续顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)、[M06 消费接口](docs/architecture/m06-consumer-handover.md)和[验收矩阵](docs/requirements-matrix.md)。
 
 AI 模块同时读取[适配器协议](docs/architecture/ai-model-adapter-contract.md)、[生命周期与版本](docs/architecture/model-lifecycle-and-calibration.md)及[金标准与对照](docs/architecture/model-evaluation-protocol.md)。M09 承接向量边界，M10 承接最小生成式接口，M12 承接通用决策接口及 Jev 首套正式实现。按各阶段授权实施，保留固定版本、实际通道身份、原有 G-1 和正式验收。ROADMAP-V2 已核验本机专案 v2.2 的 27 页原件及原登记指纹，仓库提供摘要供接续阅读。[负责人批准](docs/decisions/roadmap-v2-owner-approval.md)
 

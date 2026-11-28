@@ -11,6 +11,6 @@ M08 任务绑定 `study_id`、精确 `scope_id` 和 `scope_version`，保存冻�
 
 合成回查提供片段定位证据，M05 正式和外发资格均为 false，`mention_id`、`evidence_id`、`segment_revision`、`registry_version` 为 `null`。真实原话获得权限后从现有 M05/M06 权威入口读取 M/E 标识。M08 不实施主题聚类、开放编码、注册表发行及意图或任务大类分配。历史审核状态、重复 URL、同文摘要、便捷样本量都不能证明当前资格或同一发生。
 
-M09 引用需保留来源、采样时间窗、内容角色、当前资格和完整版本绑定。正式研究继续要求 G-1 及实际来源和用途审批。正式漏斗遵循 M06-B-F.1、六桶及两条守恒等式。合成分片与旧 PackyCode 预检回执各自归档。
+M09 引用需保留来源、采样时间窗、内容角色、当前资格和完整版本绑定。M09 隔离工程按现有授权继续。正式研究须通过适用的个人或商用门禁，正式数据须有实际来源和用途审批。正式漏斗遵循 M06-B-F.1、六桶及两条守恒等式。[研究优先 ADR](../decisions/product-realignment-v1-owner-approval.md) · [个人准入](personal-research-gate.md)合成分片与旧 PackyCode 预检回执各自归档。
 
 [采样任务契约](m08-acquisition-task-contract.md) · [平台回源契约](m08-platform-retrieval-contract.md) · [M06 消费交接](m06-consumer-handover.md) · [统计冻结契约](m06-statistics-contract.md) · [M07 版本契约](m07-versioning-contract.md)

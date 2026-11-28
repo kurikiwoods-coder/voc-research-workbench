@@ -4,12 +4,14 @@ from dataclasses import dataclass
 from http.client import HTTPException as HTTPProtocolError
 import json
 import math
+import os
 import re
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode, urlsplit
 from urllib.request import Request, HTTPRedirectHandler, build_opener
 
 from src.config import PACKYCODE_LIVE_BLOCK, PROVIDERS
+from src.edition_policy import legacy_execution_allowed
 
 ENDPOINTS = {
     **{name: config[0] for name, config in PROVIDERS.items()},
@@ -99,6 +101,8 @@ def brave_monthly_quota(headers):
 
 
 def network(method, url, body, headers):
+    if not legacy_execution_allowed(environment=os.environ):
+        raise Denied("此运行模式尚未开放真实供应商传输。")
     data = json.dumps(body).encode() if body is not None else None
     req = Request(
         url,

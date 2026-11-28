@@ -80,8 +80,11 @@ class StudyStore:
             self.project_row(db, study_id)
             return [scope_record(row, include_content=False) for row in self.scope_rows(db, study_id)]
 
-    def get_scope(self, study_id, scope_id):
+    def get_scope(self, study_id, scope_id, *, authorize=None):
         with self.store.db() as db:
+            if authorize is not None:
+                db.execute("BEGIN")
+                authorize(db)
             row = db.execute(
                 SCOPE_SELECT + " WHERE s.study_id=? AND s.scope_id=?", (study_id, scope_id)
             ).fetchone()

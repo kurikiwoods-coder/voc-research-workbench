@@ -1,0 +1,65 @@
+{
+  "version": "m09d-quality-holdout-negative-v1",
+  "rows": [
+    {
+      "id": "N-001",
+      "text": "窗帘往回拉会刮窗台，尾端能再短一点吗？",
+      "language": "zh"
+    },
+    {
+      "id": "N-002",
+      "text": "I like the water bottle's handle but wish the cap had a tether. Mine keeps falling under the seat.",
+      "language": "en"
+    },
+    {
+      "id": "N-003",
+      "text": "I keep finding a sharp seam in the left glove after wearing it for an hour.",
+      "language": "en"
+    },
+    {
+      "id": "N-004",
+      "text": "猫碗每天洗完都留水印，想知道是不是表面本来就花了。",
+      "language": "zh"
+    },
+    {
+      "id": "N-005",
+      "text": "庭院灯开关找不到，手上湿的时候摸底座不放心。",
+      "language": "zh"
+    },
+    {
+      "id": "N-006",
+      "text": "种植箱抬起来就漏土，想在搬去阳台前把底部合严一点。",
+      "language": "zh"
+    },
+    {
+      "id": "N-007",
+      "text": "I would use the folding chair more if there were somewhere to rest my feet on the patio.",
+      "language": "en"
+    },
+    {
+      "id": "N-008",
+      "text": "The suitcase zip was rough its first week. I can't tell if the fabric is catching or the slider is bent.",
+      "language": "en"
+    },
+    {
+      "id": "N-009",
+      "text": "保鲜袋冷冻以后标签翘起来，想直接写日期，解冻还能看得见。",
+      "language": "zh"
+    },
+    {
+      "id": "N-010",
+      "text": "Something about the towel makes it hard to use overnight, maybe the room was just damp.",
+      "language": "en"
+    },
+    {
+      "id": "N-011",
+      "text": "钢琴谱夹太窄，宽谱翻页时会掉，想夹住整页边角。",
+      "language": "zh"
+    },
+    {
+      "id": "N-012",
+      "text": "Can the toothbrush stand let the last droplets drain out of the bottom? It smells after a few days.",
+      "language": "en"
+    }
+  ]
+}

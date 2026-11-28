@@ -7,7 +7,9 @@ import os
 from pathlib import Path
 
 from dotenv import load_dotenv
+from src.edition_policy import Deployment, Edition, LocalOwner, legacy_execution_allowed
 from src.raw_store.credentials import CredentialVault
+from src.raw_store.runtime_binding import bind_directory
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL = "jev-1.14.0"
@@ -61,14 +63,44 @@ class Settings:
     local_reviews: dict = field(default_factory=dict, repr=False)
     local_key_overrides: frozenset[str] = field(default_factory=frozenset, repr=False)
 
+    edition: Edition = Edition.BUSINESS
+    deployment: Deployment = Deployment.LOCAL
+    personal_owner: LocalOwner | None = field(default=None, repr=False)
+
+    def __post_init__(self):
+        if self.edition not in set(Edition) or self.deployment not in set(Deployment):
+            raise ValueError("VOC_EDITION 或 VOC_DEPLOYMENT 设置无效。")
+        if self.edition == Edition.PERSONAL and self.deployment == Deployment.LOCAL:
+            if not isinstance(self.personal_owner, LocalOwner):
+                raise ValueError("个人版本机启动需要可信 Owner 配置。")
+        elif self.personal_owner is not None:
+            raise ValueError("当前版本或部署方式不能加载个人 Owner 配置。")
+
     @classmethod
     def load(cls):
         base = cls.load_base()
-        return base.with_local(CredentialVault(base.directory).read())
+        if not legacy_execution_allowed(base):
+            return base
+        directory = bind_directory(base.directory, base.edition)
+        return base.with_local(CredentialVault(directory).read())
 
     @classmethod
     def load_base(cls):
         load_dotenv(ROOT / ".env", override=False)
+        directory_config = os.getenv("VOC_DATA_DIR")
+        directory = Path(directory_config or ROOT / "runtime")
+        try:
+            edition = Edition(os.getenv("VOC_EDITION", "BUSINESS"))
+            deployment = Deployment(os.getenv("VOC_DEPLOYMENT", "LOCAL"))
+        except ValueError:
+            raise ValueError("VOC_EDITION 或 VOC_DEPLOYMENT 设置无效。") from None
+        owner = None
+        if edition == Edition.PERSONAL and deployment == Deployment.LOCAL:
+            if not directory_config or not directory.is_absolute():
+                raise ValueError("个人版需要专用的绝对 VOC_DATA_DIR 路径。")
+            owner = LocalOwner.from_environment(os.environ)
+        if edition != Edition.BUSINESS or deployment != Deployment.LOCAL:
+            return cls(directory.resolve(), edition=edition, deployment=deployment, personal_owner=owner)
         provider = os.getenv("JEV_PROVIDER", "jevmodel").strip().lower()
         if provider not in PROVIDERS:
             raise ValueError("JEV_PROVIDER 仅接受 " + "、".join(PROVIDERS))
@@ -76,12 +108,8 @@ class Settings:
         if capacity and (not capacity.isdecimal() or int(capacity) <= 0):
             raise ValueError("JEV_TOKEN_CAPACITY 应填写账户已知的正整数额度")
         keys = {name: os.getenv(var, "").strip() for name, var in CONNECTOR_KEYS.items()}
-        directory = Path(os.getenv("VOC_DATA_DIR") or ROOT / "runtime")
         return cls(
-            directory.resolve(),
-            provider,
-            keys,
-            os.getenv("JEV_REVIEW_FILE", ""),
+            directory.resolve(), provider, keys, os.getenv("JEV_REVIEW_FILE", ""),
             int(capacity) if capacity else None,
         )
 
@@ -95,6 +123,8 @@ class Settings:
         )
 
     def review_status(self):
+        if not legacy_execution_allowed(self):
+            return unapproved_review()
         try:
             if self.provider in self.local_reviews:
                 pair = self.local_reviews[self.provider]

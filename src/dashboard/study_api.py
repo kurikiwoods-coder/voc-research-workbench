@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, ValidationError, field_validator, model_validator
 
 from src.dashboard.api_setup import body
+from src.dashboard.edition_access import EditionRoute, transaction_authorizer
 from src.raw_store.store import Conflict
 from src.raw_store.studies import PROJECT_FIELDS
 
@@ -162,7 +163,7 @@ def study_errors():
 
 
 def register_studies(app):
-    router = APIRouter(prefix="/api/studies", tags=["研究项目"])
+    router = APIRouter(route_class=EditionRoute, prefix="/api/studies", tags=["研究项目"])
 
     def store(request: Request):
         return request.app.state.studies
@@ -213,9 +214,9 @@ def register_studies(app):
             return db.history(str(study_id))
 
     @router.get("/{study_id}/scopes/{scope_id}")
-    def scope(study_id: UUID, scope_id: UUID, db=Depends(store)):
+    def scope(request: Request, study_id: UUID, scope_id: UUID, db=Depends(store)):
         with study_errors():
-            return db.get_scope(str(study_id), str(scope_id))
+            return db.get_scope(str(study_id), str(scope_id), authorize=transaction_authorizer(request))
 
     @router.post("/{study_id}/scopes/{scope_id}/freeze")
     def freeze(study_id: UUID, scope_id: UUID, db=Depends(store)):

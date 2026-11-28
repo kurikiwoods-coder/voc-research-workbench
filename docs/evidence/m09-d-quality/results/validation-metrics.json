@@ -1,0 +1,1329 @@
+{
+  "protocol": "m09-d-quality-v1",
+  "dataset_version": "m09d-quality-validation-v1",
+  "input_sha256": "d9235d3b9c280bd4950a98b185513b3539b51e43d626c0edbb87ecefaf415d01",
+  "gold_sha256": "56cc1cee95518c138ef85f2374453eccdd4d90ea27405d02c23a82ba0750ee9e",
+  "prediction_sha256": "69b37d3a15ae7ae89983db1b5c167d9783d3172411027d3a2af444394f6d81fe",
+  "methods": {
+    "baseline": {
+      "seed_42": {
+        "assignment_coverage": [
+          36,
+          36
+        ],
+        "outliers": [
+          0,
+          36
+        ],
+        "positive_coverage": [
+          28,
+          28
+        ],
+        "negative_assignment": [
+          8,
+          8
+        ],
+        "weighted_purity": [
+          14,
+          36
+        ],
+        "matched_recall": [
+          14,
+          28
+        ],
+        "unsupported_candidates": [
+          2,
+          2
+        ],
+        "ari_positive": 0.47058823529411764,
+        "nmi_positive": 0.6666666666666661,
+        "intents": {
+          "hob_lock_settings_during_cooking": {
+            "topic": 0,
+            "hits": 7,
+            "cluster_size": 18,
+            "gold_size": 7,
+            "purity": 0.3888888888888889,
+            "recall": 1.0,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          },
+          "hob_prevent_accidental_start": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          },
+          "scanner_capture_both_sides": {
+            "topic": 1,
+            "hits": 7,
+            "cluster_size": 18,
+            "gold_size": 7,
+            "purity": 0.3888888888888889,
+            "recall": 1.0,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          },
+          "scanner_omit_truly_blank_sides": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          }
+        }
+      },
+      "perturbed": [
+        {
+          "seed": 17,
+          "coassigned_pair_jaccard": 1.0,
+          "candidate_member_jaccard": 1.0,
+          "metrics": {
+            "assignment_coverage": [
+              36,
+              36
+            ],
+            "outliers": [
+              0,
+              36
+            ],
+            "positive_coverage": [
+              28,
+              28
+            ],
+            "negative_assignment": [
+              8,
+              8
+            ],
+            "weighted_purity": [
+              14,
+              36
+            ],
+            "matched_recall": [
+              14,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.47058823529411764,
+            "nmi_positive": 0.6666666666666661,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 7,
+                "cluster_size": 18,
+                "gold_size": 7,
+                "purity": 0.3888888888888889,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 7,
+                "cluster_size": 18,
+                "gold_size": 7,
+                "purity": 0.3888888888888889,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        },
+        {
+          "seed": 67,
+          "coassigned_pair_jaccard": 1.0,
+          "candidate_member_jaccard": 1.0,
+          "metrics": {
+            "assignment_coverage": [
+              36,
+              36
+            ],
+            "outliers": [
+              0,
+              36
+            ],
+            "positive_coverage": [
+              28,
+              28
+            ],
+            "negative_assignment": [
+              8,
+              8
+            ],
+            "weighted_purity": [
+              14,
+              36
+            ],
+            "matched_recall": [
+              14,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.47058823529411764,
+            "nmi_positive": 0.6666666666666661,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 7,
+                "cluster_size": 18,
+                "gold_size": 7,
+                "purity": 0.3888888888888889,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 7,
+                "cluster_size": 18,
+                "gold_size": 7,
+                "purity": 0.3888888888888889,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        }
+      ],
+      "wall_s_by_seed": [
+        22.62658069999452,
+        1.0364024000009522,
+        1.0432467999999062
+      ],
+      "cpu_s_by_seed": [
+        22.0625,
+        1.03125,
+        1.0
+      ]
+    },
+    "centroid_060": {
+      "seed_42": {
+        "assignment_coverage": [
+          28,
+          36
+        ],
+        "outliers": [
+          8,
+          36
+        ],
+        "positive_coverage": [
+          25,
+          28
+        ],
+        "negative_assignment": [
+          3,
+          8
+        ],
+        "weighted_purity": [
+          13,
+          28
+        ],
+        "matched_recall": [
+          13,
+          28
+        ],
+        "unsupported_candidates": [
+          2,
+          2
+        ],
+        "ari_positive": 0.4185733512786003,
+        "nmi_positive": 0.6260133294399269,
+        "intents": {
+          "hob_lock_settings_during_cooking": {
+            "topic": 0,
+            "hits": 7,
+            "cluster_size": 15,
+            "gold_size": 7,
+            "purity": 0.4666666666666667,
+            "recall": 1.0,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          },
+          "hob_prevent_accidental_start": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          },
+          "scanner_capture_both_sides": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          },
+          "scanner_omit_truly_blank_sides": {
+            "topic": 1,
+            "hits": 6,
+            "cluster_size": 13,
+            "gold_size": 7,
+            "purity": 0.46153846153846156,
+            "recall": 0.8571428571428571,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          }
+        }
+      },
+      "perturbed": [
+        {
+          "seed": 17,
+          "coassigned_pair_jaccard": 0.7211538461538461,
+          "candidate_member_jaccard": 0.8258928571428572,
+          "metrics": {
+            "assignment_coverage": [
+              27,
+              36
+            ],
+            "outliers": [
+              9,
+              36
+            ],
+            "positive_coverage": [
+              23,
+              28
+            ],
+            "negative_assignment": [
+              4,
+              8
+            ],
+            "weighted_purity": [
+              13,
+              27
+            ],
+            "matched_recall": [
+              13,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.411214953271028,
+            "nmi_positive": 0.6202851405036773,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 7,
+                "cluster_size": 16,
+                "gold_size": 7,
+                "purity": 0.4375,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 6,
+                "cluster_size": 11,
+                "gold_size": 7,
+                "purity": 0.5454545454545454,
+                "recall": 0.8571428571428571,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        },
+        {
+          "seed": 67,
+          "coassigned_pair_jaccard": 0.7959183673469388,
+          "candidate_member_jaccard": 0.8976190476190476,
+          "metrics": {
+            "assignment_coverage": [
+              27,
+              36
+            ],
+            "outliers": [
+              9,
+              36
+            ],
+            "positive_coverage": [
+              24,
+              28
+            ],
+            "negative_assignment": [
+              3,
+              8
+            ],
+            "weighted_purity": [
+              12,
+              27
+            ],
+            "matched_recall": [
+              12,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.3898305084745763,
+            "nmi_positive": 0.6120487273625217,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 6,
+                "cluster_size": 13,
+                "gold_size": 7,
+                "purity": 0.46153846153846156,
+                "recall": 0.8571428571428571,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 6,
+                "cluster_size": 14,
+                "gold_size": 7,
+                "purity": 0.42857142857142855,
+                "recall": 0.8571428571428571,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        }
+      ],
+      "wall_s_by_seed": [
+        2.890000178012997e-05,
+        2.269999822601676e-05,
+        1.6600002709310502e-05
+      ],
+      "cpu_s_by_seed": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "density_5d": {
+      "seed_42": {
+        "assignment_coverage": [
+          36,
+          36
+        ],
+        "outliers": [
+          0,
+          36
+        ],
+        "positive_coverage": [
+          28,
+          28
+        ],
+        "negative_assignment": [
+          8,
+          8
+        ],
+        "weighted_purity": [
+          14,
+          36
+        ],
+        "matched_recall": [
+          14,
+          28
+        ],
+        "unsupported_candidates": [
+          2,
+          2
+        ],
+        "ari_positive": 0.47058823529411764,
+        "nmi_positive": 0.6666666666666661,
+        "intents": {
+          "hob_lock_settings_during_cooking": {
+            "topic": 0,
+            "hits": 7,
+            "cluster_size": 18,
+            "gold_size": 7,
+            "purity": 0.3888888888888889,
+            "recall": 1.0,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          },
+          "hob_prevent_accidental_start": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          },
+          "scanner_capture_both_sides": {
+            "topic": 1,
+            "hits": 7,
+            "cluster_size": 18,
+            "gold_size": 7,
+            "purity": 0.3888888888888889,
+            "recall": 1.0,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          },
+          "scanner_omit_truly_blank_sides": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          }
+        }
+      },
+      "perturbed": [
+        {
+          "seed": 17,
+          "coassigned_pair_jaccard": 1.0,
+          "candidate_member_jaccard": 1.0,
+          "metrics": {
+            "assignment_coverage": [
+              36,
+              36
+            ],
+            "outliers": [
+              0,
+              36
+            ],
+            "positive_coverage": [
+              28,
+              28
+            ],
+            "negative_assignment": [
+              8,
+              8
+            ],
+            "weighted_purity": [
+              14,
+              36
+            ],
+            "matched_recall": [
+              14,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.47058823529411764,
+            "nmi_positive": 0.6666666666666661,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 7,
+                "cluster_size": 18,
+                "gold_size": 7,
+                "purity": 0.3888888888888889,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 7,
+                "cluster_size": 18,
+                "gold_size": 7,
+                "purity": 0.3888888888888889,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        },
+        {
+          "seed": 67,
+          "coassigned_pair_jaccard": 1.0,
+          "candidate_member_jaccard": 1.0,
+          "metrics": {
+            "assignment_coverage": [
+              36,
+              36
+            ],
+            "outliers": [
+              0,
+              36
+            ],
+            "positive_coverage": [
+              28,
+              28
+            ],
+            "negative_assignment": [
+              8,
+              8
+            ],
+            "weighted_purity": [
+              14,
+              36
+            ],
+            "matched_recall": [
+              14,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.47058823529411764,
+            "nmi_positive": 0.6666666666666661,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 7,
+                "cluster_size": 18,
+                "gold_size": 7,
+                "purity": 0.3888888888888889,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 7,
+                "cluster_size": 18,
+                "gold_size": 7,
+                "purity": 0.3888888888888889,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        }
+      ],
+      "wall_s_by_seed": [
+        1.0281682000058936,
+        1.0070580000028713,
+        1.030075599999691
+      ],
+      "cpu_s_by_seed": [
+        1.0,
+        0.953125,
+        1.046875
+      ]
+    },
+    "cosine_055": {
+      "seed_42": {
+        "assignment_coverage": [
+          26,
+          36
+        ],
+        "outliers": [
+          10,
+          36
+        ],
+        "positive_coverage": [
+          23,
+          28
+        ],
+        "negative_assignment": [
+          3,
+          8
+        ],
+        "weighted_purity": [
+          13,
+          26
+        ],
+        "matched_recall": [
+          13,
+          28
+        ],
+        "unsupported_candidates": [
+          2,
+          2
+        ],
+        "ari_positive": 0.411214953271028,
+        "nmi_positive": 0.6202851405036773,
+        "intents": {
+          "hob_lock_settings_during_cooking": {
+            "topic": 1,
+            "hits": 7,
+            "cluster_size": 15,
+            "gold_size": 7,
+            "purity": 0.4666666666666667,
+            "recall": 1.0,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          },
+          "hob_prevent_accidental_start": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          },
+          "scanner_capture_both_sides": {
+            "topic": 0,
+            "hits": 6,
+            "cluster_size": 11,
+            "gold_size": 7,
+            "purity": 0.5454545454545454,
+            "recall": 0.8571428571428571,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          },
+          "scanner_omit_truly_blank_sides": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          }
+        }
+      },
+      "perturbed": [
+        {
+          "seed": 17,
+          "coassigned_pair_jaccard": 1.0,
+          "candidate_member_jaccard": 1.0,
+          "metrics": {
+            "assignment_coverage": [
+              26,
+              36
+            ],
+            "outliers": [
+              10,
+              36
+            ],
+            "positive_coverage": [
+              23,
+              28
+            ],
+            "negative_assignment": [
+              3,
+              8
+            ],
+            "weighted_purity": [
+              13,
+              26
+            ],
+            "matched_recall": [
+              13,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.411214953271028,
+            "nmi_positive": 0.6202851405036773,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 7,
+                "cluster_size": 15,
+                "gold_size": 7,
+                "purity": 0.4666666666666667,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 6,
+                "cluster_size": 11,
+                "gold_size": 7,
+                "purity": 0.5454545454545454,
+                "recall": 0.8571428571428571,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        },
+        {
+          "seed": 67,
+          "coassigned_pair_jaccard": 1.0,
+          "candidate_member_jaccard": 1.0,
+          "metrics": {
+            "assignment_coverage": [
+              26,
+              36
+            ],
+            "outliers": [
+              10,
+              36
+            ],
+            "positive_coverage": [
+              23,
+              28
+            ],
+            "negative_assignment": [
+              3,
+              8
+            ],
+            "weighted_purity": [
+              13,
+              26
+            ],
+            "matched_recall": [
+              13,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.411214953271028,
+            "nmi_positive": 0.6202851405036773,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 7,
+                "cluster_size": 15,
+                "gold_size": 7,
+                "purity": 0.4666666666666667,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 6,
+                "cluster_size": 11,
+                "gold_size": 7,
+                "purity": 0.5454545454545454,
+                "recall": 0.8571428571428571,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        }
+      ],
+      "wall_s_by_seed": [
+        0.0015026000037323684,
+        0.0015513000034843571,
+        0.0014625999974668957
+      ],
+      "cpu_s_by_seed": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+    "cosine_055_margin": {
+      "seed_42": {
+        "assignment_coverage": [
+          26,
+          36
+        ],
+        "outliers": [
+          10,
+          36
+        ],
+        "positive_coverage": [
+          23,
+          28
+        ],
+        "negative_assignment": [
+          3,
+          8
+        ],
+        "weighted_purity": [
+          13,
+          26
+        ],
+        "matched_recall": [
+          13,
+          28
+        ],
+        "unsupported_candidates": [
+          2,
+          2
+        ],
+        "ari_positive": 0.411214953271028,
+        "nmi_positive": 0.6202851405036773,
+        "intents": {
+          "hob_lock_settings_during_cooking": {
+            "topic": 1,
+            "hits": 7,
+            "cluster_size": 15,
+            "gold_size": 7,
+            "purity": 0.4666666666666667,
+            "recall": 1.0,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          },
+          "hob_prevent_accidental_start": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          },
+          "scanner_capture_both_sides": {
+            "topic": 0,
+            "hits": 6,
+            "cluster_size": 11,
+            "gold_size": 7,
+            "purity": 0.5454545454545454,
+            "recall": 0.8571428571428571,
+            "matched_languages": [
+              "en",
+              "zh"
+            ],
+            "supported": false
+          },
+          "scanner_omit_truly_blank_sides": {
+            "topic": null,
+            "hits": 0,
+            "cluster_size": 0,
+            "gold_size": 7,
+            "purity": null,
+            "recall": 0.0,
+            "matched_languages": [],
+            "supported": false
+          }
+        }
+      },
+      "perturbed": [
+        {
+          "seed": 17,
+          "coassigned_pair_jaccard": 1.0,
+          "candidate_member_jaccard": 1.0,
+          "metrics": {
+            "assignment_coverage": [
+              26,
+              36
+            ],
+            "outliers": [
+              10,
+              36
+            ],
+            "positive_coverage": [
+              23,
+              28
+            ],
+            "negative_assignment": [
+              3,
+              8
+            ],
+            "weighted_purity": [
+              13,
+              26
+            ],
+            "matched_recall": [
+              13,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.411214953271028,
+            "nmi_positive": 0.6202851405036773,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 7,
+                "cluster_size": 15,
+                "gold_size": 7,
+                "purity": 0.4666666666666667,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 6,
+                "cluster_size": 11,
+                "gold_size": 7,
+                "purity": 0.5454545454545454,
+                "recall": 0.8571428571428571,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        },
+        {
+          "seed": 67,
+          "coassigned_pair_jaccard": 1.0,
+          "candidate_member_jaccard": 1.0,
+          "metrics": {
+            "assignment_coverage": [
+              26,
+              36
+            ],
+            "outliers": [
+              10,
+              36
+            ],
+            "positive_coverage": [
+              23,
+              28
+            ],
+            "negative_assignment": [
+              3,
+              8
+            ],
+            "weighted_purity": [
+              13,
+              26
+            ],
+            "matched_recall": [
+              13,
+              28
+            ],
+            "unsupported_candidates": [
+              2,
+              2
+            ],
+            "ari_positive": 0.411214953271028,
+            "nmi_positive": 0.6202851405036773,
+            "intents": {
+              "hob_lock_settings_during_cooking": {
+                "topic": 1,
+                "hits": 7,
+                "cluster_size": 15,
+                "gold_size": 7,
+                "purity": 0.4666666666666667,
+                "recall": 1.0,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "hob_prevent_accidental_start": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              },
+              "scanner_capture_both_sides": {
+                "topic": 0,
+                "hits": 6,
+                "cluster_size": 11,
+                "gold_size": 7,
+                "purity": 0.5454545454545454,
+                "recall": 0.8571428571428571,
+                "matched_languages": [
+                  "en",
+                  "zh"
+                ],
+                "supported": false
+              },
+              "scanner_omit_truly_blank_sides": {
+                "topic": null,
+                "hits": 0,
+                "cluster_size": 0,
+                "gold_size": 7,
+                "purity": null,
+                "recall": 0.0,
+                "matched_languages": [],
+                "supported": false
+              }
+            }
+          }
+        }
+      ],
+      "wall_s_by_seed": [
+        0.0016228999957093038,
+        0.0014044999988982454,
+        0.0008447000000160187
+      ],
+      "cpu_s_by_seed": [
+        0.0,
+        0.015625,
+        0.0
+      ]
+    }
+  }
+}

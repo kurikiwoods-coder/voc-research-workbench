@@ -8,13 +8,15 @@
 
 ## 当前模块
 
-2026-11-26 的 M08-V 已在验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 完成 M01–M08 Windows 11 实机与部署复验，两道门禁均为 **PASS**。M08 A–D P0 工程通过，正式业务待验，M09 隔离工程入口需单独授权。[实机验收证据](docs/evidence/m08-v/README.md)
+2026-11-26 的 M08-V 已在验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 完成 M01–M08 Windows 11 实机与部署复验，两道门禁均为 **PASS**。M08 A–D P0 工程通过，正式业务待验。**M09-A = ENGINEERING_PASS**，**M09 = PARTIAL**。下一获准离线单元为 M09-B。工程范围与正式准入按研究优先 ADR 接续。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [实机验收证据](docs/evidence/m08-v/README.md) · [M09-A 离线证据](docs/evidence/m09-a/README.md)
 
-M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，第二片实扣待补证。G-1-R-B 为 **BLOCKED**。M08 的 P0 A–D 工程通过，正式业务 **PENDING**，P1 的 M08-E 及 M09–M15 为 **NOT_STARTED**。[M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-C/D 证据](docs/evidence/m08-cd/README.md)
+M01–M07 为 **ENGINEERING_PASS**。M06-R 为 **PASS**，M06 工程基线 **FROZEN**，对应源码的 Windows 11 实机及部署门禁已通过。当前 P0-0，G-1 为 **BLOCKED**。G-1-R-A 的 PackyCode 候选通道已实现。G-1-R-B-P 的 8+3 题合成接口契约为 **PASS**，原始 CSV 已补证两笔实际总扣费 $0.000238，个人 Windows 10 账本待独立复核。G-1-R-B 为 **BLOCKED**。M08 的 P0 A–D 工程通过，正式业务 **PENDING**，P1 的 M08-E 及 M10–M15 为 **NOT_STARTED**。[费用证据](docs/evidence/g1-rb-f/README.md) · [M06-R 复审证据](docs/evidence/m06-r/README.md) · [M07 工程验收](docs/evidence/m07/README.md) · [G-1-R-A 证据](docs/evidence/g1-ra/README.md) · [G-1-R-B-P 证据](docs/evidence/g1-rb-p/README.md) · [M08-C/D 证据](docs/evidence/m08-cd/README.md)
 
-[ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 35 项，待推进 44 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
+[ROADMAP-V2 完整规划](docs/planning/ROADMAP-V2.md)登记 15 个主模块、74 个功能与设计单元和 5 个复审与验收节点，合计 79 项。工程或复审完成 40 项，待推进 39 项。P2 后另列 15 项可选产品化。[开发顺序](docs/planning/development-sequence.md) · [产品化规划](docs/planning/productization-roadmap.md) · [M07–M15 接入契约](docs/architecture/m06-consumer-handover.md)
 
 M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码缺陷均关闭。Pre-M06-D 在 `4e6369b92205c51671866935365678df351ec808` 上完成 Windows 10 实机验收，结果为 **PASS**。原审计的 **PRE_M06_GATE_BLOCKED** 已作为历史结论保留。现行开发门禁为 **PASS**。2026-11-25 在 C1 基线上完成 Windows 11 实机验收，实机及部署门禁均为 **PASS**，G-1 为 **BLOCKED**。[Windows 11 实机证据](docs/evidence/m06-c1/windows11-closeout.md)[负责人门禁调整](docs/decisions/pre-m06-development-gate.md) · [审计](docs/audits/pre-m06-audit.md) · [实机证据](docs/evidence/pre-m06/windows10-closeout.md)
+
+EDITION-V1 与 G-1-P-A 的文档治理单元已交付。G-1-P-B 和 G-1-P-C 为 ENGINEERING_PASS，G-1-P-B-V 实机复验 PASS。G-1-P-D-E 为 ENGINEERING_PASS，Personal v10 与受限执行已通过隔离 Windows 11 实机及三项 CI。D-L 隔离 v11 和跨批次对账补修已在 Windows 10 验证，真实执行 `BLOCKED`，待部署批准、模型硬预算和逐操作授权。正式同批 0/6，真实请求 0。G-1-P-D `BLOCKED`，G-1-P-R `NOT_STARTED`。个人门禁 `NOT_EVALUATED`，商用 G-1 `BLOCKED`，核心进度 40/79。[D-E 工程证据](docs/evidence/g1-p-d/engineering.md) · [D-L 工程证据](docs/evidence/g1-p-d/d-l-engineering.md)
 
 ## M01 基础工程与连通性
 
@@ -158,16 +160,17 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 |---|---|
 | PDT 与矩阵编号 | 专案 §5 第三层、PDT §8；DISCOVERY、G3、CAT-4（协作） |
 | 模块职责 | 在合格样本上提取主题、记录聚类和候选复查所需的证据。 |
-| 前置依赖 | M05 可追溯语料、M06 范围与分类、M07 注册表；M11 提供人工审核。 |
-| 工程开发 | 仅有发现层说明及通用向量召回冒烟，无 BERTopic 实现。 |
-| 工程测试 | 未测试 BERTopic。 |
-| 正式业务验收 | 待验收。 |
-| 数据库及 API | 待主题运行、聚类成员、版本、差异和运行查询 API。 |
-| 前端页面 | 主题发现与聚类证据页未实现。 |
+| 前置依赖 | M05 可追溯语料、M06 范围与分类、M07 注册表，M11 提供人审。M09-A 至 D 按各自授权开展离线工程，正式研究依版本门禁。 |
+| 国际化提前约束 | 预留原始语料、分析和输出语言参数及 Embedding Adapter 多语言模型能力。[负责人批准](docs/decisions/i18n-pre-owner-approval.md) |
+| 工程开发 | **M09 = PARTIAL**。A/B 完成本机离线工程验收，覆盖向量适配、证据绑定、版本化缓存与 BERTopic 聚类。M09-C 已签收。M09-D 提供主题视图、候选审核及历史比较。 |
+| 工程测试 | M09-A 实际模型复验 3/3。M09-B 定向及上游回归 86/86，实际运行专项 3 通过、3 项纯度诊断未通过。受控进程非回环网络尝试 0。 |
+| 正式业务验收 | G3 与 P0-1 待验收。 |
+| 数据库及 API | 主题 SQLite v2 保存候选输出版本和只追加审核记录。Personal 工作库 v11、Business 工作库 v9。 |
+| 前端页面 | 本机主题发现页支持分布、关系、离群、候选、证据下钻、修订重读与运行比较。 |
 | 验收标准 | 按 DISCOVERY 保存单轨与两轨结果、复算差异；盲测与真实小样本确认可提出或驳回候选。 |
-| 最近相关提交 | `0044906` |
-| 测试结果与证据 | C0-6 向量召回未覆盖 BERTopic。 |
-| 剩余问题 | 模型参数、离线复跑、主题样本和盲测。 |
+| 最近相关提交 | M09-C 签收 `8a2ee1e3465964112e8f6a132932f35658557839`。M09-D 见草稿 PR #2。 |
+| 测试结果与证据 | [M09-A 向量与模型复验](docs/evidence/m09-a/README.md) · [M09-B 聚类与纯度诊断](docs/evidence/m09-b/README.md) · [M09-C 签收与复验](docs/evidence/m09-c/README.md) · [M09-D 实施、盲测及实机证据](docs/evidence/m09-d/README.md) |
+| 剩余问题 | M09-D 工程交付待负责人签收，正式 G3 待原定真实小样本与人审。 |
 
 ## M10 TopicGPT 与未知意图发现
 
@@ -175,7 +178,8 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 |---|---|
 | PDT 与矩阵编号 | §7.2.1、§8.1；DISCOVERY、G3、CAT-4/5、J-10、J-14（协作） |
 | 模块职责 | 实现 TopicGPT 四步、未知残差队列及与另一轨的对照。 |
-| 前置依赖 | M05、M06、M07；联验对接 M09 和 M11。托管调用依赖明确供应商和隐私批准。 |
+| 前置依赖 | M05、M06、M07；与 M09 双轨对照，候选交接用离线夹具验证，正式联验在 M11 执行。托管调用依赖明确供应商和隐私批准。 |
+| 国际化提前约束 | 预留原始语料、分析和输出语言参数、多语言 Prompt 和输出控制，保留原话及衍生文本的独立身份。[负责人批准](docs/decisions/i18n-pre-owner-approval.md) |
 | 工程开发 | 无 TopicGPT 或真实未知意图管线。 |
 | 工程测试 | 未测试。 |
 | 正式业务验收 | 待验收。 |
@@ -186,13 +190,17 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 | 测试结果与证据 | 验收矩阵对 DISCOVERY 与 G3 已登记。 |
 | 剩余问题 | 四步实现、残差回放、来源审核和真实审核。 |
 
+## I18N-PRE 国际化架构预留
+
+当前为 **PLANNED**。M10 验收完成后等待负责人单独授权实施，在 M11 开始前完成。Personal 与 Business 共用架构，首期规划 `zh-CN` 和 `en-US`。专项单列于核心 79 项之外。[负责人批准及实施范围](docs/decisions/i18n-pre-owner-approval.md)
+
 ## M11 人工审核与候选意图管理
 
 | 项目 | 记录 |
 |---|---|
 | PDT 与矩阵编号 | §6.5、§8.1/8.2；CAT-4/5/9、J-5、G3、P1-GOLD |
 | 模块职责 | 人工确认、驳回、合并或拆分候选，联审任务大类及低置信条目。 |
-| 前置依赖 | M06 关系校验、M07 版本、M09/M10 候选。低置信复核还依赖 M12。 |
+| 前置依赖 | I18N-PRE 完成、M06 关系校验、M07 版本、M09/M10 候选。M12 复核接口先按契约隔离验收，真实联调在 M12 校准及余项完成后。 |
 | 工程开发 | 无正式候选队列或联审事务。 |
 | 工程测试 | 未测试。 |
 | 正式业务验收 | 待验收。 |
@@ -209,7 +217,7 @@ M01–M05 Pre-M06 独立审计的实现 CI 已通过，确认的阻塞性代码�
 |---|---|
 | PDT 与矩阵编号 | §7、§13；J-1～J-14、G4/G5、D2/D3/D5、P1-GOLD；C0-1/2/4（前置） |
 | 模块职责 | 提供通用决策接口和模型版本记录。首套正式实施锁定 `jev-1.14.0`，继承 Choice、Score、Noul、8+3 分片、None 守门及全部原 Jev 验收。[模型接口](docs/architecture/ai-model-adapter-contract.md) |
-| 前置依赖 | M01 G-1、M02 凭证审查、M05 语料、M06/M07 已确认注册表、M11 复核流程。 |
+| 前置依赖 | M12-A 等 M11 独立工程就绪及单独授权。M12 正式研究使用适用版本门禁、M02 凭证审查、M05 语料、M06/M07 已确认注册表及 M11 复核流程。 |
 | 工程开发 | P0-0 真实请求路径和固定字段校验已有，P0 编码与金标准未实现。 |
 | 工程测试 | 分片、防重和缺概率有工程夹具，正式金标准未测试。 |
 | 正式业务验收 | C0-1/2/4 BLOCKED；J-1～J-14、G4 不作通过。 |

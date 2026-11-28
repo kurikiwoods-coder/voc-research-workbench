@@ -1,0 +1,72 @@
+# G-1-PERSONAL 实施与验证计划
+
+Phase 1 交付双版本架构与最低准入。后续形成服务端策略、审批中心、D-E 工程以及 Personal V2 四槽取证草案。Personal 工作库 v11、Business v9。正式个人版与商用版分别验收。[Phase 1 记录](../decisions/dual-edition-owner-approval.md) · [双版本政策](../architecture/edition-policy.md)
+
+[PRODUCT-REALIGNMENT-V1](../decisions/product-realignment-v1-owner-approval.md) 暂停 G-1 主动治理，允许当前已授权的 M09 隔离开发继续。完成 M11 可独立交付的工程后，M12-A 单独授权时处理 G-1 Personal 与 M02 最小增量。D/R 在 M12 真实研究及校准前按独立授权恢复，M11 与 M12 原联调留在 M12 校准和余项完成后。PackyCode 条款待决事项仅适用于原通道。
+
+| 归属 | 单元 | 当前及验收 |
+|---|---|---|
+| 个人版治理 | EDITION-V1、G-1-P-A | 2 项政策和设计已交付。服务端策略已实现 |
+| 后续个人版治理 | G-1-P-B、G-1-P-C、G-1-P-D、G-1-P-R | B、C、D-E ENGINEERING_PASS，B-V 原生 Windows 11 实机及部署门禁 PASS。D BLOCKED、R NOT_STARTED，恢复待独立授权。[B-V 证据](../evidence/g1-p-b-v/README.md) · [C 证据](../evidence/g1-p-c/README.md) |
+| 配套历史补证 | G-1-R-B-F | 控制台原始 CSV 已核对。个人 Windows 10 的原始 SQLite 及相关材料待本机独立核实 |
+| 原研究路线 | 79 个原核心单元 | 维持 39/79。上述治理与补证独立记录 |
+
+## G-1-P-B 服务端策略和双门禁
+
+当前已接入 `EditionPolicy`、可信本机 Owner、冻结范围授权和本机工作库绑定。个人正式门禁维持 NOT_EVALUATED，原商用 G-1 保持 BLOCKED。B 阶段实际接口和限制见 [服务端策略](../architecture/g1-personal-server-policy.md) 与 [工程证据](../evidence/g1-p-b/README.md)。C 的接口、追加事件和实际迁移见[审批中心契约](../architecture/g1-personal-approval-contract.md)。
+
+1. 先校验服务端部署配置、可信身份和项目授权，产生不可由客户端构造的版本/操作上下文。首版设计一实例承载一个受审版本，沿用共享代码。现有未选版本的工作库继续走旧 Business／Local 兼容路径。授权启动 Personal 时选择受控运行目录，绑定允许的项目和用途。无效配置及未批准的 Cloud 关闭具有特权的入口。
+2. 对 Personal 与 Business 各用自己的门禁评估和读投影。统一决策接口返回有效版本、部署模式、项目、操作、输入及授权范围、策略版、原因、门禁状态和受控证据引用。返回类型表达拒绝或允许，不携带密钥。正式、验证、离线合成各有隔离运行域；正式许可由服务端计算。
+3. 旧 `run_checks`、`outbound`、`call_shards` 的 PackyCode 真实路径阻断保留。未来 Personal 专用编排可复用拆分、类型校验、幂等、预算和账本。其真实路径须由批准的服务端通道和强制校验授权，受现有 HTTPS、端点白名单及无重定向规则约束。兼容旧 API、错误和状态。B 阶段缺个人审批与正式回执时，真实采集、模型出站及发布继续拒绝。
+4. 在预约、提交和重放前分别核实际依赖。外发使用批准的最终数据及预算，在冻结上下文内预约。申请后出队前撤销则终止发送。外部请求完成后若发生过期或撤销，保留实际账本审计，停止接受该结果影响正式数据。记录 UTC、精确依赖、当前授权和凭证版本。新增长时复核不得以业务写锁跨外部 HTTP 为代价。
+
+## G-1-P-C 个人审批与风险管理中心
+
+可信 Personal Local Owner 从「版本与研究准入」查看阻塞原因、登记材料及获准的 `UNKNOWN` 风险、配置本机凭证、提交申请、核准或撤销。各操作以当前权限、项目和冻结范围为准。SQLite v9 追加不可变事件、证据快照和 DPAPI 版本锚。浏览器只显示获准且脱敏的字段。[审批中心契约](../architecture/g1-personal-approval-contract.md) · [迁移证据](../evidence/g1-p-c/database-migration.md)
+
+C 的供应商审批是独立前提。暂未评价的 G-1-PERSONAL 继续阻断正式使用，个人审批不会写入 `Settings.review_status()` 的商用证据。假定服务重启和凭证轮换均会发生，后续请求以当前有效登记为准。[审批工作流](../architecture/personal-approval-workflow.md)
+
+## 拟涉及的源码
+
+| 层 | 已有入口 | B/C 后续拟改 |
+|---|---|---|
+| 配置与入口 | [config.py](../../src/config.py)、[app.py](../../src/dashboard/app.py) 的 `create_app`、本机控制、`/api/workspace` | B 加服务器版本与部署解析、受信身份注入、最小状态投影。旧兼容路径继续执行原门禁 |
+| 验收、模型、传输 | [checks.py](../../src/execution/checks.py)、[jev.py](../../src/execution/jev.py)、[transport.py](../../src/execution/transport.py)、[provider_diagnostics.py](../../src/execution/provider_diagnostics.py) | B 保留商用明确阻断。设计独立个人消费和验证入口，复用分片、预算、响应检查和日志投影。G-1-P-D 后续才安排获准的验收调用 |
+| 审批与账本 | [api_setup.py](../../src/dashboard/api_setup.py)、[credentials.py](../../src/raw_store/credentials.py)、[store.py](../../src/raw_store/store.py)、[app.py](../../src/dashboard/app.py) 的 `balance` | C 新增个人审批仓储及管理入口。现有 DPAPI 机制、账户绑定与 Token Center 保留。用量按版本、实际账户和单位隔离，审批、阈值或证明变更可追溯 |
+| 研究数据与历史 | [acquisition_api.py](../../src/dashboard/acquisition_api.py)、[relation_access.py](../../src/raw_store/relation_access.py)、[corpus.py](../../src/raw_store/corpus.py)、[denominators.py](../../src/raw_store/denominators.py) | B 在服务边界叠加版本门禁和操作权限；继续消费现有可信授权、M05 当前资格和 M06 的精确读写。C5 正式准入缺项仍返回不可用和 null。冻结计算及表保持原义 |
+| 隔离合成及回归 | [packycode_preflight.py](../../src/execution/packycode_preflight.py)、[浏览器回归](../../tests/browser_e2e.py) | 保留过去的一次性入口与独立账本。新增用例以伪造隔离数据和测试传输检测拒绝路径，预检授权不会因版本或配置变更恢复 |
+
+新增代码位置和 API 签名在下一轮实施设计明确。上表中的 `corpus.py`、`denominators.py` 等为兼容复核对象，优先在调用层补前置，避免改动冻结核心判定。
+
+## 最小迁移设计
+
+以下为 B/C 的历史迁移设计。现行 SQLite v11 基线冻结，M12-A 只复用现有存储与凭证能力。确需改动核心契约或 Schema 时须先另行批准。[返工范围](../decisions/product-realignment-v1-owner-approval.md#返工范围冻结)
+
+- B 先实现策略与旧路径兼容，保持 SQLite v8。未配置个人策略时没有有效个人准入事件，数据及旧结果继续按原规则访问。
+- C 需要持久化时，提议在工作库追加最少的治理表，使用下一可用 schema 号。首表记录供应商审批事件及版本化撤销，以版本、项目、用途、通道和凭证引用关联，现行视图从事件求有效记录。D 的正式批次与结论用独立版本域追加；B/C 不提前生成六项业务通过记录。具体表、索引和字段先按下一轮授权审定。凭证与审批材料留在受控本机存储，SQLite 保存最小引用与必要摘要。
+- 迁移覆盖空 v8 与含活跃 WAL 的项目、M06 关系、M07 版本及 M08 回执。采用现有一致性备份和原子迁移流程；校验版本、稳定 ID、历史 G-1、完整性、外键和历史投影。失败回滚，从备份恢复并重新验证。旧记录明确保留其原先身份，不能随迁移成为个人 PASS 或商用可发表证据。
+- 同库治理选择支持已冻结的 `BEGIN IMMEDIATE` 同连接复核。DPAPI 与 SQLite 各自是持久化边界。凭证更新通过受信写入路径更换版本，审批和在途任务相对更新保守失效；恢复后重新对账。维持现有诊断及合成账本隔离。
+
+## 冻结契约核对及风险
+
+| 风险或接入差异 | 解决与出场测试 |
+|---|---|
+| M06 文档中的统一 G-1 用语 | 本期在消费入口附两版解释，保留原商用判定。个人版批准后提供作用域前置，继续复用同一精确证据、身份、归属、历史范围、六桶及其对账 |
+| 伪造 Owner 或版本 | 无受信上下文、URL／请求体／Header 自称或跨项目进入一律失败关闭。验证版本视图不能创造商业权限或复用另一版审批 |
+| 通用 PackyCode 阻断被放宽 | 原入口、两层真实阻断和旧预检继续可测。Personal 受控路径要求验证用途、当前通道、来源、有效期、凭证、预算及前置；禁用时观测外部调用次数为 0 |
+| 轮换、撤销、超额与并发 | 覆盖预约前撤销、排队后轮换、发送后失效、两次确认、未知扣费、余额或预算不足、重复回执和执行中断恢复 |
+| 金标准与统计污染 | 原真实回执与人工条件保留；合成、个人和商用分域。两条恒等式、NULL/零区分、精确版本、源撤回和历史报告重开逐项验证 |
+| 云端权限漂移 | B/C 按本机受信配置测试。四种组合的云端路径由单独安全设计授权，默认封闭。静态端点、身份、TLS、密钥、日志与恢复各自验收 |
+
+目前规划以增加服务端前置和追加式治理记录接入，未发现需要变更五项政策或 `M06-B-F.1` 的冲突。若实现要求改变六桶、使用不同事务边界、向外部处理新增数据或降低历史投影约束，先登记差异并按冻结批准流程决定。[原政策](../architecture/m06-owner-approval.md) · [原统计](../architecture/m06-statistics-contract.md)
+
+## 测试和后续出场
+
+| 阶段 | 测试清单 |
+|---|---|
+| B | 配置默认与无效值、可信 Owner 和伪造值、项目与版本隔离、原 Business G-1 的六项及 PackyCode 多层阻断、PERSONAL 未准入的 0 出站、云模式关闭、原 M01–M08 兼容和冻结口径 |
+| C | 真／伪 Owner、必要证据缺失、允许的 UNKNOWN 及拒绝的关键未知、到期撤销、凭证轮换、跨项目、输入隔离、幂等及并发、预算和失败关闭、界面脱敏、原生 DPAPI 及 SQLite 升级恢复 |
+| D | 一次独立批准的个人专用批次，逐项标 M05 来源资格、可纳入的历史证据、必要真实请求、用量与账本和同批六项状态。根据实际账单复核追加成本 |
+| R | 独立复验两版互不授权、版本调整、凭证和审批失效、预算不足、数据失格及撤回报告、导出、出队、失败关闭。仅以实测和有效证据决定个人最终准入 |
+
+B 和 C 使用隔离本机库、合成证据及测试传输。D 的[同批准备、请求估算与验收材料](../evidence/g1-p-c/d-preparation.md)供负责人单独授权时复核。Windows 11 实机验证按实际受测版本登记，M08-V 的历史证据分别归档。

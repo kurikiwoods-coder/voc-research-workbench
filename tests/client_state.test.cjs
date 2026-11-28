@@ -73,6 +73,9 @@ function boot(handleRequest) {
 }
 
 function workspaceOrEvidence(url) {
+  if (url.pathname === "/api/edition") {
+    return { workspace: "BUSINESS_LOCAL", gates: { business: { id: "G-1", status: "BLOCKED" } } };
+  }
   if (url.pathname === "/api/workspace") {
     return { selected: { id: url.searchParams.get("run_id") || "previous-run", state: "paused" } };
   }

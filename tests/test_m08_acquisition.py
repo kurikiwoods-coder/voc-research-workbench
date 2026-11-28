@@ -102,7 +102,7 @@ class AcquisitionTests(unittest.TestCase):
         self.assertIsNone(result["engineering_funnel"]["N_extracted_mentions"])
         self.assertEqual([item["usage"]["unit"] for item in result["attempts"]], ["credit", "request"])
         self.assertTrue(all(item["usage"]["actual_cost"] is None for item in result["attempts"]))
-        self.assertEqual(self.app.state.store.one("PRAGMA user_version")["user_version"], 8)
+        self.assertEqual(self.app.state.store.one("PRAGMA user_version")["user_version"], 9)
         self.assertEqual(self.app.state.store.one("SELECT count(*) AS n FROM corpus_snapshots")["n"], 0)
         with closing(sqlite3.connect(self.ledger)) as db:
             row = db.execute("SELECT study_id, scope_id, scope_version, payload FROM receipts").fetchone()

@@ -3,11 +3,13 @@ from dataclasses import replace
 from decimal import Decimal
 from ipaddress import ip_address
 import json
+from os import getenv
+import sqlite3
 from pathlib import Path
 from secrets import token_bytes
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict
@@ -17,6 +19,15 @@ from src.config import (
     CONNECTOR_ACCOUNTS, CONNECTOR_KEYS, MODEL, PACKYCODE_CONTRACT, PROVIDERS, ROOT, Settings,
 )
 from src.dashboard.api_setup import register_setup, setup_view
+from src.dashboard.edition_access import (
+    DISCOVERY_PREFIX, PERSONAL_PRIVATE_PREFIXES, EditionRoute, edition_access, register_edition,
+)
+from src.dashboard.discovery_api import register_discovery
+from src.dashboard.personal_admission import register_personal_admission
+from src.dashboard.personal_governance import register_personal_governance
+from src.discovery.embedding_backend import EmbeddingBackendError
+from src.discovery.workbench_config import approved_local_backend, load_catalog
+from src.edition_policy import Deployment, Edition, EditionPolicy, legacy_execution_allowed
 from src.dashboard.acquisition_api import register_acquisition
 from src.ingestion.m08_sampling import SamplingTasks
 from src.dashboard.corpus_api import register_corpus
@@ -24,7 +35,7 @@ from src.dashboard.study_api import register_studies
 from src.dashboard.import_api import register_imports
 from src.dashboard.relations_api import is_relation_path, register_relations, relation_error
 from src.dashboard.registry_api import register_registry
-from src.execution.checks import run_checks
+from src.execution.checks import run_checks, test_gate_requires_all_six
 from src.execution.transport import number
 from src.raw_store.corpus import CorpusStore
 from src.raw_store.credentials import CredentialVault, VaultError
@@ -239,26 +250,100 @@ class Batch(BaseModel):
     request_key: UUID
 
 
-def create_app(settings=None, *, relation_grants=None, acquisition_permission=None):
+def business_gate(state):
+    base = state.settings
+    if not legacy_execution_allowed(base):
+        return "BLOCKED"
+    try:
+        cfg = base.with_local(state.vault.read())
+        if not cfg.keys.get(cfg.provider) or cfg.provider == "packycode":
+            return "BLOCKED"
+        review = cfg.review_status()
+        if not review["approved"]:
+            return "BLOCKED"
+        with state.store.db() as db:
+            db.execute("BEGIN")
+            latest = db.execute(
+                """SELECT id, state FROM runs WHERE provider=? AND account_tag=? ORDER BY rowid DESC LIMIT 1""",
+                (cfg.provider, cfg.account_tag()),
+            ).fetchone()
+            if latest is None or latest["state"] != "complete":
+                return "BLOCKED"
+            attempt = db.execute(
+                "SELECT id FROM attempts WHERE run_id=? AND finished_at IS NOT NULL ORDER BY id DESC LIMIT 1",
+                (latest["id"],),
+            ).fetchone()
+            if attempt is None:
+                return "BLOCKED"
+            rows = {row["requirement_id"]: dict(row) for row in db.execute(
+                "SELECT * FROM results WHERE attempt_id=?", (attempt["id"],),
+            )}
+            gate = rows.pop("G-1", {})
+            statuses = {code: row["status"] for code, row in rows.items()}
+            if gate.get("status") != "PASS" or not test_gate_requires_all_six(statuses, review):
+                return "BLOCKED"
+            refs = json.loads(gate["evidence_json"])
+            if not isinstance(refs, list) or len(refs) != 1 or type(refs[0]) is not int:
+                return "BLOCKED"
+            proof = db.execute(
+                """SELECT response_json FROM evidence WHERE id=? AND attempt_id=?
+                   AND name='stage_gate' AND mode='local_gate'""", (refs[0], attempt["id"]),
+            ).fetchone()
+            if proof:
+                record = json.loads(proof["response_json"])
+                if isinstance(record, dict) and record.get("statuses") == statuses and record.get("provider_review") == review:
+                    return "PASS"
+    except (VaultError, sqlite3.Error, ValueError):
+        pass
+    return "BLOCKED"
+
+
+def create_app(settings=None, *, relation_grants=None, acquisition_permission=None,
+               discovery_catalog=None, discovery_backend=None):
     @asynccontextmanager
     async def lifespan(app):
         from src.raw_store.relations import RelationStore
 
-        app.state.settings = settings or Settings.load_base()
-        app.state.store = Store(app.state.settings.directory)
-        app.state.studies = StudyStore(app.state.store)
-        app.state.sampling = SamplingTasks(app.state.settings.directory, app.state.studies, acquisition_permission)
-        app.state.imports = ImportStore(app.state.store)
-        app.state.corpus = CorpusStore(app.state.store)
-        app.state.relations = RelationStore(app.state.store, grants=relation_grants)
-        app.state.relation_cursor_key = token_bytes(32)
-        app.state.diagnostics = Store(app.state.settings.directory, diagnostic=True)
-        app.state.vault = CredentialVault(app.state.settings.directory)
-        yield
+        base = settings or Settings.load_base()
+        app.state.settings = base
+        app.state.edition_policy = EditionPolicy(base.edition, base.deployment, base.personal_owner)
+        owned_backend = None
+        if base.deployment == Deployment.LOCAL:
+            app.state.store = Store(base.directory, edition=base.edition)
+            app.state.studies = StudyStore(app.state.store)
+            app.state.imports = ImportStore(app.state.store)
+            app.state.corpus = CorpusStore(app.state.store)
+            app.state.discovery_catalog = discovery_catalog
+            app.state.discovery_backend = discovery_backend
+            if discovery_catalog is None:
+                try:
+                    app.state.discovery_catalog = load_catalog(base.directory)
+                except (OSError, KeyError, TypeError, ValueError):
+                    app.state.discovery_catalog = None
+            model_directory = getenv("VOC_M09_MODEL_DIR")
+            if discovery_backend is None and app.state.discovery_catalog and model_directory:
+                try:
+                    owned_backend = approved_local_backend(model_directory)
+                    app.state.discovery_backend = owned_backend
+                except (OSError, ValueError, EmbeddingBackendError):
+                    app.state.discovery_backend = None
+            if base.edition == Edition.BUSINESS:
+                app.state.sampling = SamplingTasks(base.directory, app.state.studies, acquisition_permission)
+                app.state.relations = RelationStore(app.state.store, grants=relation_grants)
+                app.state.relation_cursor_key = token_bytes(32)
+                app.state.diagnostics = Store(base.directory, diagnostic=True)
+                app.state.vault = CredentialVault(base.directory)
+        try:
+            yield
+        finally:
+            if owned_backend is not None:
+                owned_backend.close()
 
     app = FastAPI(
-        title="VOC 研究工作台", version="0.1.0", lifespan=lifespan, docs_url=None, redoc_url=None
+        title="VOC 研究工作台", version="0.1.0", lifespan=lifespan, docs_url=None, redoc_url=None,
+        dependencies=[Depends(edition_access)],
     )
+    app.router.route_class = EditionRoute
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["localhost", "127.0.0.1", "[::1]"])
 
     @app.middleware("http")
@@ -266,14 +351,17 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
         path = request.url.path
         relation_api = is_relation_path(path)
         acquisition_api = path.startswith("/api/acquisition/")
+        discovery_api = path.startswith(DISCOVERY_PREFIX)
+        personal_api = path.startswith(PERSONAL_PRIVATE_PREFIXES)
         private_api = (relation_api or path == "/api/studies"
-                       or acquisition_api
+                       or acquisition_api or discovery_api or personal_api
                        or path.startswith(("/api/setup/", "/api/studies/", "/api/imports/", "/api/corpus/")))
-        local_data = private_api or path in {"/api/workspace", "/api/runs"} or path.startswith("/api/runs/")
-        denial_headers = {"Cache-Control": "no-store"} if acquisition_api else None
+        legacy = legacy_execution_allowed(request.app.state.settings)
+        local_data = (not legacy and path.startswith("/api/")) or private_api or path in {"/api/workspace", "/api/runs"} or path.startswith("/api/runs/")
+        denial_headers = {"Cache-Control": "no-store"} if local_data else None
         origin = request.headers.get("origin")
         expected = f"{request.url.scheme}://{request.headers.get('host')}"
-        if acquisition_api and origin is not None and origin != expected:
+        if (acquisition_api or discovery_api or personal_api or not legacy) and origin is not None and origin != expected:
             return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403, headers=denial_headers)
         if local_data:
             try:
@@ -285,10 +373,12 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
                     return relation_error(403)
                 return JSONResponse({"detail": "请从本机 localhost 打开工作台。"}, status_code=403, headers=denial_headers)
         if request.method not in ("GET", "HEAD", "OPTIONS"):
-            if request.headers.get("X-VOC-Action") != "connectivity" or ((origin or private_api) and origin != expected):
+            if request.headers.get("X-VOC-Action") != "connectivity" or ((origin or private_api or not legacy) and origin != expected):
                 if relation_api:
                     return relation_error(403)
                 return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403, headers=denial_headers)
+        if not legacy and path == "/openapi.json":
+            return JSONResponse({"detail": "当前运行模式未开放接口说明。"}, status_code=403, headers=denial_headers)
         reply = await call_next(request)
         reply.headers["Referrer-Policy"] = "no-referrer"
         reply.headers["X-Content-Type-Options"] = "nosniff"
@@ -305,10 +395,8 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
 
     @app.get("/api/health")
     def health():
-        return {
-            "status": "ok",
-            "schema_version": app.state.store.one("PRAGMA user_version")["user_version"],
-        }
+        db = getattr(app.state, "store", None)
+        return {"status": "ok", "schema_version": db.one("PRAGMA user_version")["user_version"] if db else None}
 
     @app.get("/api/workspace")
     def workspace(run_id: UUID | None = None):
@@ -371,6 +459,9 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
     def resume(run_id: UUID):
         return execute(None, str(run_id))
 
+    register_edition(app, business_gate)
+    register_personal_governance(app)
+    register_personal_admission(app)
     register_setup(app)
     register_studies(app)
     register_imports(app)
@@ -378,6 +469,7 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
     register_corpus(app)
     register_relations(app)
     register_registry(app)
+    register_discovery(app)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
 

@@ -15,6 +15,7 @@ const pages = {
   corpus: ["原始语料库", "file"],
   relations: ["三层关系", "branch"],
   registry: ["意图注册表", "branch"],
+  discovery: ["主题发现", "grid"],
   checks: ["连通性检查", "pulse"],
   matrix: ["验收矩阵", "grid"],
   history: ["运行记录", "clock"],
@@ -28,6 +29,7 @@ const researchViews = {
   corpus: () => import("./corpus.js").then(module => module.mountCorpus),
   relations: () => import("./relations.js").then(module => module.mountRelations),
   registry: () => import("./registry.js").then(module => module.mountRegistry),
+  discovery: () => import("./discovery.js").then(module => module.mountDiscovery),
 };
 function pageFromLocation() {
   const page = location.hash.slice(1);
@@ -103,6 +105,7 @@ const paths = {
 };
 const ic = (key) =>
   `<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${paths[key] || paths.file}"/></svg>`;
+let editionStatus = null;
 let state = null,
   current = pageFromLocation(),
   selected = null,
@@ -398,18 +401,22 @@ function render() {
     main.innerHTML = { checks, matrix, history, tokens, setup }[current]();
     return;
   }
+  renderResearchView();
+}
+function renderResearchView(options = {}) {
+  const main = el("main");
   const hash = location.hash;
   if (main.firstElementChild?.dataset.workspaceRoute === hash) return;
   const view = document.createElement("div");
   const title = pages[current][0];
   view.className = { studies: "study-root", acquisition: "acquisition-root", imports: "import-root", corpus: "corpus-root",
-    relations: "relation-root", registry: "relation-root registry-root" }[current];
+    relations: "relation-root", registry: "relation-root registry-root", discovery: "discovery-root" }[current];
   view.dataset.workspaceRoute = hash;
   view.innerHTML = '<p class="panel state-box" role="status">正在读取' + title + '…</p>';
   main.replaceChildren(view);
   researchViews[current]().then(mount => {
     if (view.isConnected) mount(
-      view, hash.slice(1), { api, esc, ic, choices, tell }
+      view, hash.slice(1), { api, esc, ic, choices, tell, ...options }
     );
   }).catch(() => {
     if (view.isConnected) view.textContent = "无法加载" + title + "。请刷新工作台。";
@@ -691,7 +698,7 @@ document.addEventListener("click", async (event) => {
     return;
   }
   const navLink = event.target.closest("a.navlink");
-  if (navLink && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+  if (navLink && state && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
     event.preventDefault();
     const next = navLink.getAttribute("href").slice(1);
     document.getElementById("rail").classList.remove("open");
@@ -714,7 +721,11 @@ document.addEventListener("click", async (event) => {
       el("drawer").close();
       return;
     }
-    if (a === "refresh" || a === "retry-load") {
+    if (a === "retry-load") {
+      await startWorkspace();
+      return;
+    }
+    if (a === "refresh") {
       if (!(await refresh())) return;
       if (el("drawer").open) el("drawer").close();
       tell("已刷新本地记录");
@@ -842,13 +853,65 @@ window.addEventListener("hashchange", () => {
   el("rail").classList.remove("open");
   document.querySelector(".menu-btn").setAttribute("aria-expanded", "false");
   if (state) render();
+  else if (editionStatus) renderEdition(editionStatus);
   window.scrollTo(0, 0);
 });
 function loadError(error) {
   el("main").innerHTML =
     `<div class="panel state-box"><b>无法读取本地工作台</b><p>${esc(error.message)}</p>${act("retry-load", "重新读取")}</div>`;
 }
-nav();
-refresh(null).then((loaded) => {
+function renderEdition(data) {
+  const personal = data.edition === "PERSONAL";
+  const local = data.deployment === "LOCAL";
+  const scopedPersonal = personal && local && data.operations.scoped_local_workspace;
+  const discovery = scopedPersonal && current === "discovery";
+  el("nav").innerHTML = `<a class="navlink" href="#edition" ${discovery ? "" : 'aria-current="page"'}>版本与研究准入</a>` +
+    (scopedPersonal ? `<a class="navlink" href="#discovery" ${discovery ? 'aria-current="page"' : ""}>主题发现</a>` : "");
+  el("top-token").textContent = "供应商调用关闭";
+  if (discovery) {
+    el("crumb").textContent = "主题发现";
+    document.title = "主题发现 · VOC 研究工作台";
+    renderResearchView({ personal: true });
+    return;
+  }
+  el("crumb").textContent = "版本与研究准入";
+  document.title = "版本与研究准入 · VOC 研究工作台";
+  const metrics = [
+    ["产品版本", personal ? "个人研究版" : "商用研究版", data.edition],
+    ["部署方式", local ? "本机" : "云端", data.deployment],
+    ["个人准入", data.gates.personal.id, data.gates.personal.status],
+    ["商用准入", data.gates.business.id, data.gates.business.status],
+  ];
+  el("main").innerHTML = head("", "版本与研究准入", esc(data.reason)) +
+    `<div class="metrics">${metrics.map(([label, value, detail]) =>
+      `<div class="metric"><span>${esc(label)}</span><b>${esc(value)}</b><small>${esc(detail)}</small></div>`).join("")}</div>` +
+    shellPanel("本机操作权限", data.operations.scoped_local_workspace
+      ? "经本机 Owner 验证后，可在授予的项目和冻结范围内读取、导入或复核。"
+      : "当前部署只提供状态查询。", data.operations.scoped_local_workspace
+      ? '<p><a class="btn quiet" href="/api/edition/projects">核对已授权项目</a></p>' : "") +
+    '<p class="state-box">正式采集、外部模型、正式编码和发布关闭。</p>' +
+    (scopedPersonal
+      ? '<div id="personal-governance"></div>' : "");
+  const governance = el("personal-governance");
+  if (governance) import("./personal-governance.js").then(({ mountGovernance }) => {
+    if (governance.isConnected) mountGovernance(governance, { api, esc });
+  }).catch(() => {
+    governance.textContent = "无法载入个人审批中心，请刷新工作台。";
+  });
+}
+
+async function startWorkspace() {
+  const edition = await api("/api/edition");
+  if (edition.workspace !== "BUSINESS_LOCAL") {
+    editionStatus = edition;
+    renderEdition(edition);
+    return;
+  }
+  el("crumb").title =
+    `商用研究版 · 本机 · ${edition.gates.business.id} ${edition.gates.business.status}`;
+  nav();
+  const loaded = await refresh(null);
   if (loaded && state?.setup && !state.setup.wizard_seen && !state.setup.error) showWizard(0);
-}).catch(loadError);
+}
+
+startWorkspace().catch(loadError);

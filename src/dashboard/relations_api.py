@@ -12,10 +12,11 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
-from fastapi.routing import APIRoute
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints
 
 from src.dashboard.api_setup import body
+from src.dashboard.edition_access import EditionRoute
+from src.raw_store.denominators import _empty
 from src.raw_store.store import Busy, Conflict, now
 
 
@@ -46,7 +47,7 @@ def relation_error(status):
                         status_code=status, headers={"Cache-Control": "no-store"})
 
 
-class RelationRoute(APIRoute):
+class RelationRoute(EditionRoute):
     def get_route_handler(self):
         handle = super().get_route_handler()
 
@@ -373,8 +374,23 @@ def register_relations(app):
         return _project_request(request, db, query, str(study_id), mentions=True)
 
     @router.get("/studies/{study_id}/denominators")
-    def denominators(study_id: UUID, query: Annotated[DenominatorQuery, Query()], db=db_dep):
-        return db.denominators(
+    def denominators(request: Request, study_id: UUID, query: Annotated[DenominatorQuery, Query()]):
+        decision = getattr(request.state, "edition_decision", None)
+        if decision is not None:
+            scope = decision.scope
+            if query.mode != "formal":
+                raise HTTPException(403)
+            if (query.scope_id is not None and str(query.scope_id) != scope.scope_id
+                    or query.scope_version not in (None, scope.scope_version)):
+                raise HTTPException(404)
+            # No lookup of a claimed segment, registry or model receipt before Personal admission.
+            versions = {"study_id": scope.study_id, "scope_id": scope.scope_id, "scope_version": scope.scope_version,
+                        "counting_policy_version": query.counting_policy_version, "registry_version": None,
+                        "segment_revision": None, "mapping_revision": None, "catalog_version": None,
+                        "scope_mappings": [], "index_version": None}
+            return {**_empty("formal", {}, versions, now()), "reasons": ["G1_PERSONAL_NOT_EVALUATED",
+                                                                        "RESEARCH_NOT_ADMITTED"]}
+        return store(request).denominators(
             str(study_id), mode=query.mode, registry_version=query.registry_version,
             segment_revision=query.segment_revision, filters=_query_filters(query),
         )

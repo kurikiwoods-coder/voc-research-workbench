@@ -100,7 +100,7 @@ class SamplingIntegration(unittest.TestCase):
             self.assertEqual(evidence["role"], "synthetic")
             self.assertFalse(evidence["engineering_eligible"] or evidence["research_eligible"] or
                              evidence["outbound_allowed"])
-        self.assertEqual(self.app.state.store.one("PRAGMA user_version")["user_version"], 8)
+        self.assertEqual(self.app.state.store.one("PRAGMA user_version")["user_version"], 9)
         self.assertEqual(self.app.state.store.one("SELECT count(*) AS n FROM import_batches")["n"], 0)
         db = Store(self.directory / "m08-sampling" / "tasks" / self.task)
         self.assertEqual(db.one("SELECT count(*) AS n FROM corpus_snapshots")["n"], 60)

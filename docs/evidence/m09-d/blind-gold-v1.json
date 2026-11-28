@@ -1,0 +1,83 @@
+{
+  "version": "m09-d-third-holdout-v1",
+  "analysis_language": "zh-CN",
+  "output_language": "en-US",
+  "cluster_config": {
+    "random_seed": 42,
+    "n_neighbors": 10,
+    "n_components": 2,
+    "min_dist": 0.05,
+    "min_cluster_size": 5,
+    "min_samples": 3,
+    "top_n_words": 10
+  },
+  "centroid_cutoff": 0.6,
+  "diagnostic_precision": 0.75,
+  "diagnostic_recall": 0.75,
+  "themes": {
+    "scheduled_start": {
+      "familiarity": "known",
+      "definition": "Start or wake the appliance at a preset future time."
+    },
+    "automatic_shutoff": {
+      "familiarity": "known",
+      "definition": "Stop heating or turn off the appliance after a prescribed end time or idle interval."
+    },
+    "resume_after_interruption": {
+      "familiarity": "unknown",
+      "definition": "Restore progress or session state after an unplanned power interruption."
+    }
+  },
+  "labels": {
+    "MX01": "scheduled_start",
+    "MX02": "scheduled_start",
+    "MX03": "scheduled_start",
+    "MX04": "scheduled_start",
+    "MX05": "scheduled_start",
+    "MX06": "scheduled_start",
+    "MX07": "scheduled_start",
+    "MX08": "scheduled_start",
+    "MX09": "automatic_shutoff",
+    "MX10": "automatic_shutoff",
+    "MX11": "automatic_shutoff",
+    "MX12": "automatic_shutoff",
+    "MX13": "automatic_shutoff",
+    "MX14": "automatic_shutoff",
+    "MX15": "automatic_shutoff",
+    "MX16": "automatic_shutoff",
+    "MX17": "resume_after_interruption",
+    "MX18": "resume_after_interruption",
+    "MX19": "resume_after_interruption",
+    "MX20": "resume_after_interruption",
+    "MX21": "resume_after_interruption",
+    "MX22": "resume_after_interruption",
+    "MX23": "resume_after_interruption",
+    "MX24": "resume_after_interruption",
+    "MX25": "ambiguous",
+    "MX26": "ambiguous",
+    "MX27": "ambiguous",
+    "MX28": "ambiguous",
+    "MX29": "singleton",
+    "MX30": "singleton",
+    "MX31": "singleton",
+    "MX32": "singleton",
+    "NG01": "scheduled_start",
+    "NG02": "scheduled_start",
+    "NG03": "scheduled_start",
+    "NG04": "scheduled_start",
+    "NG05": "scheduled_start",
+    "NG06": "scheduled_start",
+    "NG07": "automatic_shutoff",
+    "NG08": "automatic_shutoff",
+    "NG09": "automatic_shutoff",
+    "NG10": "automatic_shutoff",
+    "NG11": "automatic_shutoff",
+    "NG12": "automatic_shutoff",
+    "NG13": "ambiguous",
+    "NG14": "singleton",
+    "NG15": "singleton",
+    "NG16": "singleton",
+    "NG17": "singleton",
+    "NG18": "ambiguous"
+  }
+}

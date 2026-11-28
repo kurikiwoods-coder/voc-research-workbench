@@ -2,13 +2,17 @@
 
 冻结基线为 `3bd705befb98ee108b77603763c5571ceb7fdc44`。M01–M06 工程验收通过，M06-R 复审通过并冻结。G-1 保持 BLOCKED。M07 及 M08 P0 A–D 的隔离工程验收通过，P1 的 M08-E 及 M09–M15 待启动。G-1-R-A 已实现，PackyCode 合成契约通过，正式 G-1-R-B 待补供应商审核和同批验收。箭头表示依赖。联合验收另列为里程碑。[工作单元](ROADMAP-V2.md) · [M07 工程证据](../evidence/m07/README.md) · [M08 工程证据](../evidence/m08-cd/README.md) · [G-1-R-A 接续](../packycode.md) · [基线审计](../audits/m06-final-engineering-audit.md)
 
+当前按已有授权接续 M09 隔离工程。M11 独立工程就绪后再单独授权 M12-A 的 G-1 Personal 与 M02 最小增量，正式准入及联调按各自阶段核验。商用 G-1 独立验收。M08-V 继续绑定其原源码，当前核心工程 39/79。[研究优先 ADR](../decisions/product-realignment-v1-owner-approval.md) · [现行顺序](ROADMAP-V2.md#当前接续顺序)
+
 ## M01–M15 模块依赖图
+
+下图中 M08 至 M11 包含隔离工程。实际采集、模型调用与正式研究各自需要相应数据许可及准入。
 
 ```mermaid
 flowchart TD
     M01["M01 基础工程"] --> M02["M02 API 配置中心"]
     M01 --> M03["M03 研究项目与范围"]
-    M02 --> G1["G-1 正式准入阻塞"]
+    M02 --> G1["Business G-1 阻塞"]
     M03 --> M04["M04 CSV 和 Excel 导入"]
     M04 --> M05["M05 原始语料治理"]
     M05 --> M06["M06 三层数据与统计"]
@@ -18,14 +22,18 @@ flowchart TD
     M08 --> M09
     M07 --> M10["M10 双轨发现与残差"]
     M09 --> M10
-    M10 --> M11["M11 候选审核"]
+    M10 -->|验收后另行授权| I18N["I18N-PRE 国际化架构预留"]
+    I18N --> M11["M11 候选审核"]
     M07 --> Joint["注册表与审核联验"]
     M11 --> Joint
-    Joint --> M12["M12 决策编码与校准"]
-    G1 -->|正式研究| M08
-    G1 -->|正式编码| M12
+    Joint --> M12A["M12-A 接口与最小修正"]
+    M12A --> Personal["G-1-PERSONAL 同批与复审"]
+    M12A --> M12["M12 决策编码与校准"]
+    G1 -->|商用正式编码| M12
+    Personal -->|个人正式编码| M12
     M06 --> M13["M13 洞察与报告"]
-    M12 --> M13
+    M12 --> ModelReview["M11 与 M12 原定联调"]
+    ModelReview --> M13
     M13 --> M14["M14 问卷与回流"]
     M14 --> P1R["P1-R 运营验收"]
     M13 --> P1R
@@ -36,13 +44,15 @@ flowchart TD
     class M01,M02,M03,M04,M05,M06 done
     class M07 done
     class M08 done
-    class M09,M10,M11,Joint,M12,M13,M14,P1R,M15 pending
+    class Personal,M09,M10,I18N,M11,Joint,M12A,M12,ModelReview,M13,M14,P1R,M15 pending
     class G1 blocked
 ```
 
 M07 先交稳定 ID、版本结构、候选态、共享定义及查询契约。M11 先接候选和审核能力，两者联验才完成候选意图与任务大类发行。M12 使用实际可用的确切注册表版本，低置信与未知回到已经接好的审核或发现入口，属于运行时反馈。离线工程夹具可为 M09/M10 与 M11 提供接口样本，正式闭环仍使用矩阵规定的证据与准入。[M06 消费契约](../architecture/m06-consumer-handover.md) · [组合事务](../architecture/m06-data-model.md#原子提交与并发)
 
 ## M06-R 至 P0-R 关键路径
+
+下图记录原商用准入和 P0 正式闭环。个人隔离工程的顺序及正式研究边界依[现行路线](ROADMAP-V2.md#当前接续顺序)。
 
 ```mermaid
 flowchart TD
@@ -52,7 +62,8 @@ flowchart TD
     G1 -->|通过后按授权实施| Collect["M08 采样与回源"]
     Register --> Discover["M09 和 M10 双轨盲测"]
     Collect --> Discover
-    Discover --> Joint["M07 与 M11 联审发行"]
+    Discover -->|M10 验收后另行授权| I18N["I18N-PRE 国际化架构预留"]
+    I18N --> Joint["M07 与 M11 联审发行"]
     G1 -->|正式验收前提| Joint
     Joint --> Decide["M12 锁版编码与校准"]
     Decide --> Insight["M13 洞察与可追溯报告"]
@@ -62,7 +73,7 @@ flowchart TD
     classDef pending fill:#F1F3F5,stroke:#637180,color:#28323D
     classDef blocked fill:#FCE5E2,stroke:#A24943,color:#592B29
     class Freeze done
-    class Recheck,Register,Collect,Discover,Joint,Decide,Insight,Survey,P0R pending
+    class Recheck,Register,Collect,Discover,I18N,Joint,Decide,Insight,Survey,P0R pending
     class G1 blocked
 ```
 
@@ -100,7 +111,9 @@ flowchart TD
 
 ## 下一授权入口
 
-G-1-R 需负责人单独授权。拿到授权后，先核对实际所选提供商及调用通道的留存政策、地区、分处理商、公开语料处理范围和组织审核。TypeSafe 的 ZDR 以实际组织证据为准，JevModel 及中转通道分别审查。检查既有脱敏回执能否按原规则纳入同一验收批次，并按最小必要调用量执行所缺步骤。若所选通道存在 Score 等字段缺口，保留 schema_gap，按原流程独立审查可能合格的其他 Jev 通道。齐全后记录同批次 C0-1～C0-6、后端回读、余额同步或未同步状态及审查凭据。任何缺项保留 BLOCKED，正式 P0 仍等 G-1。工作台已有连通性中心、恢复入口及专用凭证界面。[连通性操作](../connectivity.md) · [G-1 矩阵](../requirements-matrix.md#当前验收快照) · [既有 Tavily 回执](../evidence/p0-0/tavily-live/README.md)
+继续已授权 M09。M12-A 需在 M11 独立工程就绪后获单独授权。M12 正式研究及校准前，由单独授权恢复 G-1-P-D 同批实测及 G-1-P-R 独立复审。PackyCode 原合成授权已用尽。个人供应商强制项、风险接受、正式和合成证据复用规则见[个人门禁](../architecture/personal-research-gate.md)及[实施计划](g1-personal-implementation-plan.md)。
+
+商用 G-1-R 需负责人单独授权。拿到授权后，先核对实际所选提供商及调用通道的留存政策、地区、分处理商、公开语料处理范围和组织审核。TypeSafe 的 ZDR 以实际组织证据为准，JevModel 及中转通道分别审查。检查既有脱敏回执能否按原规则纳入同一验收批次，并按最小必要调用量执行所缺步骤。若所选通道存在 Score 等字段缺口，保留 schema_gap，按原流程独立审查可能合格的其他 Jev 通道。齐全后记录同批次 C0-1～C0-6、后端回读、余额同步或未同步状态及审查凭据。任何缺项保留 BLOCKED，正式 P0 仍等 G-1。工作台已有连通性中心、恢复入口及专用凭证界面。[连通性操作](../connectivity.md) · [G-1 矩阵](../requirements-matrix.md#当前验收快照) · [既有 Tavily 回执](../evidence/p0-0/tavily-live/README.md)
 
 ## 会话安排与出场记录
 
@@ -108,10 +121,11 @@ G-1-R 需负责人单独授权。拿到授权后，先核对实际所选提供�
 |---|---|---|
 | M07 | A–D 可在同一会话交付契约、治理和 UI | 版本差异和权限回归。正式联合发布待 M11 与 M07 联验 |
 | M08 | A/B 基础及双搜索，C/D 来源和任务。E 按 P1 扩展 | 双源故障切换、CSV 全流程及真实采样与回源 |
-| M09 | A–D 合并为完整离线主题试点 | 向量/索引版本、聚类复跑及盲测 |
-| M10 | A–C 生成流程和残差，D/E 双轨及审核交接 | 同样本比较、无新意图和新类盲测 |
-| M11 | A–D 合并候选、组合事务和审核 UI | 与 M07 联合发行，与 M12 连通复核入口 |
-| M12 | A 接口与兼容层，B/C 真实编码和召回，D/E 校准、分片及账本按风险分批 | 单独复审版本、概率、幂等和校准。F 延续到 P1 |
+| M09 | A–D 合并为完整离线主题试点 | 向量/索引版本、聚类复跑及盲测。预留语言参数和 Embedding 多语言能力 |
+| M10 | A–C 生成流程和残差，D/E 双轨及审核交接 | 同样本比较、无新意图和新类盲测，离线验证候选交接。预留多语言 Prompt 和输出控制 |
+| I18N-PRE | M10 验收后单独授权，M11 启动前完成 | 双版本共用 Locale 与衍生证据契约，切换语言时统计、权限、稳定 ID 一致。[专项范围](../decisions/i18n-pre-owner-approval.md) |
+| M11 | 候选、组合事务和审核 UI 可独立交付，M12 复核接口使用隔离夹具 | 与 M07 联合发行，M12 校准及余项完成后执行原定真实联调 |
+| M12 | A 接口、G-1 Personal 与 M02 最小增量，B/C 真实编码和召回，D/E 校准、分片及账本按风险分批 | 单独复审版本、概率、幂等和校准。F 延续到 P1 |
 | M13 | A–C 基础洞察和报告，D/E 高级视图和四周基线 | 两条对账、真实数据及历史读取。100K 技术债在 A 登记 |
 | M14 | A–C 草稿与试填，D 发布回收，E 分析回写 | P0 实操与完整 G6 分阶段验收 |
 | M15 | A–C 竞品与来源，D Radar，E/F 调度与历史报告 | P2-R 跨模块回归与正式验收 |
@@ -119,6 +133,8 @@ G-1-R 需负责人单独授权。拿到授权后，先核对实际所选提供�
 每个主模块交接记录实际基线 SHA、职责、消费接口、冻结约束、已通过测试、剩余验收、缺陷和下一授权范围。一个会话可以交付连续子单元，每个里程碑仍需可独立检查。已有历史以证据索引接续，保留适用的独立复审、隐私核对及测试。
 
 ## 版本边界与计划日期
+
+下表描述交付用途与证据层级。产品版本独立管理，Personal 为全功能产品规划，两个版本分别核正式准入及部署。[产品版本](../architecture/edition-policy.md)
 
 | 版本 | 可使用范围 | 出场口径 |
 |---|---|---|
@@ -129,6 +145,6 @@ G-1-R 需负责人单独授权。拿到授权后，先核对实际所选提供�
 | 计划日期 | 目标 | 调整条件 |
 |---|---|---|
 | 2026-12-06 | P0 核心工程版 | 取决于模块授权、接口可用性、回归及实际阻塞 |
-| 2026-12-10 | 个人研究试用版，尽可能完成获准范围内的 P1/P2 基础工程能力 | 逐源许可及 G-1 决定可开放功能。征样、四周观测、正式答卷回收和重大缺陷按实调整 |
+| 2026-12-10 | 个人研究试用版，尽可能完成获准范围内的 P1/P2 基础工程能力 | 逐源许可及适用的个人版准入决定可开放功能。征样、四周观测、正式答卷回收和重大缺陷按实调整 |
 
 日期是计划目标。正式阶段的开始、样本量、观察窗口和验收期限以原矩阵与实际证据核定。高级模型模式及 P2 后产品化按各自授权启动。[原需求验收矩阵](../requirements-matrix.md) · [产品化规划](productization-roadmap.md)

@@ -6,6 +6,7 @@ import hashlib
 import json
 from uuid import uuid4
 
+from src.edition_policy import Edition
 from src.raw_store.corpus_access import (
     RESTRICTED_FILE_ROWS, ROW_COLUMNS, ROW_SOURCE, qualification, unresolved_sources, withdrawal_id,
 )
@@ -72,8 +73,8 @@ def check_sheet_sources(db, study_id, sheet):
         raise Conflict("该工作表含本项目已撤销许可的来源，请先移除该来源的内容。")
 
 
-def visible_import_row(row, access):
-    visible = access["status"] == "verified"
+def visible_import_row(row, access, *, include_corpus=True):
+    visible = include_corpus and access["status"] == "verified"
     return {
         "record_id": row["record_id"], "line_number": row["line_number"], "privacy": row["privacy"],
         "duplicate_of_line": row["duplicate_of_line"], "status": row["import_status"],
@@ -91,9 +92,11 @@ class ImportStore:
         self.store = store
 
     @contextmanager
-    def write(self):
+    def write(self, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN IMMEDIATE")
+            if authorize is not None:
+                authorize(db)
             yield db
 
     @staticmethod
@@ -112,21 +115,26 @@ class ImportStore:
         with self.store.db() as db:
             return self.target(db, study_id, scope_id)
 
-    def upload(self, study_id, scope_id, filename, kind, data, sheets):
+    def upload(self, study_id, scope_id, filename, kind, data, sheets, *, authorize=None):
         digest = hashlib.sha256(data).hexdigest()
         cutoff = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat(timespec="milliseconds")
-        with self.write() as db:
+        with self.write(authorize) as db:
             self.target(db, study_id, scope_id)
-            db.execute("""DELETE FROM import_files WHERE uploaded_at < ?
-                       AND NOT EXISTS (SELECT 1 FROM import_batches b WHERE b.file_id=import_files.file_id)""", (cutoff,))
+            # Personal grants authorize one frozen scope, including housekeeping.
+            where_scope, target = ("", ())
+            if self.store.edition == Edition.PERSONAL:
+                where_scope, target = " AND f.study_id=? AND f.scope_id=?", (study_id, scope_id)
+            staged = "NOT EXISTS (SELECT 1 FROM import_batches b WHERE b.file_id=f.file_id)"
+            db.execute(f"DELETE FROM import_files AS f WHERE {staged} AND f.uploaded_at < ?{where_scope}",
+                       (cutoff, *target))
             row = db.execute(f"""SELECT {FILE_COLUMNS} FROM import_files f
                              WHERE study_id=? AND scope_id=? AND sha256=? AND kind=?
                              ORDER BY EXISTS (SELECT 1 FROM import_batches b WHERE b.file_id=f.file_id) DESC,
                                       f.rowid LIMIT 1""", (study_id, scope_id, digest, kind)).fetchone()
             if row:
                 return decoded(row)
-            drafts = db.execute("""SELECT COUNT(*) FROM import_files f
-                                   WHERE NOT EXISTS (SELECT 1 FROM import_batches b WHERE b.file_id=f.file_id)""").fetchone()[0]
+            drafts = db.execute(f"SELECT COUNT(*) FROM import_files f WHERE {staged}{where_scope}",
+                                target).fetchone()[0]
             if drafts >= MAX_DRAFTS:
                 raise Conflict("待导入文件已达到 8 个。请在导入首页丢弃不再需要的文件或继续已有导入。")
             file_id = str(uuid4())
@@ -136,9 +144,11 @@ class ImportStore:
                        (file_id, study_id, scope_id, filename, kind, digest, data, dump(sheets), now()))
             return decoded(db.execute(f"SELECT {FILE_COLUMNS} FROM import_files WHERE file_id=?", (file_id,)).fetchone())
 
-    def get_file(self, study_id, file_id, sheet_index):
+    def get_file(self, study_id, file_id, sheet_index, *, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN")
+            if authorize is not None:
+                authorize(db)
             row = db.execute(f"SELECT {FILE_COLUMNS} FROM import_files WHERE study_id=? AND file_id=?",
                              (study_id, file_id)).fetchone()
             if row is None:
@@ -154,10 +164,12 @@ class ImportStore:
         with self.store.db() as db:
             check_sheet_sources(db, study_id, sheet)
 
-    def revoked_preview_receipt(self, study_id, file_id, index, mapping, privacy):
+    def revoked_preview_receipt(self, study_id, file_id, index, mapping, privacy, *, authorize=None):
         """Replay an unchanged, withdrawn staging plan without reopening its source bytes."""
         with self.store.db() as db:
             db.execute("BEGIN")
+            if authorize is not None:
+                authorize(db)
             row = db.execute(
                 """SELECT b.scope_id, b.signature, b.summary_json FROM import_batches b
                    WHERE b.study_id=? AND b.file_id=? AND b.sheet_index=? AND b.mapping_json=?
@@ -175,9 +187,11 @@ class ImportStore:
                     "summary": {**json.loads(row["summary_json"]), "source_types": {}},
                     "sample_rows": [], "issue_rows": [], "more_issues": False}
 
-    def confirmation_receipt(self, study_id, file_id, sheet_index, mapping, privacy, signature):
+    def confirmation_receipt(self, study_id, file_id, sheet_index, mapping, privacy, signature, *, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN")
+            if authorize is not None:
+                authorize(db)
             row = db.execute(BATCH_SELECT + """
                 JOIN import_files requested ON requested.study_id=b.study_id
                     AND requested.scope_id=b.scope_id AND requested.sha256=f.sha256
@@ -189,8 +203,8 @@ class ImportStore:
             self.target(db, study_id, row["scope_id"])
             return batch_record(row)
 
-    def discard(self, study_id, file_id):
-        with self.write() as db:
+    def discard(self, study_id, file_id, *, authorize=None):
+        with self.write(authorize) as db:
             attached = db.execute("SELECT 1 FROM import_batches WHERE study_id=? AND file_id=?",
                                   (study_id, file_id)).fetchone()
             if attached:
@@ -204,8 +218,8 @@ class ImportStore:
             raise KeyError(batch_id)
         return batch_record(row)
 
-    def commit(self, file, sheet, index, mapping, privacy, signature, rows, summary):
-        with self.write() as db:
+    def commit(self, file, sheet, index, mapping, privacy, signature, rows, summary, *, authorize=None):
+        with self.write(authorize) as db:
             return self.commit_in_transaction(db, file, sheet, index, mapping, privacy, signature, rows, summary)
 
     def commit_in_transaction(self, db, file, sheet, index, mapping, privacy, signature, rows, summary):
@@ -239,24 +253,29 @@ class ImportStore:
                         row["text_fingerprint"], row["duplicate_of_line"], dump(row["issues"])) for row in rows))
         return self.saved_batch(db, study_id, ident)
 
-    def history(self, study_id, offset):
+    def history(self, study_id, offset, *, scope_id=None, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN")
+            if authorize is not None:
+                authorize(db)
             StudyStore.project_row(db, study_id)
-            rows = db.execute(BATCH_SELECT + """ WHERE b.study_id=?
-                              ORDER BY b.created_at DESC, b.rowid DESC LIMIT 21 OFFSET ?""", (study_id, offset)).fetchall()
+            rows = db.execute(BATCH_SELECT + """ WHERE b.study_id=? AND (? IS NULL OR b.scope_id=?)
+                              ORDER BY b.created_at DESC, b.rowid DESC LIMIT 21 OFFSET ?""",
+                              (study_id, scope_id, scope_id, offset)).fetchall()
             drafts = db.execute("""SELECT f.file_id, f.scope_id, f.filename, f.sheets_json, f.uploaded_at,
                                       'v' || s.version_no AS scope_version FROM import_files f JOIN study_scopes s
                                    ON s.study_id=f.study_id AND s.scope_id=f.scope_id
-                                   WHERE f.study_id=? AND NOT EXISTS
+                                   WHERE f.study_id=? AND (? IS NULL OR f.scope_id=?) AND NOT EXISTS
                                       (SELECT 1 FROM import_batches b WHERE b.file_id=f.file_id)
-                                   ORDER BY f.uploaded_at DESC""", (study_id,))
+                                   ORDER BY f.uploaded_at DESC""", (study_id, scope_id, scope_id))
             return {"batches": [batch_record(row) for row in rows[:20]],
                     "more": len(rows) > 20, "drafts": [decoded(row) for row in drafts]}
 
-    def get_batch(self, study_id, batch_id, status, offset):
+    def get_batch(self, study_id, batch_id, status, offset, *, include_corpus=True, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN")
+            if authorize is not None:
+                authorize(db)
             batch = self.saved_batch(db, study_id, batch_id)
             today = now()[:10]
             rows = db.execute(
@@ -266,18 +285,22 @@ class ImportStore:
                     ORDER BY r.line_number LIMIT 21 OFFSET :offset""",
                 {"study_id": study_id, "batch_id": batch_id, "status": status, "offset": offset, "today": today},
             ).fetchall()
-            return {"batch": batch, "rows": [visible_import_row(row, qualification(row, today)) for row in rows[:20]],
+            return {"batch": batch, "rows": [visible_import_row(row, qualification(row, today), include_corpus=include_corpus)
+                                              for row in rows[:20]],
                     "more": len(rows) > 20}
 
-    def report(self, study_id, batch_id):
+    def report(self, study_id, batch_id, *, authorize=None):
         with self.store.db() as db:
+            db.execute("BEGIN")
+            if authorize is not None:
+                authorize(db)
             batch = self.saved_batch(db, study_id, batch_id)
             issues = db.execute("""SELECT line_number, status, duplicate_of_line, issues_json FROM import_rows
                                    WHERE batch_id=? AND issues_json<>'[]' ORDER BY line_number""", (batch_id,))
             return batch, [decoded(row) for row in issues]
 
-    def revoke(self, study_id, batch_id):
-        with self.write() as db:
+    def revoke(self, study_id, batch_id, *, authorize=None):
+        with self.write(authorize) as db:
             batch = self.saved_batch(db, study_id, batch_id)
             if not batch["revoked_at"]:
                 db.execute("UPDATE import_batches SET revoked_at=? WHERE batch_id=?", (now(), batch_id))

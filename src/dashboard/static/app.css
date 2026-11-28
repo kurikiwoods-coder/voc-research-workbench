@@ -887,6 +887,57 @@ main {
   color: var(--amber);
   margin-bottom: 12px;
 }
+
+.governance {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.governance .body > * + *,
+.governance .governance-data > * + *,
+.governance-form > * + * {
+  margin-top: 14px;
+}
+.governance .field {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.governance label:not([hidden]) {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.governance .governance-choice {
+  display: flex;
+  align-items: flex-start;
+}
+.governance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+  gap: 10px;
+}
+.governance fieldset {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--line, #d9e3e1);
+  border-radius: 8px;
+}
+.governance details {
+  padding: 10px 0;
+}
+.governance summary {
+  cursor: pointer;
+  font-weight: 650;
+}
+.governance .governance-history {
+  padding-left: 20px;
+}
+.governance .governance-history > li + li {
+  margin-top: 12px;
+}
+.governance .governance-binding dd {
+  margin: 0;
+}
 .drawer-head {
   display: flex;
   justify-content: space-between;

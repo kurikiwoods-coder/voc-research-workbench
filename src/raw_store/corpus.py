@@ -78,9 +78,11 @@ class CorpusStore:
             raise ValueError("原文库只允许使用工作台主库。")
         self.store = store
 
-    def batches(self, study_id, offset=0):
+    def batches(self, study_id, offset=0, *, scope_id=None, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN")
+            if authorize is not None:
+                authorize(db)
             StudyStore.project_row(db, study_id)
             rows = db.execute(
                 """SELECT b.batch_id, f.filename, b.sheet_name, b.scope_id, 'v' || s.version_no AS scope_version,
@@ -91,14 +93,17 @@ class CorpusStore:
                            (SELECT 1 FROM corpus_reviews h WHERE h.record_id=r.record_id)) AS reviewed_count
                    FROM import_batches b JOIN import_files f ON f.file_id=b.file_id
                    JOIN study_scopes s ON s.study_id=b.study_id AND s.scope_id=b.scope_id
-                   WHERE b.study_id=? ORDER BY b.created_at DESC, b.rowid DESC LIMIT ? OFFSET ?""",
-                (study_id, PAGE_SIZE + 1, offset),
+                   WHERE b.study_id=? AND (? IS NULL OR b.scope_id=?)
+                   ORDER BY b.created_at DESC, b.rowid DESC LIMIT ? OFFSET ?""",
+                (study_id, scope_id, scope_id, PAGE_SIZE + 1, offset),
             ).fetchall()
             return {"batches": [dict(row) for row in rows[:PAGE_SIZE]], "more": len(rows) > PAGE_SIZE}
 
-    def candidates(self, study_id, batch_id, offset=0):
+    def candidates(self, study_id, batch_id, offset=0, *, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN")
+            if authorize is not None:
+                authorize(db)
             if db.execute("SELECT 1 FROM import_batches WHERE study_id=? AND batch_id=?",
                           (study_id, batch_id)).fetchone() is None:
                 raise KeyError(batch_id)
@@ -124,7 +129,7 @@ class CorpusStore:
         return row
 
     @staticmethod
-    def duplicate(db, row, today, status):
+    def duplicate(db, row, today, status, *, scope_id=None):
         if not row["dedupe_group"] or row["role"] != "user_quote" or status != "verified":
             return None
         source = ROW_SOURCE.replace(
@@ -140,8 +145,9 @@ class CorpusStore:
                 SELECT {ROW_COLUMNS} {source}
                 WHERE b.study_id=:study_id AND v.dedupe_group=:dedupe_group
                     AND v.decision='verified' AND v.role='user_quote'
+                    AND (:scope_id IS NULL OR b.scope_id=:scope_id)
                 ORDER BY snap.created_at, snap.record_id""",
-            {"study_id": row["study_id"], "dedupe_group": row["dedupe_group"], "today": today},
+            {"study_id": row["study_id"], "dedupe_group": row["dedupe_group"], "today": today, "scope_id": scope_id},
         )
         members = [entry["record_id"] for entry in group if qualification(entry, today)["engineering_eligible"]]
         if not members:
@@ -149,7 +155,9 @@ class CorpusStore:
         return {"group_id": row["dedupe_group"], "canonical_record_id": members[0],
                 "record_count": len(members), "is_duplicate": members[0] != row["record_id"]}
 
-    def describe(self, db, row, today):
+    def describe(self, db, row, today, *, scope_id=None):
+        if scope_id is not None and scope_id != row["scope_id"]:
+            raise KeyError(row["record_id"])
         summary = record_summary(row, today)
         visible = summary["status"] == "verified"
         metadata = safe_metadata(row["fields_json"]) if visible else {}
@@ -175,20 +183,24 @@ class CorpusStore:
                 "raw_sha256": row["raw_sha256"] if visible else None,
                 "metadata": metadata, "trace": trace,
                 "import_status": row["import_status"], "import_issues": json.loads(row["issues_json"]),
-                "duplicate": self.duplicate(db, row, today, summary["status"]), "history": history,
+                "duplicate": self.duplicate(db, row, today, summary["status"], scope_id=scope_id), "history": history,
                 "decision": row["decision"], "retention_until": row["retention_until"], "revoked_at": row["revoked_at"],
                 "research_eligible": False, "outbound_allowed": False}
 
-    def detail(self, study_id, record_id):
+    def detail(self, study_id, record_id, *, scope_id=None, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN")
+            if authorize is not None:
+                authorize(db)
             today = now()[:10]
-            return self.describe(db, self.source_row(db, study_id, record_id, today), today)
+            return self.describe(db, self.source_row(db, study_id, record_id, today), today, scope_id=scope_id)
 
-    def qualified_record(self, study_id, record_id):
+    def qualified_record(self, study_id, record_id, *, scope_id=None, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN")
-            return self.qualified_record_in_transaction(db, study_id, record_id, today=now()[:10])
+            if authorize is not None:
+                authorize(db)
+            return self.qualified_record_in_transaction(db, study_id, record_id, today=now()[:10], scope_id=scope_id)
 
     @staticmethod
     def _check_day(today):
@@ -226,12 +238,12 @@ class CorpusStore:
                 yield record
         self._check_day(today)
 
-    def qualified_record_in_transaction(self, db, study_id, record_id, *, today):
+    def qualified_record_in_transaction(self, db, study_id, record_id, *, today, scope_id=None):
         """Project one input in the caller's snapshot. Writes use qualified_write_inputs."""
         if not db.in_transaction:
             raise ValueError("当前资格复核需要活动事务。")
         row = self._qualified_row(db, study_id, record_id, today)
-        record = self.describe(db, row, today)
+        record = self.describe(db, row, today, scope_id=scope_id)
         self._check_day(today)
         return {name: record[name] for name in (
             "record_id", "trace", "raw_text", "raw_sha256", "metadata", "duplicate", "status", "license_status",
@@ -302,15 +314,18 @@ class CorpusStore:
         return row["withdrawal_id"]
 
     def review(self, study_id, record_id, decision, role, reason, basis="", retention_until=None,
-               license_status=None, license_evidence_ref=None, license_issued_on=None, reauthorize=False):
+               license_status=None, license_evidence_ref=None, license_issued_on=None, reauthorize=False,
+               *, scope_id=None, authorize=None):
         with self.store.db() as db:
             db.execute("BEGIN IMMEDIATE")
             at = now()
+            if authorize is not None:
+                authorize(db)
             self._review_in_transaction(db, at, study_id, record_id, decision, role, reason, basis,
                                         retention_until, license_status, license_evidence_ref, license_issued_on,
                                         reauthorize)
             today = at[:10]
-            return self.describe(db, self.source_row(db, study_id, record_id, today), today)
+            return self.describe(db, self.source_row(db, study_id, record_id, today), today, scope_id=scope_id)
 
     def _review_in_transaction(self, db, at, study_id, record_id, decision, role, reason, basis="",
                                retention_until=None, license_status=None, license_evidence_ref=None,

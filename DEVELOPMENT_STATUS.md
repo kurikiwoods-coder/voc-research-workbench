@@ -1,10 +1,92 @@
 # VOC Research Workbench 开发状态
 
+2026-11-28，负责人正式签收 M09-C 提交 `8a2ee1e3465964112e8f6a132932f35658557839`。**M09-C = ACCEPTED**，工程状态 **ENGINEERING_PASS**，核心已验收 **42/79**。M09-B 纯度诊断继续保留，**G3 = PENDING**，**M09 = PARTIAL**，P0-1 待验收。负责人同时授权 M09-D 隔离实施。[签收证据](docs/evidence/m09-c/README.md) · [三项 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/46115987906)
+
+## M09-D 主题发现、候选审核与独立盲测
+
+M09-D 已实现本机聚类分布、主题关系及离群检查、版本化候选输出、原话下钻、历史决策重读与离线重算比较。主题侧库兼容升级至 SQLite v2。已验收核心仍为 **42/79**。独立合成盲测保留未知主题混簇、已知主题漏分及负例误发现，探索过滤维持诊断用途。正式 **G3 = PENDING**，**M09 = PARTIAL**。[M09-D 实施与验证](docs/evidence/m09-d/README.md)
+
+## M09-C 主题快照、溯源与复跑
+
+2026-11-27，M09-C 已实现隔离运行快照、成员与精确证据回查、离线复跑及运行差异比较。独立主题库采用 SQLite v1，Personal 工作库 v11、Business 工作库 v9。交付时为 **PENDING_ACCEPTANCE**，彼时已验收核心 **41/79**。[M09-C 工程证据](docs/evidence/m09-c/README.md)
+
+2026-11-28，以草稿 PR #2 已核对基线 `0c1ec3fb2e71193c2763e3da84107e1222ff293e` 在原生 Windows 11 家庭中文版 26H2 x64（26300.9974）完成专项复验。官方源码受控重建的 `jieba==0.42.1` 两次哈希一致，锁定轮包 44/44 与固定模型资产 11/11 验证通过。离线安装与 `pip check` 通过，专项 22 通过、0 失败、3 项 G3 诊断跳过，退出码 0，进程审计的非回环尝试 0。该复验基线的三项 CI 通过，负责人其后签收本页顶部登记的提交。[环境核查及复跑命令](docs/evidence/m09-c/README.md#windows-11-本机核查与复跑命令) · [同提交 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/46013848716)
+
+## M09-B 离线 BERTopic
+
+2026-11-27，Windows 11 CPU 完成 M09-B 工程验收。**M09-B = ENGINEERING_PASS**，**M09 = PARTIAL**，核心 **41/79**。定向及上游回归 86/86。真实运行专项 6 项，默认夹具、纯离群和空词表通过，三项阈值诊断分别记录 8/11、8/12、8/13 的主题纯度。候选结果仍须人工审核，正式发现质量按原 G3 验收。真实研究 API、费用及正式研究分母增量均为 0。[工程证据](docs/evidence/m09-b/README.md)
+
+## M09-A 离线向量适配
+
+2026-11-27，按负责人授权完成 M09-A 本机离线工程验收，**M09-A = ENGINEERING_PASS**，**M09 = PARTIAL**，核心进度 **40/79**。复用 M05 资格、M06 封版片段、M07 精确注册表及 M08 合成回执，输出带稳定行映射的版本化向量矩阵。合成及直接上游回归通过 81/81，获准的 MiniLM 实际权重在原生 Windows 11 CPU 上通过 3/3。[实现与测试证据](docs/evidence/m09-a/README.md)
+
+真实研究 API 及实测进程非回环网络尝试均为 0。M06 **FROZEN**，Personal SQLite v11，Business SQLite v9，G-1-P-D **BLOCKED**，G-1-P-R **NOT_STARTED**，Personal Gate **NOT_EVALUATED**，Business Gate **BLOCKED**。
+
+## PRODUCT-REALIGNMENT-V1 与当前工程状态
+
+2026-11-27 负责人决策 **APPROVED**。决策登记时的接续基线为本机、远端及草稿 PR #2 一致的 `da045c9f76b095f762efbf42c84190de44b20472`。当时仓库尚无 M09 工程交付。M09 原有隔离开发授权有效，当前实现状态见本页顶部。[正式 ADR](docs/decisions/product-realignment-v1-owner-approval.md) · [当前接续](docs/planning/ROADMAP-V2.md#当前接续顺序)
+
+当前 **G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED，G-1-PERSONAL = NOT_EVALUATED，Business G-1 = BLOCKED**。Product Realignment 仅登记方向和返工边界。G-1 Personal 与 M02 等 M12-A 独立授权，M11 接口先在隔离环境验收，真实联调等 M12 校准与余项完成。本轮真实研究调用、供应商探针、余额查询、真实研究 Token 和费用均为 0。[返工范围](docs/decisions/product-realignment-v1-owner-approval.md#返工范围冻结)
+
+## API 架构确认与 G-1 暂停
+
+2026-11-27 核对草稿 PR #2 的开发分支 `codex/g1-personal-phase-1`，文档接续基线为 `bee8287359c965286b1fd38005ef9d1852bad3d8`，对应三项 CI 已通过。现行 Personal 工作库为 SQLite v11，Business 工作库为 v9，M06 冻结。核心进度 **39/79**。核对时仓库仍登记 M09–M15 为 **NOT_STARTED**，未发现已提交的 M09 工程成果。M09 的既有隔离开发授权继续有效。I18N-PRE 为 **PLANNED**。[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45932760024) · [当前开发顺序](docs/planning/ROADMAP-V2.md#当前接续顺序)
+
+**G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED，G-1-PERSONAL = NOT_EVALUATED，商用 G-1 = BLOCKED**。本轮仅登记 API 架构和接续决策。G-1 的最小修正及 M02 增量等 M12-A 单独授权，正式研究及模型校准前复验。Personal V2、原 PackyCode 通道的待决事项及其已有回执继续按原范围保留。本轮真实研究 API、供应商探针、余额查询、研究 Token 和研究费用均为 0。[个人门禁](docs/architecture/personal-research-gate.md) · [适配器契约](docs/architecture/ai-model-adapter-contract.md)
+
+## G-1-PERSONAL V2 本机预准入
+
+2026-11-27，Personal V2 沿用既有 G-1-P-D 受控执行，按当前账户、凭证、固定通道、逐源许可、Owner 费用及剩余风险批准准备一次四槽取证。既有 C0-5、C0-6 离线证据可在复核版本、适用范围及摘要后引用至该批次。历史模型合成回执及两笔费用继续用于原批次审计。C0-1 至 C0-6 的正式标准见原政策。[个人准入政策](docs/architecture/personal-research-gate.md) · [待签发的四槽草案](docs/evidence/g1-p-d/personal-v2-authorization-draft.md)
+
+Personal V2 的费用风险按已确认不存在、未知、已知存在记录。未知项需要 Owner 在受保护材料中明确接受，并批准计入专用令牌额度的正值风险金额。已知存在的风险继续阻断。日常 API 生命周期仅登记政策，留待 G-1-P-R 与 M02 联调。
+
+**G-1-PERSONAL = NOT_EVALUATED，G-1-P-D = BLOCKED，G-1-P-R = NOT_STARTED**。正式批次和逐槽授权尚未签发，正式同批 0/6。真实请求、探针、余额查询、实际 Token、费用及正式研究分母增量均为 0。独立复审待六项同批证据齐备。商用 **G-1 = BLOCKED**。
+
+2026-11-27，已登记个人版治理冻结。现有账户信息、适用公开条款及 Owner 基础核验可满足账户和用途取证。PackyAPI 发布的商业条款明确排除消费者使用，现有账户材料无法确认该账户有覆盖本次个人本地研究的其他适用条款。原生 Windows 只读预检复核通过 Owner DPAPI、部署绑定、SQLite v11 完整性和外键检查。当时 Tavily 与 PackyCode 凭证可回读，正式批次、发送权及请求均为 0。按负责人决定暂停真实执行。[PackyAPI 商业服务条款](https://docs.packyapi.com/docs/tos/TOS.html) · [M09 接续](HANDOVER.md#当前接续--m09-a)
+
+## I18N-PRE 规划登记
+
+2026-11-26，**I18N-PRE = PLANNED**。M09、M10 的语言接口和证据提前约束已登记。M10 验收完成后等待负责人单独授权实施，在 M11 启动前完成专项。登记时核心进度为 39/79，当前进度见本页顶部。[负责人批准](docs/decisions/i18n-pre-owner-approval.md)
+
+## G-1-P-D 个人版正式同批验收准备
+
+2026-11-26，**G-1-P-D-E = ENGINEERING_PASS**。D-E 的 Personal v10、受限执行及恢复修复通过隔离 Windows 11 实机验收，交付提交 `4c7d705b277352af530c59f917f787bcc3a69bfd` 的 Ubuntu、Windows Server 2022、Chromium 均通过。隔离验证确认 Business 工作库 v9，两版诊断及合成契约库 v1。[负责人批准](docs/decisions/g1-p-d-e-v10-owner-approval.md) · [D-E 工程证据](docs/evidence/g1-p-d/engineering.md) · [D-E 交付 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45794168453)
+
+**G-1-P-D-L 真实执行 `BLOCKED`。** 隔离 v11、逐操作授权和两项跨批次对账 P1 通过 Windows 11 定向实机复验，Python 70/70、原生 DPAPI 3/3。独立 Personal v11 正式验收工作区已部署，Owner、ACL、备份、新目录恢复与重启回读通过。PackyCode/SystemOne 仍缺实际通道可执行的逐请求输出硬上限及含重试的最坏扣费证明，正式逐槽授权及恢复连续性待复核。真实请求 0，正式同批 0/6。[Windows 11 与部署证据](docs/evidence/g1-p-d/d-l-windows11-deployment.md) · [D-L 授权草案](docs/evidence/g1-p-d/d-l-authorization-draft.md)
+
+**G-1-P-D = BLOCKED**。C0-1 至 C0-6 的个人正式同批状态均为 `BLOCKED`，C0-5 和 C0-6 保留既有离线通过。真实研究供应商请求、探针、账户查询、真实研究 Token、新增研究费用、正式研究分母和正式历史证据纳入均为 0。[D 六项及证据](docs/evidence/g1-p-d/README.md)
+
+## G-1-P-C 个人供应商审批中心
+
+**G1_PERSONAL_APPROVAL_CENTER = IMPLEMENTED**，**G1_PERSONAL_IMPLEMENTATION = PARTIAL**。源码 `912ff28e0a10e3329bc49c6e9fdc97e290229a68` 实现可信本机 Owner 的项目和冻结范围审批、必要材料复核、非强制风险登记、凭证绑定及不可变事件，工作库 SQLite v9。该源码 **WINDOWS_11_REAL_MACHINE = PASS**，**WINDOWS_11_DEPLOYMENT_GATE = PASS**。C 交付提交的三项 CI 已通过，**G-1-P-C = ENGINEERING_PASS**，具备 D 准备工作的工程接续条件。[C 证据](docs/evidence/g1-p-c/README.md) · [C 交付 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45762882859)
+
+**G-1-PERSONAL = NOT_EVALUATED**，**G-1 = BLOCKED**。M06 工程基线 FROZEN，正式统计继续 `unavailable/null`，核心 39/79。R、M09–M15 为 **NOT_STARTED**。C 阶段真实研究和真实供应商探针分别为 **0 次**。[D 批次准备规范](docs/evidence/g1-p-c/d-preparation.md)
+
+## G-1-P-B-V 网页成果接管
+
+**WEB_CODE_TAKEOVER = PASS**，**G-1-P-B-V = PASS**。原生 Windows 11 在隔离的 B 版源码快照上通过全量回归、DPAPI、ACL 及三种路径启动重启。该源码的 **WINDOWS_11_REAL_MACHINE = PASS**、**WINDOWS_11_DEPLOYMENT_GATE = PASS**。验收提交 `97e942d9339921089cabb6fe2b0ea01d6832f5fe` 的三项 CI 通过。[验收证据](docs/evidence/g1-p-b-v/README.md) · [B-V CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45757091621)
+
+## G-1-P-B 双版本服务端工程
+
+2026-11-26 从 Phase 1 实际远端 `0e7a3d7ec4909cf43410728045a9bb765b2760da` 接续。**G-1-P-B = ENGINEERING_PASS**，`G1_PERSONAL_SERVER_POLICY = IMPLEMENTED`，`G1_PERSONAL_IMPLEMENTATION = PARTIAL`。个人本机 Owner、项目及冻结范围权限、两道门禁与云模式关闭已实现。独立复审及 Windows 兼容回归完成，未关闭 P0/P1 为 0。[工程证据](docs/evidence/g1-p-b/README.md) · [本机启动](docs/architecture/g1-personal-server-policy.md)
+
+该 B 源码使用 SQLite v8，M06 工程基线 FROZEN，核心 39/79。B 阶段真实研究及供应商探针各 **0 次**。
+
+实现验收绑定 `d7c711660843c8c095fccbedd4b67d5303f9226b`。Ubuntu 与 Windows Server 2022 均通过 422 项 Python、2 项 Node、三次空库冷启动及四份归档校验。Chromium 全量通过。Windows Server 的中文及空格路径启动回归通过。[三项 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45749971864)
+
+## G-1-PERSONAL Phase 1
+
+2026-11-26，以 M08-V 报告提交 `dd89a14f25ac0dfae3f63dcf1809da2494f1c9dc` 接续，原验收源码 `74590d4a4d43a66c7a3296943da9205bc6ff65e0` 的 Windows 11 实机及部署均 PASS，当轮新增未关闭 P0/P1/P2/P3 为 0/0/0/0，基线三项 CI 均通过。M06 工程基线 FROZEN，SQLite 工作库 v8，ROADMAP-V2 **39/79**。[基线 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/45740807294) · [M08-V](docs/evidence/m08-v/README.md)
+
+`DUAL_EDITION_STRATEGY = APPROVED_AND_DOCUMENTED`，`PERSONAL_EDITION = FULL_ACCESS_PLANNED`，`BUSINESS_EDITION = PLANNED`，`G1_PERSONAL_POLICY = DOCUMENTED`，`G1_PERSONAL_IMPLEMENTATION = NOT_STARTED`。个人门禁 **G-1-PERSONAL = NOT_EVALUATED**，商用 **G-1 = BLOCKED**，M09 = **NOT_STARTED**。下一轮为 G-1-P-B/C，各阶段待独立授权。个人 M09 等 G-1-P-D 与 G-1-P-R 完成准入后另行授权。[批准记录](docs/decisions/dual-edition-owner-approval.md) · [实施计划](docs/planning/g1-personal-implementation-plan.md)
+
+G-1-R-B-F 原始 CSV 两条消费 **CSV_VERIFIED**，累计 809 输入、220 输出、1,029 合计 Token，实际费用 **$0.000238**。与仓库合成回执交叉核对一致。个人 Windows 10 的原始 SQLite 独立核对为 **LOCAL_VERIFICATION_PENDING**。云端离线回归 Python 395/395、Node 2/2、三次空库冷启动通过。M08-V 实机沿用原证据。真实研究及真实供应商 API 调用各 **0 次**。[脱敏费用证据](docs/evidence/g1-rb-f/README.md)
+
 ## M08-V Windows 11 实机与部署验收
 
 2026-11-26 在普通登录用户的原生 Windows 11 Enterprise 25H2 x64（26200.8655）上复验 `74590d4a4d43a66c7a3296943da9205bc6ff65e0`。**M08_V = PASS**、**M01_M08_WINDOWS_11_REGRESSION = PASS**、**WINDOWS_11_REAL_MACHINE = PASS**、**WINDOWS_11_DEPLOYMENT_GATE = PASS**。Python 395/395、Node 2/2、Chromium 全量与两项专项、空库冷启动 3/3、历史归档 4/4、路径启动 6/6、SQLite v7→v8 迁移及恢复、DPAPI 合成凭证均通过。[实机证据](docs/evidence/m08-v/README.md)
 
-**M06_ENGINEERING_BASELINE = FROZEN**、**M07 = ENGINEERING_PASS**、**M08_P0_ENGINEERING = ENGINEERING_PASS**、**M08_FORMAL_BUSINESS_ACCEPTANCE = PENDING**。**G-1 = BLOCKED**、**PACKYCODE_PROVIDER_APPROVAL = PENDING**，真实研究 API 与真实供应商探针各 0 次。ROADMAP-V2 为 **39/79**，M08-E 和 M09–M15 尚未启动。M09 的隔离工程入口具备，等待单独授权。
+**M06_ENGINEERING_BASELINE = FROZEN**、**M07 = ENGINEERING_PASS**、**M08_P0_ENGINEERING = ENGINEERING_PASS**、**M08_FORMAL_BUSINESS_ACCEPTANCE = PENDING**。**G-1 = BLOCKED**、**PACKYCODE_PROVIDER_APPROVAL = PENDING**，真实研究 API 与真实供应商探针各 0 次。ROADMAP-V2 为 **39/79**，M08-E 和 M09–M15 尚未启动。M09 的隔离工程前置接口具备，接续条件见本页顶部的个人版准入。
 
 ## M08-C/D 隔离工程验收
 
@@ -20,7 +102,7 @@ SQLite 正式工作库 v8，A/B 演示账本 v1，C/D 任务账本 v1 独立。M
 
 负责人批准一次固定 8+3 的 PackyCode 合成契约试验，最多两次 POST，使用独立、不可重置的小额令牌和 100,000 输入 Token 本地预算目标。首片通过后须核对扣费和余额再发第二片。独立 SQLite 保存预约、分片证据及回执。结项时 G-1 为 **BLOCKED**，M06 冻结，M07 工程通过，M08 及 M12 当时未启动。[安全决定](docs/decisions/packycode-synthetic-preflight.md) · [验收证据](docs/evidence/g1-rb-p/README.md)
 
-原批次完成 8+3 题，两个请求均返回 HTTP 200、`jev-1.14.0`。11 题字段校验通过，接口实报合计 **809 输入 / 220 输出 Token**，合成契约为 **PASS**。首片单笔实扣 **$0.000144**，最终测试令牌余额显示 **$2.00**，第二片单笔和实际总扣费未核实。[验收证据](docs/evidence/g1-rb-p/README.md#实际接口结项)
+原批次完成 8+3 题，两个请求均返回 HTTP 200、`jev-1.14.0`。11 题字段校验通过，接口实报合计 **809 输入 / 220 输出 Token**，合成契约为 **PASS**。首片单笔实扣 **$0.000144**，最终测试令牌余额显示 **$2.00**，原结项时第二片消费及总额未核实，Phase 1 已追加原始 CSV 取证。[原验收](docs/evidence/g1-rb-p/README.md#实际接口结项) · [费用补证](docs/evidence/g1-rb-f/README.md)
 
 ## G-1-R-A PackyCode 工程接入
 

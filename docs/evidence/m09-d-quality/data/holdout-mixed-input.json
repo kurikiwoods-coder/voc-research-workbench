@@ -1,0 +1,165 @@
+{
+  "version": "m09d-quality-holdout-mixed-v1",
+  "rows": [
+    {
+      "id": "H-001",
+      "text": "The bike leans so far on the kickstand that I can't put groceries into the front box with both hands.",
+      "language": "en"
+    },
+    {
+      "id": "H-002",
+      "text": "I'd like the user manual printed large enough for my parents to read.",
+      "language": "en"
+    },
+    {
+      "id": "H-003",
+      "text": "It can stand on its own. I need the crate to stay put when I cycle over the curb.",
+      "language": "en"
+    },
+    {
+      "id": "H-004",
+      "text": "When I bump the table even a little, the slide text goes soft. I'd like it to recover without turning the ring.",
+      "language": "en"
+    },
+    {
+      "id": "H-005",
+      "text": "The bike wobbled around the corner outside the shop. I don't remember if I was still loading or already moving.",
+      "language": "en"
+    },
+    {
+      "id": "H-006",
+      "text": "It stays square on the screen. The issue is the menu getting blurry whenever we move the projector closer.",
+      "language": "en"
+    },
+    {
+      "id": "H-007",
+      "text": "不能正中摆放，投到墙上左边高右边低，想把原来完整的画面调回来。",
+      "language": "zh"
+    },
+    {
+      "id": "H-008",
+      "text": "从客厅挪到卧室后，字幕变糊，画面大小合适，能不能自己重新对焦？",
+      "language": "zh"
+    },
+    {
+      "id": "H-009",
+      "text": "移到会议桌另一头后，轮廓还是方的，就是小字虚了，想自动调回清楚。",
+      "language": "zh"
+    },
+    {
+      "id": "H-010",
+      "text": "Bread gets crushed when the parcels roll into it on the way home. I need a way to keep the items separated under way.",
+      "language": "en"
+    },
+    {
+      "id": "H-011",
+      "text": "I wheel the unit out for each lesson. Please bring the writing back into focus after I park it at the new distance.",
+      "language": "en"
+    },
+    {
+      "id": "H-012",
+      "text": "还没骑就差点翻，放个快递要一手抓车把；希望停车装卸能稳一点。",
+      "language": "zh"
+    },
+    {
+      "id": "H-013",
+      "text": "在坡一点的地方支架挂不住，抱着货没法腾手，想停车也能稳住车身。",
+      "language": "zh"
+    },
+    {
+      "id": "H-014",
+      "text": "上小坡后包一路往后滑，前面能加固定点系带吗？",
+      "language": "zh"
+    },
+    {
+      "id": "H-015",
+      "text": "机器只能放在沙发侧面，画面四角希望能对齐幕布，边上的文字也要看全。",
+      "language": "zh"
+    },
+    {
+      "id": "H-016",
+      "text": "城里室内拖鞋底太滑，刚拖过的瓷砖上走不稳。",
+      "language": "zh"
+    },
+    {
+      "id": "H-017",
+      "text": "装东西时车老往一边倒，想不用人扶也能在路边站稳。",
+      "language": "zh"
+    },
+    {
+      "id": "H-018",
+      "text": "Getting the child into the carrier is the difficult part. A stand should keep the parked bike level through that.",
+      "language": "en"
+    },
+    {
+      "id": "H-019",
+      "text": "The image is sharp enough. I'd like to keep the whole rectangle on the wall when I can't aim the lens straight at it.",
+      "language": "en"
+    },
+    {
+      "id": "H-020",
+      "text": "一人带货出门总担心车倒、箱子滑，两个问题还没遇到哪个更严重。",
+      "language": "zh"
+    },
+    {
+      "id": "H-021",
+      "text": "I can't tell whether I bumped the focus or just picked a bad place to put it. The whole thing looked wrong.",
+      "language": "en"
+    },
+    {
+      "id": "H-022",
+      "text": "The projector remote has nearly identical buttons. I keep pressing the wrong one in the dark.",
+      "language": "en"
+    },
+    {
+      "id": "H-023",
+      "text": "The bags slide across the cargo bed whenever I turn. A way to cinch them to the frame would help.",
+      "language": "en"
+    },
+    {
+      "id": "H-024",
+      "text": "Once we're moving the load is fine. I want the bike to stay on its feet while I'm lifting the bag into the box.",
+      "language": "en"
+    },
+    {
+      "id": "H-025",
+      "text": "车铃装在把横下面，戴手套伸过去很难拨响。",
+      "language": "zh"
+    },
+    {
+      "id": "H-026",
+      "text": "投得远一点就需要重新拧镜头，希望换位置能把焦点找准。",
+      "language": "zh"
+    },
+    {
+      "id": "H-027",
+      "text": "装得下也好停车，麻烦的是雨天急刹东西全往前挤，想隔一下或者固定起来。",
+      "language": "zh"
+    },
+    {
+      "id": "H-028",
+      "text": "Putting the projector on the ceiling gives us a trapezoid. I need the whole presentation visible without moving the bracket.",
+      "language": "en"
+    },
+    {
+      "id": "H-029",
+      "text": "调了一晚上还是不行，方不方清不清都受影响，两样都想要。",
+      "language": "zh"
+    },
+    {
+      "id": "H-030",
+      "text": "停车倒是不晃，骑上石板路箱子就弹起来，想有地方把货绑住。",
+      "language": "zh"
+    },
+    {
+      "id": "H-031",
+      "text": "投影打斜了右下角跑到墙外，想校正到框内，没法搬柜子腾地方。",
+      "language": "zh"
+    },
+    {
+      "id": "H-032",
+      "text": "The only free shelf is to the side. From there, one edge of the movie gets cut off and the subtitles sit on a slant.",
+      "language": "en"
+    }
+  ]
+}

@@ -1,0 +1,311 @@
+{
+  "version": "m09-d-third-holdout-v1",
+  "provenance": "synthetic",
+  "scope": "timer and interruption intents for air fryers and kitchen scales",
+  "batches": {
+    "mixed": [
+      [
+        "MX01",
+        "scale",
+        "en-US",
+        "I'd set the scale tonight if it could turn itself on right when prep starts tomorrow."
+      ],
+      [
+        "MX02",
+        "fryer",
+        "zh-CN",
+        "睡前选好程序，早上六点让炸锅自己开始加热。"
+      ],
+      [
+        "MX03",
+        "fryer",
+        "en-US",
+        "Queue tomorrow's cook tonight, with the heater starting at the hour I pick."
+      ],
+      [
+        "MX04",
+        "scale",
+        "zh-CN",
+        "能不能约在做饭前十分钟唤醒秤，我不用再去按开关键。"
+      ],
+      [
+        "MX05",
+        "fryer",
+        "en-US",
+        "I need to programme the fryer to begin forty minutes after I load it."
+      ],
+      [
+        "MX06",
+        "scale",
+        "zh-CN",
+        "设个预约时间，到点秤自动开机等我来称。"
+      ],
+      [
+        "MX07",
+        "scale",
+        "en-US",
+        "Let the scale wake at a chosen time so I can step straight into measuring."
+      ],
+      [
+        "MX08",
+        "fryer",
+        "zh-CN",
+        "让我预约启动时间，到点后空气炸锅自动开机烹饪。"
+      ],
+      [
+        "MX09",
+        "fryer",
+        "en-US",
+        "After the timer rings, switch the heat off on its own instead of waiting for me."
+      ],
+      [
+        "MX10",
+        "scale",
+        "zh-CN",
+        "称完五分钟没有动作，秤就自己关机省电吧。"
+      ],
+      [
+        "MX11",
+        "scale",
+        "en-US",
+        "Shut the scale down automatically after the set idle time."
+      ],
+      [
+        "MX12",
+        "fryer",
+        "zh-CN",
+        "烹饪计时归零要自动切断加热，别只发出提示声。"
+      ],
+      [
+        "MX13",
+        "scale",
+        "en-US",
+        "When I forget the scale on the counter, have it power off by itself."
+      ],
+      [
+        "MX14",
+        "fryer",
+        "zh-CN",
+        "预约的是停止加热的时间，到点直接关，不是开机时间。"
+      ],
+      [
+        "MX15",
+        "fryer",
+        "en-US",
+        "Set a fixed end time that stops the air fryer even if nobody is home."
+      ],
+      [
+        "MX16",
+        "scale",
+        "zh-CN",
+        "希望我能设定多久不用就自动关秤。"
+      ],
+      [
+        "MX17",
+        "scale",
+        "en-US",
+        "A battery swap shouldn't wipe the weighing session. Bring back the prior tare and running total."
+      ],
+      [
+        "MX18",
+        "fryer",
+        "zh-CN",
+        "停电几十秒再来电，能记住炸到哪一步并从那一步接着做吗？"
+      ],
+      [
+        "MX19",
+        "fryer",
+        "en-US",
+        "After a momentary blackout, let me continue the same program with its remaining cook time."
+      ],
+      [
+        "MX20",
+        "scale",
+        "zh-CN",
+        "秤中途断电，重新开机希望还能接着之前的配方称，不用把累计重量清零。"
+      ],
+      [
+        "MX21",
+        "fryer",
+        "en-US",
+        "Restore the cook progress after the plug gets knocked out and I reconnect it."
+      ],
+      [
+        "MX22",
+        "scale",
+        "zh-CN",
+        "换完电池请恢复断电前的去皮和累计值，从原来的称量继续。"
+      ],
+      [
+        "MX23",
+        "scale",
+        "en-US",
+        "If the scale loses power mid-recipe, save enough state to carry on from that measurement."
+      ],
+      [
+        "MX24",
+        "fryer",
+        "zh-CN",
+        "插头意外掉了，恢复供电后保留原来的温度和剩余分钟，别整个程序重头开始。"
+      ],
+      [
+        "MX25",
+        "scale",
+        "en-US",
+        "The scale timer did something unexpected somewhere near the end."
+      ],
+      [
+        "MX26",
+        "fryer",
+        "zh-CN",
+        "昨天跳闸那回机器表现怪怪的，具体是开还是关我也没注意。"
+      ],
+      [
+        "MX27",
+        "fryer",
+        "en-US",
+        "The cooking timer is confusing. I can't tell which option I was on."
+      ],
+      [
+        "MX28",
+        "scale",
+        "zh-CN",
+        "数字忽然跳了一下，会不会与我碰到开关有关？"
+      ],
+      [
+        "MX29",
+        "scale",
+        "en-US",
+        "I'd like the display to show a negative value when I lift part of a measured ingredient out."
+      ],
+      [
+        "MX30",
+        "fryer",
+        "zh-CN",
+        "出风口不该朝侧边喷油烟，靠墙时太难擦。"
+      ],
+      [
+        "MX31",
+        "fryer",
+        "en-US",
+        "Please use firmer cardboard so the box doesn't collapse when I stack it."
+      ],
+      [
+        "MX32",
+        "scale",
+        "zh-CN",
+        "秤盘的边缘太滑，碗放上去容易移位。"
+      ]
+    ],
+    "negative": [
+      [
+        "NG01",
+        "scale",
+        "en-US",
+        "Give the scale a scheduled wake-up for my regular morning baking."
+      ],
+      [
+        "NG02",
+        "fryer",
+        "zh-CN",
+        "我想选晚上七点开炸，六点出门的时候先把开机时间定好。"
+      ],
+      [
+        "NG03",
+        "fryer",
+        "en-US",
+        "Let me store a start time so dinner begins cooking at six on the dot."
+      ],
+      [
+        "NG04",
+        "scale",
+        "zh-CN",
+        "希望称重前可以设好开机钟点，早上到点自动亮屏。"
+      ],
+      [
+        "NG05",
+        "scale",
+        "en-US",
+        "I'd use a timer that automatically turns the scale on before my alarm."
+      ],
+      [
+        "NG06",
+        "fryer",
+        "zh-CN",
+        "选好食谱放着，等到预约的钟点再开机开始做。"
+      ],
+      [
+        "NG07",
+        "fryer",
+        "en-US",
+        "At the end of the set cook, shut off the heat automatically without my intervention."
+      ],
+      [
+        "NG08",
+        "scale",
+        "zh-CN",
+        "秤待机一段时间后应自己关掉，不要一直亮着。"
+      ],
+      [
+        "NG09",
+        "scale",
+        "en-US",
+        "Put the scale on an automatic power-off timer after my last measurement."
+      ],
+      [
+        "NG10",
+        "fryer",
+        "zh-CN",
+        "我定的关火时间一到就停止加热，否则容易烤糊。"
+      ],
+      [
+        "NG11",
+        "fryer",
+        "en-US",
+        "Cut power to the heater at the end of the countdown even if I don't press stop."
+      ],
+      [
+        "NG12",
+        "scale",
+        "zh-CN",
+        "秤要在无人操作时按设定时长自动关机。"
+      ],
+      [
+        "NG13",
+        "scale",
+        "en-US",
+        "The startup light looked different last night, but I'm not sure what I did."
+      ],
+      [
+        "NG14",
+        "fryer",
+        "zh-CN",
+        "说明书上的图跟面板长得不大一样。"
+      ],
+      [
+        "NG15",
+        "fryer",
+        "en-US",
+        "A solid blue finish would fit my kitchen better."
+      ],
+      [
+        "NG16",
+        "scale",
+        "zh-CN",
+        "能送一张防滑垫就好了。"
+      ],
+      [
+        "NG17",
+        "scale",
+        "en-US",
+        "The box got crushed at the corner on arrival."
+      ],
+      [
+        "NG18",
+        "fryer",
+        "zh-CN",
+        "昨天用过一次，就是有点说不上来哪里不顺手。"
+      ]
+    ]
+  }
+}

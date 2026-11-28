@@ -8,7 +8,8 @@ import re
 from hashlib import sha256
 from urllib.parse import urlsplit
 
-from src.execution.transport import ENDPOINTS, network, number, outbound, redact
+from src.edition_policy import Edition, legacy_execution_allowed
+from src.execution.transport import Denied, ENDPOINTS, network, number, outbound, redact
 from src.raw_store.store import dump
 
 SITE = "cooking"
@@ -130,6 +131,8 @@ def fetch_forum_post(ident, engine, *, secrets=(), diagnostic=False, transport=n
 
 
 def discover(settings, store, attempt, transport=network, *, engines=ENGINES):
+    if not legacy_execution_allowed(settings) or store.edition != Edition.BUSINESS:
+        raise Denied("当前运行模式尚未开放真实来源核验。")
     if (transport is network) == store.fixture:
         raise ValueError("在线传输和合成测试必须使用独立数据库")
     secrets = list(settings.keys.values())

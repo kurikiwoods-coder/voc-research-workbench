@@ -9,6 +9,7 @@ import sys
 
 from src.config import Settings
 from src.dashboard.app import requirements
+from src.edition_policy import Edition, legacy_execution_allowed
 from src.execution.transport import ENDPOINTS, number, outbound
 from src.ingestion.public_source import LICENSES, SITE, first_sentence, post_id
 from src.raw_store.store import Store, dump, now
@@ -67,6 +68,8 @@ CREATE TABLE usage_ledger(shard_no INTEGER PRIMARY KEY,state TEXT,tokens INTEGER
 
 
 def export(store, run_id, target):
+    if store.edition != Edition.BUSINESS or store.diagnostic:
+        raise ValueError("该工作库不能导出商用验收归档。")
     audit = store.audit(run_id)
     checks = [c for c in requirements(store,run_id) if c["stage"]=="P0-0" and c["last_checked_at"]]
     if len(checks)!=7 or store.fixture:
@@ -136,6 +139,9 @@ def verify(folder):
 
 def verify_public_source(folder):
     """Re-fetch the licensed excerpts identified in an independently checked audit."""
+    if not legacy_execution_allowed(Settings.load_base()):
+        return {"check": "public source recheck", "status": "BLOCKED",
+                "reason": "当前运行模式尚未开放历史来源的在线复核。", "observations": []}
     folder = Path(folder)
     verify(folder)
     receipt = json.loads((folder / "run.json").read_text("utf-8"))
@@ -214,7 +220,10 @@ if __name__ == "__main__":
     elif args.verify:
         result = verify(args.directory)
     else:
-        result = export(Store(Settings.load().directory), args.run, args.directory)
+        base = Settings.load_base()
+        if not legacy_execution_allowed(base):
+            parser.exit(2, "当前运行模式不能导出商用验收归档。\n")
+        result = export(Store(base.directory), args.run, args.directory)
     print(json.dumps(result, ensure_ascii=False, indent=2))
     if args.verify_source and result["status"] != "PASS":
         sys.exit(2 if result["status"] == "BLOCKED" else 1)
