@@ -35,10 +35,12 @@
 | 候选与本机 HTTP 权限 | 14 通过、0 失败、0 跳过，12.331 秒，非回环网络尝试 0 |
 | 固定模型与盲测 | 原生 Windows 11 26H2 x64（26300.9974），CPython 3.12.9，2 通过，0 失败，0 跳过 |
 | 浏览器 | Windows 11 本机 Chrome 158.0.8127.38 回环测试。确定性界面夹具与固定 MiniLM、BERTopic 实际推理分别执行，覆盖主题键盘操作、原话下钻、撤销、审核修订重读、重算与比较及移动端。另以 Personal 合成 Owner 验证项目及冻结范围选择。页面外部请求与 Python 非回环尝试均为 0。 |
+| Personal HTTP 测试夹具复验 | 5 通过、0 失败、0 跳过，7.084 秒。复用既有 Windows Personal 隔离目录夹具。 |
+| Python 全量回归 | 629 项，617 通过、0 失败、12 跳过，260.489 秒。11 项需另备固定模型或聚类运行时，1 项为非 Windows 路径。固定模型的 M09-D 盲测与浏览器另行实跑。 |
 | Node、空库冷启动、历史归档 | 2/2、3/3、4/4 |
-| GitHub CI | Ubuntu、Windows Server 2022 与 Chromium 结果见交付提交对应的 PR 检查。Chromium 常规运行包含 M09-D 的确定性界面夹具。 |
+| GitHub CI | Ubuntu、Windows Server 2022 与 Chromium 结果见交付提交对应的 PR 检查。Chromium 常规运行包含 M09-D 的确定性界面夹具。交付提交的三项检查通过后，M09-D 进入 `PENDING_ACCEPTANCE`，等待负责人签收。 |
 
-浏览器使用合成材料。固定模型复验使用已有本机脱机锁定环境和已验签模型。将 `$appPython`、`$m09Python`、`$m09ModelDir`、`$appSitePackages` 和 `$browserOutput` 指向相应的隔离位置。原生浏览器可按已安装的 Chromium 路径设置 `VOC_CHROMIUM`。
+浏览器使用合成材料。本机保留主题分布、证据下钻、历史比较、移动端和 Personal 冻结范围截图。可用下列命令和合成夹具重新生成。固定模型复验使用已有本机脱机锁定环境和已验签模型。将 `$appPython`、`$m09Python`、`$m09ModelDir`、`$appSitePackages` 和 `$browserOutput` 指向相应的隔离位置。原生浏览器可按已安装的 Chromium 路径设置 `VOC_CHROMIUM`。
 
 ```powershell
 & $appPython tests/browser_e2e.py --discovery-only --output $browserOutput
@@ -50,7 +52,7 @@ $env:PYTHONPATH = $appSitePackages
 & $m09Python tests/browser_e2e.py --discovery-native --output $browserOutput
 ```
 
-隔离沙箱默认用户目录导致回归夹具无法创建目录或校验模型路径。使用进程级测试目录变量重跑，保留初始结果与错误堆栈。旧有 `StarletteDeprecationWarning` 继续记录。
+隔离沙箱默认用户目录导致回归夹具无法创建目录或校验模型路径。将测试进程的 `LOCALAPPDATA`、`TMP`、`TEMP` 指向同一隔离绝对目录后重跑，保留初始结果与错误堆栈。旧有 `StarletteDeprecationWarning` 继续记录。
 
 ## 工程可行性检查
 

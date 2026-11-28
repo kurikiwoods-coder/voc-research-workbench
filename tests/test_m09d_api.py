@@ -2,6 +2,7 @@
 
 from dataclasses import replace
 from ipaddress import ip_address
+from pathlib import Path
 from uuid import uuid4
 import json
 import socket
@@ -16,7 +17,7 @@ from src.discovery.workbench_config import load_catalog
 from src.dashboard.personal_workspace import provision
 from src.edition_policy import Deployment, Edition, LocalOwner, Permission
 from src.raw_store.relation_access import RelationGrant
-from test_edition_policy import owner_environment
+from test_edition_policy import fixture_root, owner_environment
 import test_m09_embeddings as embedding_fixtures
 from test_m09_persistence import cluster_fixture
 
@@ -156,7 +157,7 @@ class DiscoveryApiTests(unittest.TestCase):
         self.assertEqual(load_catalog(self.settings.directory), self.catalog)
 
     def test_personal_discovery_has_scope_read_and_separate_review_permission(self):
-        directory = self.settings.directory / "personal-discovery"
+        directory = Path(self.enterContext(fixture_root("voc-m09d-personal-"))) / "workspace"
         binding = provision(directory, "合成主题研究", "离线场景", uuid4())
         key = tuple(binding[field] for field in ("study_id", "scope_id", "scope_version"))
         environment, proof = owner_environment(binding, permissions=[Permission.READ_CORPUS.value])
