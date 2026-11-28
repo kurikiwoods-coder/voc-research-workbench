@@ -1,0 +1,245 @@
+{
+  "version": "m09d-quality-dev-v1",
+  "rows": [
+    {
+      "id": "D-001",
+      "text": "The keep-out box only works for the first pass. The second pass rolls straight over the wet paint.",
+      "language": "en"
+    },
+    {
+      "id": "D-002",
+      "text": "二层地图和禁区设好后能存一份吗？我没法每次换楼层都描一遍。",
+      "language": "zh"
+    },
+    {
+      "id": "D-003",
+      "text": "给落地灯周围画了条虚拟墙，结果每趟都冲进去，把电线卷起来。",
+      "language": "zh"
+    },
+    {
+      "id": "D-004",
+      "text": "跨楼层不指望它自己上台阶，只希望搬过去后找到这一层以前的清扫区域。",
+      "language": "zh"
+    },
+    {
+      "id": "D-005",
+      "text": "The only feature I use is making the power light dim enough to leave in the bedroom.",
+      "language": "en"
+    },
+    {
+      "id": "D-006",
+      "text": "跑图没问题，麻烦在宝宝地垫要一直留出来，设置了区域就别反复跨进去。",
+      "language": "zh"
+    },
+    {
+      "id": "D-007",
+      "text": "I wish it would stay away from the stairs and keep all the rooms from disappearing. Both bother me equally.",
+      "language": "en"
+    },
+    {
+      "id": "D-008",
+      "text": "主要是坐飞机想安静睡觉，耳罩挡不住一直响的发动机。",
+      "language": "zh"
+    },
+    {
+      "id": "D-009",
+      "text": "不是我听不见，是对方老问我说了什么。麦这边得把人声传清楚。",
+      "language": "zh"
+    },
+    {
+      "id": "D-010",
+      "text": "希望拖地时能避开地毯那一格，其他地砖按原路线拖就好。",
+      "language": "zh"
+    },
+    {
+      "id": "D-011",
+      "text": "I want to exempt just the fringe next to the sofa. It can still vacuum the rest of the same room.",
+      "language": "en"
+    },
+    {
+      "id": "D-012",
+      "text": "两台主机并着插，副机睡醒时别把我正在看的那路抢走。",
+      "language": "zh"
+    },
+    {
+      "id": "D-013",
+      "text": "家里没门挡，想让扫地机绕开猫砂盆那一小块。",
+      "language": "zh"
+    },
+    {
+      "id": "D-014",
+      "text": "I need a separate layout for the basement. The app keeps writing over the ground-floor map.",
+      "language": "en"
+    },
+    {
+      "id": "D-015",
+      "text": "同一台机器两层轮换用，想保留两套房间分区，别让新的覆盖旧的。",
+      "language": "zh"
+    },
+    {
+      "id": "D-016",
+      "text": "I hear my team fine. They say my voice turns to mush the moment I step out onto the street.",
+      "language": "en"
+    },
+    {
+      "id": "D-017",
+      "text": "Let me keep the podcast quiet and turn down the room around it. These seal poorly with my glasses.",
+      "language": "en"
+    },
+    {
+      "id": "D-018",
+      "text": "包装到了就湿透，打开是好的，想要个能挡雨的外箱。",
+      "language": "zh"
+    },
+    {
+      "id": "D-019",
+      "text": "戴耳机写文档时想挡住空调低频，打开降噪还是嗡嗡的。",
+      "language": "zh"
+    },
+    {
+      "id": "D-020",
+      "text": "坐地铁能不能把外面轰隆声压下去一点？不想每站都把音量调很高。",
+      "language": "zh"
+    },
+    {
+      "id": "D-021",
+      "text": "希望耳麦能把旁边人的聊天隔开些，电话那头听到的是我在讲。",
+      "language": "zh"
+    },
+    {
+      "id": "D-022",
+      "text": "When I leave the charging station downstairs, can it still pull up the existing plan for the top floor?",
+      "language": "en"
+    },
+    {
+      "id": "D-023",
+      "text": "开机顺序不一定一样，显示器就按上次选的接口亮，不想每天重新切回去。",
+      "language": "zh"
+    },
+    {
+      "id": "D-024",
+      "text": "I share the display with a game box. It can detect both connections without taking over the screen mid-call.",
+      "language": "en"
+    },
+    {
+      "id": "D-025",
+      "text": "骑车接听没问题，麻烦是对方只听到呼呼的风，我想正常说完一句话。",
+      "language": "zh"
+    },
+    {
+      "id": "D-026",
+      "text": "I carry the robot upstairs once a week. Next time it goes up, I want it to recognize the saved layout and room names.",
+      "language": "en"
+    },
+    {
+      "id": "D-027",
+      "text": "杯架卡不稳，坐地铁一路晃，回家看到盖已经松了。",
+      "language": "zh"
+    },
+    {
+      "id": "D-028",
+      "text": "The headset sounds crisp in my ears, but the person on the other end hears every fan except me.",
+      "language": "en"
+    },
+    {
+      "id": "D-029",
+      "text": "HDMI一有信号就从工作电脑跳走，我希望锁定当前输入。",
+      "language": "zh"
+    },
+    {
+      "id": "D-030",
+      "text": "I don't take calls on these. I need to listen to a book without a treadmill drowning it out.",
+      "language": "en"
+    },
+    {
+      "id": "D-031",
+      "text": "The layout thing got weird after I moved it. Could be the app, could be what I changed in the room.",
+      "language": "en"
+    },
+    {
+      "id": "D-032",
+      "text": "Every time my console wakes, the monitor abandons the laptop. Leave the source where I set it.",
+      "language": "en"
+    },
+    {
+      "id": "D-033",
+      "text": "In the laundromat the dryer comes right through the earcups, even with noise cancellation on.",
+      "language": "en"
+    },
+    {
+      "id": "D-034",
+      "text": "接上另一台以后就有点乱，画面和声音都像是不对，也没看是哪个口。",
+      "language": "zh"
+    },
+    {
+      "id": "D-035",
+      "text": "通透模式不需要，我想耳朵里少听一点隔壁桌聊天。",
+      "language": "zh"
+    },
+    {
+      "id": "D-036",
+      "text": "The menu remembers my brightness. It should also remember that I prefer DisplayPort even if the TV stick powers on first.",
+      "language": "en"
+    },
+    {
+      "id": "D-037",
+      "text": "I don't need any of the fancy settings. The carrying pouch needs a clip.",
+      "language": "en"
+    },
+    {
+      "id": "D-038",
+      "text": "On the train platform the recording picks up the wind louder than my words.",
+      "language": "en"
+    },
+    {
+      "id": "D-039",
+      "text": "Marking the dog bowls as a forbidden area should be enough. The cleaner keeps nudging them across the tiles.",
+      "language": "en"
+    },
+    {
+      "id": "D-040",
+      "text": "有时声音太大，有时通话又太小，哪边出的事我也分不清。",
+      "language": "zh"
+    },
+    {
+      "id": "D-041",
+      "text": "Voice notes made with these buds cut out halfway through a sentence even when the connection is steady.",
+      "language": "en"
+    },
+    {
+      "id": "D-042",
+      "text": "People can hear me fine. I bought these to get some quiet on the bus, and the engine drone is still there.",
+      "language": "en"
+    },
+    {
+      "id": "D-043",
+      "text": "开会时我这边只是打字，远端同事说我讲话被键盘声盖住了。",
+      "language": "zh"
+    },
+    {
+      "id": "D-044",
+      "text": "When the dock reconnects after lunch the picture briefly swaps to another port. I'd like automatic source selection off.",
+      "language": "en"
+    },
+    {
+      "id": "D-045",
+      "text": "楼上楼下各扫一回，搬下来的时候又得重新建图，原来分好的房间也没了。",
+      "language": "zh"
+    },
+    {
+      "id": "D-046",
+      "text": "Drawing a map once is fine. It's having to start from a blank layout each time I take it back to the loft that bothers me.",
+      "language": "en"
+    },
+    {
+      "id": "D-047",
+      "text": "能指定默认的USB-C画面吗？插着电视盒时，现在每次都是盒子先出来。",
+      "language": "zh"
+    },
+    {
+      "id": "D-048",
+      "text": "The scan found the doorway perfectly. I just need a way to stop it entering the pantry.",
+      "language": "en"
+    }
+  ]
+}
