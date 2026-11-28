@@ -3,6 +3,7 @@ from dataclasses import replace
 from decimal import Decimal
 from ipaddress import ip_address
 import json
+from os import getenv
 import sqlite3
 from pathlib import Path
 from secrets import token_bytes
@@ -19,10 +20,13 @@ from src.config import (
 )
 from src.dashboard.api_setup import register_setup, setup_view
 from src.dashboard.edition_access import (
-    PERSONAL_PRIVATE_PREFIXES, EditionRoute, edition_access, register_edition,
+    DISCOVERY_PREFIX, PERSONAL_PRIVATE_PREFIXES, EditionRoute, edition_access, register_edition,
 )
+from src.dashboard.discovery_api import register_discovery
 from src.dashboard.personal_admission import register_personal_admission
 from src.dashboard.personal_governance import register_personal_governance
+from src.discovery.embedding_backend import EmbeddingBackendError
+from src.discovery.workbench_config import approved_local_backend, load_catalog
 from src.edition_policy import Deployment, Edition, EditionPolicy, legacy_execution_allowed
 from src.dashboard.acquisition_api import register_acquisition
 from src.ingestion.m08_sampling import SamplingTasks
@@ -294,7 +298,8 @@ def business_gate(state):
     return "BLOCKED"
 
 
-def create_app(settings=None, *, relation_grants=None, acquisition_permission=None):
+def create_app(settings=None, *, relation_grants=None, acquisition_permission=None,
+               discovery_catalog=None, discovery_backend=None):
     @asynccontextmanager
     async def lifespan(app):
         from src.raw_store.relations import RelationStore
@@ -302,18 +307,37 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
         base = settings or Settings.load_base()
         app.state.settings = base
         app.state.edition_policy = EditionPolicy(base.edition, base.deployment, base.personal_owner)
+        owned_backend = None
         if base.deployment == Deployment.LOCAL:
             app.state.store = Store(base.directory, edition=base.edition)
             app.state.studies = StudyStore(app.state.store)
             app.state.imports = ImportStore(app.state.store)
             app.state.corpus = CorpusStore(app.state.store)
+            app.state.discovery_catalog = discovery_catalog
+            app.state.discovery_backend = discovery_backend
+            if discovery_catalog is None:
+                try:
+                    app.state.discovery_catalog = load_catalog(base.directory)
+                except (OSError, KeyError, TypeError, ValueError):
+                    app.state.discovery_catalog = None
+            model_directory = getenv("VOC_M09_MODEL_DIR")
+            if discovery_backend is None and app.state.discovery_catalog and model_directory:
+                try:
+                    owned_backend = approved_local_backend(model_directory)
+                    app.state.discovery_backend = owned_backend
+                except (OSError, ValueError, EmbeddingBackendError):
+                    app.state.discovery_backend = None
             if base.edition == Edition.BUSINESS:
                 app.state.sampling = SamplingTasks(base.directory, app.state.studies, acquisition_permission)
                 app.state.relations = RelationStore(app.state.store, grants=relation_grants)
                 app.state.relation_cursor_key = token_bytes(32)
                 app.state.diagnostics = Store(base.directory, diagnostic=True)
                 app.state.vault = CredentialVault(base.directory)
-        yield
+        try:
+            yield
+        finally:
+            if owned_backend is not None:
+                owned_backend.close()
 
     app = FastAPI(
         title="VOC 研究工作台", version="0.1.0", lifespan=lifespan, docs_url=None, redoc_url=None,
@@ -327,16 +351,17 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
         path = request.url.path
         relation_api = is_relation_path(path)
         acquisition_api = path.startswith("/api/acquisition/")
+        discovery_api = path.startswith(DISCOVERY_PREFIX)
         personal_api = path.startswith(PERSONAL_PRIVATE_PREFIXES)
         private_api = (relation_api or path == "/api/studies"
-                       or acquisition_api or personal_api
+                       or acquisition_api or discovery_api or personal_api
                        or path.startswith(("/api/setup/", "/api/studies/", "/api/imports/", "/api/corpus/")))
         legacy = legacy_execution_allowed(request.app.state.settings)
         local_data = (not legacy and path.startswith("/api/")) or private_api or path in {"/api/workspace", "/api/runs"} or path.startswith("/api/runs/")
         denial_headers = {"Cache-Control": "no-store"} if local_data else None
         origin = request.headers.get("origin")
         expected = f"{request.url.scheme}://{request.headers.get('host')}"
-        if (acquisition_api or personal_api or not legacy) and origin is not None and origin != expected:
+        if (acquisition_api or discovery_api or personal_api or not legacy) and origin is not None and origin != expected:
             return JSONResponse({"detail": "请从本机工作台发起操作。"}, status_code=403, headers=denial_headers)
         if local_data:
             try:
@@ -444,6 +469,7 @@ def create_app(settings=None, *, relation_grants=None, acquisition_permission=No
     register_corpus(app)
     register_relations(app)
     register_registry(app)
+    register_discovery(app)
     app.mount("/static", StaticFiles(directory=STATIC), name="static")
     return app
 

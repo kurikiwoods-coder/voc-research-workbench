@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from src.config import Settings
 from src.dashboard.app import create_app
+from discovery_browser import run_discovery_browser
 from src.dashboard.personal_workspace import provision
 from test_edition_policy import fixture_root, owner_environment
 from test_personal_credentials import synthetic_protection
@@ -472,6 +473,9 @@ def main():
     parser.add_argument("--registry-only", action="store_true")
     parser.add_argument("--packycode-only", action="store_true")
     parser.add_argument("--acquisition-only", action="store_true")
+    discovery_mode = parser.add_mutually_exclusive_group()
+    discovery_mode.add_argument("--discovery-only", action="store_true")
+    discovery_mode.add_argument("--discovery-native", action="store_true")
     parser.add_argument("--output", type=Path, default=ROOT / "test-results/browser")
     args = parser.parse_args()
     if args.serve:
@@ -491,6 +495,9 @@ def main():
         return
     if args.acquisition_only:
         run_acquisition_browser(args.output)
+        return
+    if args.discovery_only or args.discovery_native:
+        run_discovery_browser(args.output, actual=args.discovery_native)
         return
     with tempfile.TemporaryDirectory(prefix="voc-browser-") as directory:
         with socket.socket() as port_probe:
@@ -517,6 +524,7 @@ def main():
         run_acquisition_browser(args.output)
         run_edition_browser(args.output)
         run_governance_browser(args.output)
+        run_discovery_browser(args.output)
     print("Chromium E2E passed. Screenshots:", args.output)
 
 

@@ -1,6 +1,6 @@
 # M09-C 主题快照、证据追溯与离线复跑
 
-实施基线 `cd4859dfa12cdc5676d13fd5033b2a04a8ada19d`，Personal 开发分支 `codex/g1-personal-phase-1`，草稿 PR #2。范围为 M09-C 隔离工程。**M09-C = PENDING_ACCEPTANCE**，**M09 = PARTIAL**，已验收核心 **41/79**。
+实施基线 `cd4859dfa12cdc5676d13fd5033b2a04a8ada19d`，Personal 开发分支 `codex/g1-personal-phase-1`，草稿 PR #2。2026-11-28 负责人正式签收提交 `8a2ee1e3465964112e8f6a132932f35658557839`。**M09-C = ACCEPTED**，工程状态 **ENGINEERING_PASS**。**M09 = PARTIAL**，已验收核心 **42/79**。G3 与 P0-1 待验收。[签收提交](https://github.com/kurikiwoods-coder/voc-research-workbench/commit/8a2ee1e3465964112e8f6a132932f35658557839) · [签收提交三项 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/46115987906)
 
 ## 本地发现服务
 

@@ -14,8 +14,10 @@ from src.edition_policy import Edition
 from src.raw_store.store import Conflict, SQLITE_TIMEOUT, dump, now
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 APPLICATION_IDS = {Edition.BUSINESS: 0x4D303943, Edition.PERSONAL: 0x4D303950}
+CANDIDATE_OUTPUT_VERSION = "m09-d-candidates-v1"
+CANDIDATE_DECISIONS = frozenset({"retained", "rejected"})
 _DIGEST = re.compile(r"[0-9a-f]{64}\Z")
 _STATUSES = {"empty", "insufficient_samples", "empty_vocabulary", "no_clusters", "clustered"}
 _LINEAGE_FIELDS = frozenset(field.name for field in fields(Lineage))
@@ -124,15 +126,54 @@ _SCHEMA = (
 )
 
 
+_CANDIDATE_SCHEMA = (
+    f"""ALTER TABLE topic_runs
+        ADD COLUMN candidate_output_version TEXT NOT NULL DEFAULT '{CANDIDATE_OUTPUT_VERSION}'""",
+    """CREATE TRIGGER topic_runs_candidate_output_version
+       BEFORE UPDATE OF candidate_output_version ON topic_runs
+       BEGIN SELECT RAISE(ABORT, 'immutable candidate output version'); END""",
+    """CREATE TABLE topic_candidate_reviews (
+        run_id TEXT NOT NULL,
+        revision INTEGER NOT NULL CHECK(revision >= 1),
+        topic_id INTEGER NOT NULL CHECK(topic_id >= 0),
+        request_id TEXT NOT NULL,
+        actor_ref TEXT NOT NULL,
+        decision TEXT NOT NULL CHECK(decision IN ('retained', 'rejected')),
+        decided_at TEXT NOT NULL,
+        PRIMARY KEY(run_id, revision),
+        UNIQUE(run_id, request_id),
+        FOREIGN KEY(run_id, topic_id) REFERENCES topics(run_id, topic_id)
+    ) STRICT""",
+    """CREATE TRIGGER topic_candidate_reviews_insert BEFORE INSERT ON topic_candidate_reviews
+       WHEN NOT EXISTS(SELECT 1 FROM topic_runs WHERE run_id = NEW.run_id AND finished_at IS NOT NULL)
+         OR NEW.revision <> (
+            SELECT COALESCE(MAX(revision), 0) + 1 FROM topic_candidate_reviews WHERE run_id = NEW.run_id)
+         OR EXISTS(SELECT 1 FROM topic_candidate_reviews
+                   WHERE run_id = NEW.run_id AND request_id = NEW.request_id)
+       BEGIN SELECT RAISE(ABORT, 'invalid candidate review append'); END""",
+    """CREATE TRIGGER topic_candidate_reviews_update BEFORE UPDATE ON topic_candidate_reviews
+       BEGIN SELECT RAISE(ABORT, 'immutable candidate review'); END""",
+    """CREATE TRIGGER topic_candidate_reviews_delete BEFORE DELETE ON topic_candidate_reviews
+       BEGIN SELECT RAISE(ABORT, 'immutable candidate review'); END""",
+)
+
+
 def _initialize(db, app_id):
     identity = db.execute("SELECT application_id, user_version FROM pragma_application_id(), pragma_user_version()")
     application, version = identity.fetchone()
     if (application, version) == (app_id, SCHEMA_VERSION):
         return
+    if (application, version) == (app_id, 1):
+        for statement in _CANDIDATE_SCHEMA:
+            db.execute(statement)
+        db.execute(f"PRAGMA user_version={SCHEMA_VERSION}")
+        return
     if (application, version) != (0, 0) or db.execute("SELECT 1 FROM sqlite_schema LIMIT 1").fetchone():
         raise sqlite3.DatabaseError("Unsupported topic run database")
 
     for statement in _SCHEMA:
+        db.execute(statement)
+    for statement in _CANDIDATE_SCHEMA:
         db.execute(statement)
     for table in ("topics", "topic_members", "topic_representatives", "topic_postprocessing"):
         db.execute(f"""CREATE TRIGGER {table}_insert BEFORE INSERT ON {table}
@@ -204,6 +245,7 @@ def _member_values(member, scope):
 
 def _summary(row):
     result = dict(row)
+    result.pop("candidate_output_version", None)
     for key in ("metadata", "quality"):
         result[key] = json.loads(result[key])
     return result
@@ -307,6 +349,54 @@ class TopicRunStore:
                     (study_id, scope_id, scope_version),
                 )
             ]
+
+    def candidate_reviews(self, run_id, revision):
+        with self._transaction() as db:
+            version_row = db.execute(
+                "SELECT candidate_output_version FROM topic_runs WHERE run_id=? AND finished_at IS NOT NULL",
+                (run_id,),
+            ).fetchone()
+            if version_row is None:
+                raise KeyError(run_id)
+            latest = db.execute(
+                "SELECT COALESCE(MAX(revision), 0) FROM topic_candidate_reviews WHERE run_id=?", (run_id,),
+            ).fetchone()[0]
+            revision = latest if revision is None else revision
+            if revision > latest:
+                raise KeyError(revision)
+            reviews = [
+                dict(row) for row in db.execute(
+                    """SELECT revision, topic_id, decision, actor_ref, decided_at FROM topic_candidate_reviews
+                       WHERE run_id=? AND revision<=? ORDER BY revision""",
+                    (run_id, revision),
+                )
+            ]
+            return version_row["candidate_output_version"], latest, revision, reviews
+
+    def review_candidate(self, run_id, topic_id, decision, expected_revision, request_id, actor_ref):
+        with self._transaction(write=True) as db:
+            existing = db.execute(
+                """SELECT revision, topic_id, decision, actor_ref
+                   FROM topic_candidate_reviews WHERE run_id=? AND request_id=?""",
+                (run_id, request_id),
+            ).fetchone()
+            revision = expected_revision + 1
+            if existing is not None:
+                if tuple(existing) != (revision, topic_id, decision, actor_ref):
+                    raise Conflict("m09_candidate_idempotency_conflict")
+                return revision
+            latest = db.execute(
+                "SELECT COALESCE(MAX(revision), 0) FROM topic_candidate_reviews WHERE run_id=?", (run_id,),
+            ).fetchone()[0]
+            if latest != expected_revision:
+                raise Conflict("m09_candidate_revision_conflict")
+            db.execute(
+                """INSERT INTO topic_candidate_reviews(run_id, revision, topic_id, request_id, actor_ref,
+                                                        decision, decided_at)
+                   VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (run_id, revision, topic_id, request_id, actor_ref, decision, now()),
+            )
+            return revision
 
     def save(self, *, study_id, scope_id, scope_version, idempotency_key, request_sha256, started_at, status,
              metadata, topics, members, quality, replay_of=None):

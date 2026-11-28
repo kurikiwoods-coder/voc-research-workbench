@@ -226,7 +226,7 @@ class TopicRuns:
                             config, cache_dir)
 
     def _create(self, backend, refs, request_id, registry_version, analysis_language, output_language,
-                config, cache_dir, parent=None):
+                config, cache_dir, parent=None, *, recalculation=False):
         self._authorize()
         started_at = now()
         if not isinstance(request_id, str) or not REFERENCE.fullmatch(request_id):
@@ -248,10 +248,11 @@ class TopicRuns:
              row.model_input_sha256) for row in expected_rows
         ])
         replay_of = None if parent is None else parent["run_id"]
-        request_sha256 = _digest((
+        request_identity = (
             self._scope, registry_version, analysis_language, output_language, asdict(config), asdict(profile),
             sorted(references.items()), input_sha256, replay_of,
-        ))
+        )
+        request_sha256 = _digest((*request_identity, "recalculation") if recalculation else request_identity)
         stored = self._store.by_request(self._scope[0], request_id, request_sha256)
         if stored is not None:
             return self._view(stored)
@@ -270,7 +271,11 @@ class TopicRuns:
             "mode": result.mode, "research_denominator": result.research_denominator,
             "outbound_allowed": result.outbound_allowed,
         }
-        if parent is not None and any(
+        if recalculation:
+            metadata["operation"] = "recalculation"
+            if input_sha256 != parent["metadata"]["input_sha256"]:
+                raise Conflict("m09_recalculation_inputs_changed")
+        if parent is not None and not recalculation and any(
             dump(metadata[key]) != dump(parent["metadata"][key])
             for key in ("input_sha256", "vector_sha256", "embedding_run_id", "runtime_versions", "effective_config")
         ):
@@ -330,3 +335,17 @@ class TopicRuns:
                 self._read_member(member)
         self._authorize()
         return _compare(left, right)
+
+    def recalculate(self, run_id, backend, *, request_id, config=None, cache_dir=None):
+        """Recompute the same qualified evidence under explicit settings and seal a new snapshot."""
+        parent = self._snapshot(run_id)
+        metadata = parent["metadata"]
+        refs = []
+        for member in parent["members"]:
+            self._read_member(member)
+            refs.append(_restore_reference(member))
+        return self._create(
+            backend, refs, request_id, metadata["registry_version"], metadata["analysis_language"],
+            metadata["output_language"], config or TopicConfig(**metadata["requested_config"]),
+            cache_dir, parent=parent, recalculation=True,
+        )

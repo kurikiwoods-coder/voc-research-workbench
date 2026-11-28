@@ -22,6 +22,9 @@ CLAIM_PARAMS = {"edition", "product_edition", "deployment", "deployment_mode", "
 STUDY = "/api/studies/{study_id}"
 IMPORT = "/api/imports/{study_id}"
 CORPUS = "/api/corpus/{study_id}"
+DISCOVERY_PREFIX = "/api/discovery/"
+DISCOVERY = DISCOVERY_PREFIX + "{study_id}/{scope_id}/{scope_version}"
+DISCOVERY_RUN = DISCOVERY + "/runs/{run_id}"
 BATCH = "/batches/{batch_id}"
 UPLOAD = "/uploads/{file_id}"
 RECORD = "/records/{record_id}"
@@ -60,6 +63,14 @@ PERSONAL_ROUTES = {
     ("GET", CORPUS + RECORD): Permission.READ_CORPUS,
     ("GET", CORPUS + RECORD + "/eligible"): Permission.READ_CORPUS,
     ("POST", CORPUS + RECORD + "/review"): Permission.REVIEW_CORPUS,
+    ("GET", DISCOVERY + "/inputs"): Permission.READ_CORPUS,
+    ("GET", DISCOVERY + "/runs"): Permission.READ_CORPUS,
+    ("POST", DISCOVERY + "/runs"): Permission.READ_CORPUS,
+    ("GET", DISCOVERY_RUN): Permission.READ_CORPUS,
+    ("GET", DISCOVERY_RUN + "/evidence/{document_id}"): Permission.READ_CORPUS,
+    ("GET", DISCOVERY_RUN + "/compare/{other_run_id}"): Permission.READ_CORPUS,
+    ("POST", DISCOVERY_RUN + "/recalculate"): Permission.READ_CORPUS,
+    ("POST", DISCOVERY_RUN + "/candidates/{topic_id}/review"): Permission.REVIEW_CORPUS,
 }
 
 TARGETS = {
@@ -104,6 +115,8 @@ def has_scope(db, scope):
 
 def same_target(db, scope, params):
     if "scope_id" in params and canonical_uuid(params["scope_id"]) != scope.scope_id:
+        return False
+    if "scope_version" in params and params["scope_version"] != scope.scope_version:
         return False
     for parameter, (source, column) in TARGETS.items():
         value = params.get(parameter)
