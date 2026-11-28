@@ -2,7 +2,9 @@
 
 ## M09-C 主题快照、溯源与复跑
 
-2026-11-27，M09-C 已实现隔离运行快照、成员与精确证据回查、离线复跑及运行差异比较。独立主题库采用 SQLite v1，Personal 工作库 v11、Business 工作库 v9。原生 Windows 11 固定模型验收待补，**M09-C = PENDING_ACCEPTANCE**，**M09 = PARTIAL**，已验收核心 **41/79**。[M09-C 工程证据](docs/evidence/m09-c/README.md)
+2026-11-27，M09-C 已实现隔离运行快照、成员与精确证据回查、离线复跑及运行差异比较。独立主题库采用 SQLite v1，Personal 工作库 v11、Business 工作库 v9。**M09-C = PENDING_ACCEPTANCE**，**M09 = PARTIAL**，已验收核心 **41/79**。[M09-C 工程证据](docs/evidence/m09-c/README.md)
+
+2026-11-28，以草稿 PR #2 已核对基线 `0c1ec3fb2e71193c2763e3da84107e1222ff293e` 在原生 Windows 11 家庭中文版 26H2 x64（26300.9974）完成专项复验。官方源码受控重建的 `jieba==0.42.1` 两次哈希一致，锁定轮包 44/44 与固定模型资产 11/11 验证通过。离线安装与 `pip check` 通过，专项 22 通过、0 失败、3 项 G3 诊断跳过，退出码 0，进程审计的非回环尝试 0。基线的三项 CI 通过，本轮验收材料待负责人审核。[环境核查及复跑命令](docs/evidence/m09-c/README.md#windows-11-本机核查与复跑命令) · [同提交 CI](https://github.com/kurikiwoods-coder/voc-research-workbench/actions/runs/46013848716)
 
 ## M09-B 离线 BERTopic
 

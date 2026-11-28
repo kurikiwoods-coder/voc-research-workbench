@@ -1,10 +1,10 @@
 # 开发交接
 
-## 当前接续 · M09-C 待原生 Windows 11 验收
+## 当前接续 · M09-C 实机复验通过，待负责人验收
 
-活动分支 `codex/g1-personal-phase-1`，沿用草稿 PR #2。**M09-A/B = ENGINEERING_PASS**，**M09 = PARTIAL**，本机已验收核心 **41/79**。原生 Windows 11 CPU 的实际模型通过 3/3。M09-B 定向及上游回归通过 86/86，真实运行专项 3 项通过、3 项主题纯度诊断未通过。[向量接口、安装及复验](docs/evidence/m09-a/README.md) · [聚类接口及证据](docs/evidence/m09-b/README.md)
+活动分支 `codex/g1-personal-phase-1`，沿用草稿 PR #2。**M09-A/B = ENGINEERING_PASS**，**M09 = PARTIAL**，本机已验收核心 **41/79**。M09-A 原生 Windows 11 CPU 的实际模型通过 3/3。M09-B 定向及上游回归通过 86/86，真实运行专项 3 项通过、3 项主题纯度诊断未通过。[向量接口、安装及复验](docs/evidence/m09-a/README.md) · [聚类接口及证据](docs/evidence/m09-b/README.md)
 
-M09-C 的本地发现服务 TopicRuns 提供已封存快照、精确证据回查、离线复跑与比较。接续验收时在原生 Windows 11 上使用既有锁定环境及获准模型资产，运行 M09-C 定向和实际模型用例。M09-D 候选视图与独立留出集待负责人授权，G3 保持待验收。[接口、备份与复验命令](docs/evidence/m09-c/README.md)
+M09-C 的本地发现服务 TopicRuns 提供已封存快照、精确证据回查、离线复跑与比较。2026-11-28，原生 Windows 11 26H2 x64（26300.9974）完成固定模型复验。受控重建的 `jieba==0.42.1` 经两次独立构建哈希一致，锁定依赖离线安装 44/44，`pip check` 通过。专项 22 通过、0 失败、3 项 G3 诊断跳过，进程审计的非回环尝试 0。M09-C 为 **PENDING_ACCEPTANCE**，待负责人验收。M09-D 候选视图与独立留出集待负责人授权，G3 保持待验收。[接口、备份与复验命令](docs/evidence/m09-c/README.md)
 
 后续交付记录功能完整度、技术验证、质量缺口、Token 效率、成本风险和接续条件，并附 SHA、PR、工作区状态与下一阶段交付条件。以实际执行和可核验证据填写，缺少 Token 数据时填 N/A。[工程交付报告规范](docs/decisions/product-realignment-v1-owner-approval.md#工程交付报告规范)
 
@@ -28,7 +28,7 @@ G-1 暂停期间，既有工程和验收证据继续有效于其原范围。Pack
 
 ## M09 离线隔离开发接续
 
-四槽真实实证因当前 PackyCode 账户的个人用途无法确认而暂停。M09-A/B 已完成本机离线工程验收，M09-C 等待原生 Windows 11 验收。正式运行依适用版本门禁。[工作单元](docs/planning/ROADMAP-V2.md) · [M08 消费契约](docs/architecture/m08-consumer-handover.md)
+四槽真实实证因当前 PackyCode 账户的个人用途无法确认而暂停。M09-A/B 已完成本机离线工程验收，M09-C Windows 11 复验通过，工程交付待负责人验收。正式运行依适用版本门禁。[工作单元](docs/planning/ROADMAP-V2.md) · [M08 消费契约](docs/architecture/m08-consumer-handover.md)
 
 1. **M09-A**。在临时 SQLite 和合成夹具中接续 M05 资格、M06 冻结范围与片段版本、M07 精确封版注册表及 M08 追溯。保存预处理、输入摘要、向量模型与维度版本。原话语言、分析语言及输出语言分别传递，保留模型多语言能力配置。合成向量验证适配器契约，固定 MiniLM 权重复验中英相似度、向量与缓存复跑。
 2. **M09-B/C**。使用预装且获准的本地模型和固定 BERTopic 参数验证聚类。在断网环境保存并复跑主题、成员、参数、运行版本、证据引用与差异。回查须重验当前资格和精确片段版本。原话只读，候选与正式注册表分别保存。

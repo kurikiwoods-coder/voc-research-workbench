@@ -1,0 +1,25 @@
+diff --git a/tests/test_m09_actual_topics.py b/tests/test_m09_actual_topics.py
+index d383b1c..0fbdd59 100644
+--- a/tests/test_m09_actual_topics.py
++++ b/tests/test_m09_actual_topics.py
+@@ -14,0 +15 @@ from src.discovery.topics import TopicConfig, cluster_offline
++from src.raw_store.mentions import MentionStore
+@@ -16,0 +18 @@ from src.raw_store.relations import RelationStore
++from src.raw_store.store import Store
+@@ -256,0 +259,11 @@ class ApprovedTopicPersistenceTest(unittest.TestCase):
++
++        workspace = Store(fixture.case.db.directory, edition=fixture.case.db.edition)
++        evidence = OfflineEvidence(
++            study_id=fixture.case.study, scope_id=fixture.case.scope, scope_version="v1",
++            mentions=MentionStore(workspace, authorize=fixture.case.authorize),
++            registry=RegistryVersions(RelationStore(workspace)),
++            fixture_records=tuple(ref.record for ref in fixture.refs),
++        )
++        consumer = TopicRuns(workspace, evidence, authorize_project=authorize)
++        self.assertEqual(consumer.get(first["run_id"]), first)
++
+@@ -263 +276 @@ class ApprovedTopicPersistenceTest(unittest.TestCase):
+-                producer.evidence_for(first["run_id"], doc_id).original_text,
++                consumer.evidence_for(first["run_id"], doc_id).original_text,
+@@ -270 +282,0 @@ class ApprovedTopicPersistenceTest(unittest.TestCase):
+-        consumer = TopicRuns(fixture.case.db, fixture.evidence, authorize_project=authorize)
